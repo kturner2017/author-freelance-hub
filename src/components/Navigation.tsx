@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,12 +12,16 @@ export const Navigation = () => {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <h1 className="text-2xl font-serif font-bold text-primary">Authify</h1>
+              <Link to="/">
+                <h1 className="text-2xl font-serif font-bold text-primary">Authify</h1>
+              </Link>
             </div>
           </div>
           
           <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
-            <Button variant="ghost">For Authors</Button>
+            <Link to="/for-authors">
+              <Button variant="ghost">For Authors</Button>
+            </Link>
             <Button variant="ghost">For Professionals</Button>
             <Button variant="ghost">Resources</Button>
             <Button variant="default">Sign In</Button>
@@ -36,7 +41,9 @@ export const Navigation = () => {
       {isOpen && (
         <div className="sm:hidden">
           <div className="pt-2 pb-3 space-y-1">
-            <Button variant="ghost" className="w-full justify-start">For Authors</Button>
+            <Link to="/for-authors">
+              <Button variant="ghost" className="w-full justify-start">For Authors</Button>
+            </Link>
             <Button variant="ghost" className="w-full justify-start">For Professionals</Button>
             <Button variant="ghost" className="w-full justify-start">Resources</Button>
             <Button variant="default" className="w-full justify-start">Sign In</Button>
