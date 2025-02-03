@@ -6,6 +6,7 @@ import { Card, CardContent } from './ui/card';
 import { Toggle } from './ui/toggle';
 import BoxEditor from './BoxEditor';
 import { useToast } from './ui/use-toast';
+import { useNavigate } from 'react-router-dom';
 import { 
   ChevronDown,
   ChevronRight,
@@ -25,7 +26,9 @@ import {
   ArrowDown,
   Pencil,
   X,
-  Check
+  Check,
+  ArrowLeft,
+  Save
 } from 'lucide-react';
 import FileUploader from './FileUploader';
 
@@ -63,6 +66,7 @@ const INITIAL_BOXES = {
 };
 
 const ManuscriptEditor = () => {
+  const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [editorView, setEditorView] = useState<'boxes' | 'document'>('boxes');
   const [expandedSections, setExpandedSections] = useState({
@@ -82,6 +86,19 @@ const ManuscriptEditor = () => {
   const bookData = {
     title: "Gomer",
     author: "K. TURNER"
+  };
+
+  const handleSave = () => {
+    toast({
+      title: "Changes saved",
+      description: "Your changes have been saved successfully."
+    });
+    console.log('Saving changes');
+  };
+
+  const handleBack = () => {
+    navigate('/editor');
+    console.log('Navigating back to editor');
   };
 
   const handleAddAct = () => {
@@ -413,8 +430,13 @@ const ManuscriptEditor = () => {
         {/* Top Bar */}
         <div className="h-14 border-b flex items-center px-4 justify-between bg-white">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon">
-              <Menu className="h-5 w-5" />
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={handleBack}
+              className="hover:bg-gray-100"
+            >
+              <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
               <h2 className="text-xl font-semibold">{selectedChapter}</h2>
@@ -422,6 +444,14 @@ const ManuscriptEditor = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="default"
+              onClick={handleSave}
+              className="bg-primary hover:bg-primary-600 flex items-center gap-2"
+            >
+              <Save className="h-4 w-4" />
+              Save
+            </Button>
             <div className="flex items-center border rounded-lg p-1 mr-4">
               <Button
                 variant="ghost"
