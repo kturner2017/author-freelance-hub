@@ -3,6 +3,7 @@ import { Button } from './ui/button';
 import { Separator } from './ui/separator';
 import { ScrollArea } from './ui/scroll-area';
 import { Card, CardContent } from './ui/card';
+import BoxEditor from './BoxEditor';
 import { 
   ChevronDown,
   ChevronRight,
@@ -16,6 +17,12 @@ import {
   Menu
 } from 'lucide-react';
 
+interface Box {
+  id: string;
+  title: string;
+  content: string;
+}
+
 const ManuscriptEditor = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [expandedSections, setExpandedSections] = useState({
@@ -23,6 +30,7 @@ const ManuscriptEditor = () => {
     'act2': false,
     'act3': false
   });
+  const [selectedBox, setSelectedBox] = useState<Box | null>(null);
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => ({
@@ -41,17 +49,28 @@ const ManuscriptEditor = () => {
     // Add box implementation here
   };
 
+  const handleBoxClick = (box: Box) => {
+    setSelectedBox(box);
+  };
+
+  const handleBoxTitleChange = (title: string) => {
+    if (selectedBox) {
+      setSelectedBox({ ...selectedBox, title });
+    }
+  };
+
+  const handleBoxContentChange = (content: string) => {
+    if (selectedBox) {
+      setSelectedBox({ ...selectedBox, content });
+    }
+  };
+
+  // ... keep existing code (sidebar JSX)
+
   return (
     <div className="flex h-screen bg-white">
       {/* Left Sidebar */}
       <div className="w-64 bg-[#2c3643] text-white flex flex-col">
-        <div className="p-4 flex items-center justify-between border-b border-gray-700">
-          <h1 className="text-xl font-semibold">Manuscript</h1>
-          <Button variant="ghost" size="icon" className="text-white hover:bg-gray-700">
-            <Plus className="h-5 w-5" />
-          </Button>
-        </div>
-        
         <ScrollArea className="flex-1">
           <div className="p-2">
             <div className="space-y-1">
@@ -167,41 +186,64 @@ const ManuscriptEditor = () => {
 
         {/* Content Area */}
         <ScrollArea className="flex-1 p-6">
-          <div className="space-y-8">
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold">Act I</h3>
-                <Button 
-                  size="sm"
-                  onClick={handleAddBox}
-                  className="bg-primary hover:bg-primary-600"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Box
-                </Button>
-              </div>
-              
-              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'}>
-                <Card className="hover:shadow-lg transition-shadow">
-                  <CardContent className="p-4">
-                    <h4 className="font-semibold mb-2">Ordinary World</h4>
-                    <p className="text-sm text-gray-600">
-                      Bilbo Baggins, a very well-to-do hobbit of Bag End, sits outside his front porch. He smokes a wooden pipe, as usual.
-                    </p>
-                  </CardContent>
-                </Card>
+          {selectedBox ? (
+            <BoxEditor
+              title={selectedBox.title}
+              content={selectedBox.content}
+              onTitleChange={handleBoxTitleChange}
+              onContentChange={handleBoxContentChange}
+            />
+          ) : (
+            <div className="space-y-8">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-semibold">Act I</h3>
+                  <Button 
+                    size="sm"
+                    onClick={handleAddBox}
+                    className="bg-primary hover:bg-primary-600"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Box
+                  </Button>
+                </div>
                 
-                <Card className="hover:shadow-lg transition-shadow">
-                  <CardContent className="p-4">
-                    <h4 className="font-semibold mb-2">Call to Adventure</h4>
-                    <p className="text-sm text-gray-600">
-                      Gandalf arrives and tells him that he's looking for someone to share in an adventure that he's arranging.
-                    </p>
-                  </CardContent>
-                </Card>
+                <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'}>
+                  <Card 
+                    className="hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => handleBoxClick({
+                      id: '1',
+                      title: 'Ordinary World',
+                      content: 'Bilbo Baggins, a very well-to-do hobbit of Bag End, sits outside his front porch. He smokes a wooden pipe, as usual.'
+                    })}
+                  >
+                    <CardContent className="p-4">
+                      <h4 className="font-semibold mb-2">Ordinary World</h4>
+                      <p className="text-sm text-gray-600">
+                        Bilbo Baggins, a very well-to-do hobbit of Bag End, sits outside his front porch. He smokes a wooden pipe, as usual.
+                      </p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card 
+                    className="hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => handleBoxClick({
+                      id: '2',
+                      title: 'Call to Adventure',
+                      content: 'Gandalf arrives and tells him that he\'s looking for someone to share in an adventure that he\'s arranging.'
+                    })}
+                  >
+                    <CardContent className="p-4">
+                      <h4 className="font-semibold mb-2">Call to Adventure</h4>
+                      <p className="text-sm text-gray-600">
+                        Gandalf arrives and tells him that he's looking for someone to share in an adventure that he's arranging.
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </ScrollArea>
       </div>
     </div>
