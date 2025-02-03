@@ -88,6 +88,7 @@ const ManuscriptEditor = () => {
   };
 
   const [boxes, setBoxes] = useState<{ [key: string]: Box }>(INITIAL_BOXES);
+  const [documentContent, setDocumentContent] = useState('');
 
   // Load boxes from Supabase when component mounts
   useEffect(() => {
@@ -612,9 +613,24 @@ const ManuscriptEditor = () => {
         <ScrollArea className="flex-1 p-6">
           {editorView === 'document' ? (
             <div className="max-w-4xl mx-auto">
-              <div className="prose prose-lg">
-                <h1>{selectedChapter}</h1>
-                <p className="text-gray-500">Begin writing here...</p>
+              <div className="relative w-full min-h-[600px]">
+                <Textarea
+                  value={documentContent}
+                  onChange={(e) => {
+                    setDocumentContent(e.target.value);
+                    console.log('Document content updated:', e.target.value);
+                  }}
+                  className="w-full h-full min-h-[600px] text-lg border rounded-lg p-8 resize-vertical leading-relaxed focus-visible:ring-1 focus-visible:ring-primary"
+                  placeholder="Begin writing your story here..."
+                  style={{ 
+                    fontFamily: "'Georgia', serif",
+                    fontSize: '1.2rem',
+                    lineHeight: '1.8'
+                  }}
+                />
+                <div className="absolute top-2 left-2 text-sm text-gray-400">
+                  Chapter Story
+                </div>
               </div>
             </div>
           ) : selectedBox ? (
