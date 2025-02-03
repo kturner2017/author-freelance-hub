@@ -128,11 +128,11 @@ const ManuscriptEditor = () => {
   const handleSave = async () => {
     console.log('Saving boxes:', boxes);
     
-    // Convert boxes object to array for Supabase
+    // Convert boxes object to array for Supabase, including ALL boxes
     const boxesArray = Object.values(boxes).map(box => ({
       box_id: box.id,
       title: box.title,
-      content: box.content,
+      content: box.content || '',
       act: box.act,
       chapter_id: selectedChapter
     }));
@@ -497,6 +497,21 @@ const ManuscriptEditor = () => {
                   Act II
                 </div>
               </Button>
+              {expandedSections.act2 && (
+                <div className="ml-4 space-y-1">
+                  {getBoxesForAct('act2').map(box => (
+                    <Button 
+                      key={box.id}
+                      variant="ghost" 
+                      className="w-full justify-start text-sm text-gray-400 hover:bg-gray-700 py-1 h-auto"
+                      onClick={() => handleBoxClick(box)}
+                    >
+                      <File className="h-4 w-4 mr-2" />
+                      {box.title}
+                    </Button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </ScrollArea>
