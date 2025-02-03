@@ -185,29 +185,32 @@ const ManuscriptEditor = () => {
     console.log('Selected act:', section);
   };
 
+  const [boxes, setBoxes] = useState<{ [key: string]: Box }>(INITIAL_BOXES);
+  
   const handleAddBox = () => {
-    console.log('Adding new box');
-  };
+    const newBoxId = `box-${Object.keys(boxes).length + 1}`;
+    const newBox: Box = {
+      id: newBoxId,
+      title: 'New Box',
+      content: '',
+      act: selectedAct
+    };
 
-  const handleBoxClick = (box: Box) => {
-    console.log('Box clicked:', box);
-    setSelectedBox(box);
-  };
+    setBoxes(prevBoxes => ({
+      ...prevBoxes,
+      [newBoxId]: newBox
+    }));
 
-  const handleBoxTitleChange = (title: string) => {
-    if (selectedBox) {
-      setSelectedBox({ ...selectedBox, title });
-    }
-  };
+    toast({
+      title: "Box added",
+      description: "A new box has been added to the selected act."
+    });
 
-  const handleBoxContentChange = (content: string) => {
-    if (selectedBox) {
-      setSelectedBox({ ...selectedBox, content });
-    }
+    console.log('Added new box:', newBox);
   };
 
   const getBoxesForAct = (act: 'act1' | 'act2' | 'act3') => {
-    return Object.values(INITIAL_BOXES).filter(box => box.act === act);
+    return Object.values(boxes).filter(box => box.act === act);
   };
 
   return (
