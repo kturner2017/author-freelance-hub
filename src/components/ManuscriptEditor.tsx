@@ -27,6 +27,7 @@ import {
   X,
   Check
 } from 'lucide-react';
+import FileUploader from './FileUploader';
 
 interface Box {
   id: string;
@@ -482,6 +483,14 @@ const ManuscriptEditor = () => {
                   </Button>
                 </div>
                 
+                {/* File Uploader */}
+                <div className="mb-6">
+                  <FileUploader 
+                    act={selectedAct} 
+                    chapterId={selectedChapter}
+                  />
+                </div>
+
                 <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'}>
                   {getBoxesForAct(selectedAct).map((box) => (
                     <Card 
