@@ -71,6 +71,14 @@ const ManuscriptEditor = () => {
     author: "K. TURNER"
   };
 
+  const handleAddAct = () => {
+    console.log('Adding new act');
+    toast({
+      title: "Adding new act",
+      description: "This feature is not yet implemented."
+    });
+  };
+
   const handleAddChapter = () => {
     const newChapterNumber = chapters.length + 1;
     const newChapter = `Chapter ${newChapterNumber}`;
