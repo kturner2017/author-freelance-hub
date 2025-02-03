@@ -20,7 +20,12 @@ import {
   Folder,
   File,
   BookOpen,
-  LayoutDashboard
+  LayoutDashboard,
+  ArrowUp,
+  ArrowDown,
+  Pencil,
+  X,
+  Check
 } from 'lucide-react';
 
 interface Box {
@@ -28,6 +33,11 @@ interface Box {
   title: string;
   content: string;
   act: 'act1' | 'act2' | 'act3';
+}
+
+interface Chapter {
+  id: string;
+  title: string;
 }
 
 const INITIAL_BOXES = {
@@ -61,11 +71,13 @@ const ManuscriptEditor = () => {
   });
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   const [selectedAct, setSelectedAct] = useState<'act1' | 'act2' | 'act3'>('act1');
-  const [chapters, setChapters] = useState<string[]>(['Chapter 1']);
-  const [selectedChapter, setSelectedChapter] = useState<string>('Chapter 1');
+  const [chapters, setChapters] = useState<Chapter[]>([{ id: '1', title: 'Chapter 1' }]);
+  const [selectedChapter, setSelectedChapter] = useState<string>('1');
+  const [editingChapterId, setEditingChapterId] = useState<string | null>(null);
+  const [editingChapterTitle, setEditingChapterTitle] = useState('');
   const { toast } = useToast();
 
-  // Mock book data (in a real app, this would come from a prop or context)
+  // Mock book data
   const bookData = {
     title: "Gomer",
     author: "K. TURNER"
@@ -80,14 +92,86 @@ const ManuscriptEditor = () => {
   };
 
   const handleAddChapter = () => {
-    const newChapterNumber = chapters.length + 1;
-    const newChapter = `Chapter ${newChapterNumber}`;
+    const newId = (chapters.length + 1).toString();
+    const newChapter = {
+      id: newId,
+      title: `Chapter ${newId}`
+    };
     setChapters([...chapters, newChapter]);
     toast({
       title: "Chapter added",
-      description: `${newChapter} has been created.`
+      description: `${newChapter.title} has been created.`
     });
     console.log('Added new chapter:', newChapter);
+  };
+
+  const handleDeleteChapter = (chapterId: string) => {
+    if (chapters.length <= 1) {
+      toast({
+        title: "Cannot delete chapter",
+        description: "You must have at least one chapter.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const updatedChapters = chapters.filter(chapter => chapter.id !== chapterId);
+    setChapters(updatedChapters);
+    if (selectedChapter === chapterId) {
+      setSelectedChapter(updatedChapters[0].id);
+    }
+    toast({
+      title: "Chapter deleted",
+      description: "The chapter has been removed."
+    });
+  };
+
+  const handleMoveChapter = (chapterId: string, direction: 'up' | 'down') => {
+    const currentIndex = chapters.findIndex(chapter => chapter.id === chapterId);
+    if (
+      (direction === 'up' && currentIndex === 0) ||
+      (direction === 'down' && currentIndex === chapters.length - 1)
+    ) {
+      return;
+    }
+
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    const updatedChapters = [...chapters];
+    [updatedChapters[currentIndex], updatedChapters[newIndex]] = 
+    [updatedChapters[newIndex], updatedChapters[currentIndex]];
+    
+    setChapters(updatedChapters);
+    toast({
+      title: "Chapter moved",
+      description: `Chapter moved ${direction}.`
+    });
+  };
+
+  const startEditingChapter = (chapter: Chapter) => {
+    setEditingChapterId(chapter.id);
+    setEditingChapterTitle(chapter.title);
+  };
+
+  const saveChapterEdit = () => {
+    if (!editingChapterId) return;
+    
+    const updatedChapters = chapters.map(chapter =>
+      chapter.id === editingChapterId
+        ? { ...chapter, title: editingChapterTitle }
+        : chapter
+    );
+    
+    setChapters(updatedChapters);
+    setEditingChapterId(null);
+    toast({
+      title: "Chapter renamed",
+      description: "Chapter name has been updated."
+    });
+  };
+
+  const cancelChapterEdit = () => {
+    setEditingChapterId(null);
+    setEditingChapterTitle('');
   };
 
   const toggleSection = (section: 'act1' | 'act2' | 'act3') => {
@@ -147,19 +231,86 @@ const ManuscriptEditor = () => {
               </Button>
 
               {chapters.map((chapter, index) => (
-                <Button 
-                  key={chapter}
-                  variant="ghost" 
-                  className={`w-full justify-start text-gray-300 hover:bg-gray-700 py-1 h-auto ${
-                    selectedChapter === chapter ? 'bg-gray-700' : ''
-                  }`}
-                  onClick={() => setSelectedChapter(chapter)}
-                >
-                  <div className="flex items-center">
-                    <File className="h-4 w-4 mr-2" />
-                    {chapter}
-                  </div>
-                </Button>
+                <div key={chapter.id} className="flex items-center group">
+                  {editingChapterId === chapter.id ? (
+                    <div className="flex items-center w-full gap-1 pr-2">
+                      <input
+                        type="text"
+                        value={editingChapterTitle}
+                        onChange={(e) => setEditingChapterTitle(e.target.value)}
+                        className="flex-1 bg-gray-700 text-white px-2 py-1 rounded"
+                        autoFocus
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={saveChapterEdit}
+                      >
+                        <Check className="h-4 w-4 text-green-500" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={cancelChapterEdit}
+                      >
+                        <X className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <Button 
+                        variant="ghost" 
+                        className={`flex-1 justify-start text-gray-300 hover:bg-gray-700 py-1 h-auto ${
+                          selectedChapter === chapter.id ? 'bg-gray-700' : ''
+                        }`}
+                        onClick={() => setSelectedChapter(chapter.id)}
+                      >
+                        <div className="flex items-center">
+                          <File className="h-4 w-4 mr-2" />
+                          {chapter.title}
+                        </div>
+                      </Button>
+                      <div className="hidden group-hover:flex items-center gap-1 pr-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => startEditingChapter(chapter)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => handleMoveChapter(chapter.id, 'up')}
+                          disabled={index === 0}
+                        >
+                          <ArrowUp className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => handleMoveChapter(chapter.id, 'down')}
+                          disabled={index === chapters.length - 1}
+                        >
+                          <ArrowDown className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => handleDeleteChapter(chapter.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </div>
               ))}
 
               <Button 
