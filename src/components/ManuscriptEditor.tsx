@@ -352,6 +352,24 @@ const ManuscriptEditor = () => {
     return Object.values(boxes).filter(box => box.act === act);
   };
 
+  const handleFormatText = (command: string) => {
+    document.execCommand(command, false);
+    console.log('Applying text format:', command);
+  };
+
+  const handleIndentParagraph = () => {
+    const selection = window.getSelection();
+    if (!selection) return;
+
+    const range = selection.getRangeAt(0);
+    const paragraph = range.commonAncestorContainer.parentElement;
+    
+    if (paragraph) {
+      paragraph.style.textIndent = '40px'; // Standard American paragraph indent
+      console.log('Applied paragraph indentation');
+    }
+  };
+
   return (
     <div className="flex h-screen bg-white">
       {/* Left Sidebar */}
@@ -628,20 +646,59 @@ const ManuscriptEditor = () => {
                 <h1 className="text-3xl font-serif mb-2">Chapter {selectedChapter}</h1>
                 <p className="text-gray-500">Write your story below</p>
               </div>
-              <div className="relative w-full min-h-[600px] bg-white shadow-sm rounded-lg">
-                <Textarea
-                  value={documentContent}
-                  onChange={(e) => {
-                    setDocumentContent(e.target.value);
-                    console.log('Document content updated:', e.target.value);
-                  }}
-                  className="w-full h-full min-h-[600px] text-lg border rounded-lg p-8 resize-vertical leading-relaxed focus-visible:ring-1 focus-visible:ring-primary"
-                  placeholder="Begin writing your story here..."
+              
+              {/* Text Formatting Toolbar */}
+              <div className="bg-gray-100 p-2 rounded-t-lg border border-b-0 flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleFormatText('bold')}
+                  className="h-8 w-8 p-0"
+                >
+                  <span className="font-bold">B</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleFormatText('italic')}
+                  className="h-8 w-8 p-0"
+                >
+                  <span className="italic">I</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleFormatText('underline')}
+                  className="h-8 w-8 p-0"
+                >
+                  <span className="underline">U</span>
+                </Button>
+                <Separator orientation="vertical" className="h-6" />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleIndentParagraph}
+                  className="h-8 px-2 text-sm"
+                >
+                  Indent
+                </Button>
+              </div>
+
+              <div className="relative w-full min-h-[600px] bg-white shadow-sm rounded-b-lg">
+                <div
+                  contentEditable
+                  className="w-full h-full min-h-[600px] text-lg border rounded-b-lg p-8 resize-vertical leading-relaxed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                   style={{ 
                     fontFamily: "'Georgia', serif",
                     fontSize: '1.2rem',
                     lineHeight: '1.8'
                   }}
+                  onInput={(e) => {
+                    const content = e.currentTarget.innerHTML;
+                    setDocumentContent(content);
+                    console.log('Document content updated');
+                  }}
+                  dangerouslySetInnerHTML={{ __html: documentContent }}
                 />
               </div>
             </div>
