@@ -1,26 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
 import { ScrollArea } from './ui/scroll-area';
+import { Card, CardContent } from './ui/card';
 import { 
-  Bold, 
-  Italic, 
-  Underline, 
-  Quote, 
-  Code, 
-  List, 
-  ListOrdered,
-  AlignLeft,
-  Link,
-  MessageCircle,
-  ChevronLeft,
+  ChevronDown,
   ChevronRight,
-  Menu,
   Plus,
-  Settings
+  Settings,
+  Copy,
+  Trash2,
+  CheckSquare,
+  LayoutGrid,
+  List,
+  Menu
 } from 'lucide-react';
 
 const ManuscriptEditor = () => {
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [expandedSections, setExpandedSections] = useState({
+    'act1': true,
+    'act2': false,
+    'act3': false
+  });
+
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
   return (
     <div className="flex h-screen bg-white">
       {/* Left Sidebar */}
@@ -33,125 +43,144 @@ const ManuscriptEditor = () => {
         </div>
         
         <ScrollArea className="flex-1">
-          <div className="p-4">
-            <div className="space-y-4">
-              <div>
-                <Button variant="ghost" className="w-full justify-start text-gray-300 hover:text-white hover:bg-gray-700">
-                  Front matter
-                </Button>
-                <div className="ml-4 space-y-2">
-                  <Button variant="ghost" className="w-full justify-start text-sm text-gray-400 hover:text-white hover:bg-gray-700">
-                    Copyright
-                  </Button>
-                  <Button variant="ghost" className="w-full justify-start text-sm text-gray-400 hover:text-white hover:bg-gray-700">
-                    Table of Contents
-                  </Button>
+          <div className="p-2">
+            <div className="space-y-1">
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start text-gray-300 hover:bg-gray-700 py-1 h-auto"
+              >
+                <div className="flex items-center">
+                  <ChevronRight className="h-4 w-4 mr-2" />
+                  Get Started
                 </div>
-              </div>
-              
-              <div>
-                <Button variant="ghost" className="w-full justify-start text-gray-300 hover:text-white hover:bg-gray-700">
-                  Body
+              </Button>
+
+              <div className="space-y-1">
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start text-gray-300 hover:bg-gray-700 py-1 h-auto"
+                  onClick={() => toggleSection('act1')}
+                >
+                  <div className="flex items-center">
+                    {expandedSections.act1 ? (
+                      <ChevronDown className="h-4 w-4 mr-2" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 mr-2" />
+                    )}
+                    Act I
+                  </div>
                 </Button>
-                <div className="ml-4">
-                  <Button variant="ghost" className="w-full justify-start text-sm text-blue-400 hover:text-white hover:bg-blue-600">
-                    Chapter 1
-                  </Button>
+                {expandedSections.act1 && (
+                  <div className="ml-4 space-y-1">
+                    <Button variant="ghost" className="w-full justify-start text-sm text-gray-400 hover:bg-gray-700 py-1 h-auto">
+                      Ordinary World
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start text-sm text-gray-400 hover:bg-gray-700 py-1 h-auto">
+                      Call to Adventure
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start text-sm text-gray-400 hover:bg-gray-700 py-1 h-auto">
+                      Refusal of the Call
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start text-gray-300 hover:bg-gray-700 py-1 h-auto"
+                onClick={() => toggleSection('act2')}
+              >
+                <div className="flex items-center">
+                  {expandedSections.act2 ? (
+                    <ChevronDown className="h-4 w-4 mr-2" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 mr-2" />
+                  )}
+                  Act II
                 </div>
-              </div>
-              
-              <div>
-                <Button variant="ghost" className="w-full justify-start text-gray-300 hover:text-white hover:bg-gray-700">
-                  Back matter
-                </Button>
-              </div>
+              </Button>
             </div>
           </div>
         </ScrollArea>
-        
-        <div className="p-4 border-t border-gray-700">
-          <div className="text-sm text-gray-400">0 words</div>
-        </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Top Bar */}
-        <div className="h-14 border-b flex items-center px-4 justify-between">
+        <div className="h-14 border-b flex items-center px-4 justify-between bg-white">
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon">
               <Menu className="h-5 w-5" />
             </Button>
-            <input 
-              type="text" 
-              placeholder="Chapter title..."
-              className="border-none focus:outline-none text-lg"
-              defaultValue="Chapter 1"
-            />
+            <h2 className="text-xl font-semibold">Manuscript</h2>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon">
+              <Copy className="h-5 w-5" />
+            </Button>
+            <Button variant="ghost" size="icon">
+              <Trash2 className="h-5 w-5" />
+            </Button>
+            <Button variant="ghost" size="icon">
+              <CheckSquare className="h-5 w-5" />
+            </Button>
+            <Button variant="ghost" size="icon">
               <Settings className="h-5 w-5" />
             </Button>
+            <Separator orientation="vertical" className="h-6" />
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => setViewMode('grid')}
+              className={viewMode === 'grid' ? 'bg-gray-100' : ''}
+            >
+              <LayoutGrid className="h-5 w-5" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => setViewMode('list')}
+              className={viewMode === 'list' ? 'bg-gray-100' : ''}
+            >
+              <List className="h-5 w-5" />
+            </Button>
           </div>
         </div>
 
-        {/* Editor Area */}
-        <div className="flex-1 overflow-auto">
-          <div className="max-w-3xl mx-auto py-12 px-8">
-            <div className="prose prose-lg max-w-none">
-              <div className="text-gray-400 mb-8">Begin writing here...</div>
+        {/* Content Area */}
+        <ScrollArea className="flex-1 p-6">
+          <div className="space-y-8">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-semibold">Act I</h3>
+                <Button size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add
+                </Button>
+              </div>
+              
+              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'}>
+                <Card className="hover:shadow-lg transition-shadow">
+                  <CardContent className="p-4">
+                    <h4 className="font-semibold mb-2">Ordinary World</h4>
+                    <p className="text-sm text-gray-600">
+                      Bilbo Baggins, a very well-to-do hobbit of Bag End, sits outside his front porch. He smokes a wooden pipe, as usual.
+                    </p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="hover:shadow-lg transition-shadow">
+                  <CardContent className="p-4">
+                    <h4 className="font-semibold mb-2">Call to Adventure</h4>
+                    <p className="text-sm text-gray-600">
+                      Gandalf arrives and tells him that he's looking for someone to share in an adventure that he's arranging.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Bottom Toolbar */}
-        <div className="border-t p-2 flex justify-center items-center gap-2 bg-white">
-          <div className="flex items-center gap-1 bg-[#2c3643] text-white rounded-md p-1">
-            <Button variant="ghost" size="icon" className="text-white hover:bg-gray-700">
-              <Bold className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="text-white hover:bg-gray-700">
-              <Italic className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="text-white hover:bg-gray-700">
-              <Underline className="h-4 w-4" />
-            </Button>
-            <Separator orientation="vertical" className="h-6 bg-gray-600" />
-            <Button variant="ghost" size="icon" className="text-white hover:bg-gray-700">
-              <AlignLeft className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="text-white hover:bg-gray-700">
-              <List className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="text-white hover:bg-gray-700">
-              <ListOrdered className="h-4 w-4" />
-            </Button>
-            <Separator orientation="vertical" className="h-6 bg-gray-600" />
-            <Button variant="ghost" size="icon" className="text-white hover:bg-gray-700">
-              <Quote className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="text-white hover:bg-gray-700">
-              <Code className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="text-white hover:bg-gray-700">
-              <Link className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="text-white hover:bg-gray-700">
-              <MessageCircle className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="text-sm text-gray-500">
-            Select text to apply formatting
-          </div>
-        </div>
-      </div>
-
-      {/* Right Sidebar (collapsed) */}
-      <div className="w-12 border-l flex flex-col items-center py-4 space-y-4">
-        <Button variant="ghost" size="icon">
-          <Settings className="h-5 w-5" />
-        </Button>
+        </ScrollArea>
       </div>
     </div>
   );
