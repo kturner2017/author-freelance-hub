@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Navigation } from "@/components/Navigation";
+import Navigation from "@/components/Navigation";
 import { Pen, BookOpen, Users, Rocket } from "lucide-react";
 
 const ForAuthors = () => {
