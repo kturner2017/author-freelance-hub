@@ -1,55 +1,82 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Button } from './ui/button';
+import { Menu, X } from 'lucide-react';
+import useMobile from '@/hooks/use-mobile';
 
-export const Navigation = () => {
+const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const isMobile = useMobile();
+
+  const toggleMenu = () => setIsOpen(!isOpen);
 
   return (
-    <nav className="bg-white shadow-sm">
+    <nav className="fixed w-full bg-white/80 backdrop-blur-md z-50 border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          <div className="flex">
+          <div className="flex justify-between w-full">
             <div className="flex-shrink-0 flex items-center">
-              <Link to="/">
-                <h1 className="text-2xl font-serif font-bold text-primary">Authify</h1>
+              <Link to="/" className="text-2xl font-serif font-bold text-primary">
+                Authify
               </Link>
             </div>
-          </div>
-          
-          <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
-            <Link to="/for-authors">
-              <Button variant="ghost">For Authors</Button>
-            </Link>
-            <Button variant="ghost">For Professionals</Button>
-            <Button variant="ghost">Resources</Button>
-            <Button variant="default">Sign In</Button>
+            
+            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+              <Link
+                to="/for-authors"
+                className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700"
+              >
+                For Authors
+              </Link>
+              <Link
+                to="/editor"
+                className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700"
+              >
+                Editor
+              </Link>
+              <Button>Sign In</Button>
+            </div>
           </div>
 
           <div className="flex items-center sm:hidden">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-primary hover:bg-primary-100 focus:outline-none"
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleMenu}
+              aria-label="Toggle menu"
             >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+              {isOpen ? <X /> : <Menu />}
+            </Button>
           </div>
         </div>
       </div>
 
-      {isOpen && (
-        <div className="sm:hidden">
+      {/* Mobile menu */}
+      {isOpen && isMobile && (
+        <div className="sm:hidden absolute w-full bg-white border-b">
           <div className="pt-2 pb-3 space-y-1">
-            <Link to="/for-authors">
-              <Button variant="ghost" className="w-full justify-start">For Authors</Button>
+            <Link
+              to="/for-authors"
+              className="block pl-3 pr-4 py-2 text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              onClick={toggleMenu}
+            >
+              For Authors
             </Link>
-            <Button variant="ghost" className="w-full justify-start">For Professionals</Button>
-            <Button variant="ghost" className="w-full justify-start">Resources</Button>
-            <Button variant="default" className="w-full justify-start">Sign In</Button>
+            <Link
+              to="/editor"
+              className="block pl-3 pr-4 py-2 text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              onClick={toggleMenu}
+            >
+              Editor
+            </Link>
+            <div className="pl-3 pr-4 py-2">
+              <Button className="w-full">Sign In</Button>
+            </div>
           </div>
         </div>
       )}
     </nav>
   );
 };
+
+export default Navigation;
