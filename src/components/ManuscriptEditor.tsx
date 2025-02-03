@@ -3,6 +3,7 @@ import { Button } from './ui/button';
 import { Separator } from './ui/separator';
 import { ScrollArea } from './ui/scroll-area';
 import { Card, CardContent } from './ui/card';
+import { Textarea } from './ui/textarea';
 import BoxEditor from './BoxEditor';
 import { useToast } from './ui/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -79,6 +80,7 @@ const ManuscriptEditor = () => {
   const [selectedChapter, setSelectedChapter] = useState<string>('1');
   const [editingChapterId, setEditingChapterId] = useState<string | null>(null);
   const [editingChapterTitle, setEditingChapterTitle] = useState('');
+  const [documentContent, setDocumentContent] = useState('');
   const { toast } = useToast();
 
   // Mock book data
@@ -88,7 +90,6 @@ const ManuscriptEditor = () => {
   };
 
   const [boxes, setBoxes] = useState<{ [key: string]: Box }>(INITIAL_BOXES);
-  const [documentContent, setDocumentContent] = useState('');
 
   // Load boxes from Supabase when component mounts
   useEffect(() => {
@@ -131,6 +132,16 @@ const ManuscriptEditor = () => {
   }, [selectedChapter]);
 
   const handleSave = async () => {
+    if (editorView === 'document') {
+      // Save document content logic here
+      console.log('Saving document content:', documentContent);
+      toast({
+        title: "Story saved",
+        description: "Your chapter content has been saved successfully."
+      });
+      return;
+    }
+
     console.log('Saving boxes:', boxes);
     
     // Convert boxes object to array for Supabase, including ALL boxes
@@ -613,7 +624,11 @@ const ManuscriptEditor = () => {
         <ScrollArea className="flex-1 p-6">
           {editorView === 'document' ? (
             <div className="max-w-4xl mx-auto">
-              <div className="relative w-full min-h-[600px]">
+              <div className="mb-6">
+                <h1 className="text-3xl font-serif mb-2">Chapter {selectedChapter}</h1>
+                <p className="text-gray-500">Write your story below</p>
+              </div>
+              <div className="relative w-full min-h-[600px] bg-white shadow-sm rounded-lg">
                 <Textarea
                   value={documentContent}
                   onChange={(e) => {
@@ -628,9 +643,6 @@ const ManuscriptEditor = () => {
                     lineHeight: '1.8'
                   }}
                 />
-                <div className="absolute top-2 left-2 text-sm text-gray-400">
-                  Chapter Story
-                </div>
               </div>
             </div>
           ) : selectedBox ? (
