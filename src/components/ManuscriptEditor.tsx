@@ -353,7 +353,7 @@ const ManuscriptEditor = () => {
             <div className="space-y-1">
               <Button 
                 variant="ghost" 
-                className="w-full justify-start text-gray-300 hover:bg-gray-700 py-1 h-auto"
+                className="w-full justify-start text-gray-300 hover:bg-gray-700 active:bg-gray-600 transition-colors duration-200 py-1 h-auto"
               >
                 <div className="flex items-center">
                   <ChevronRight className="h-4 w-4 mr-2" />
@@ -393,7 +393,7 @@ const ManuscriptEditor = () => {
                     <>
                       <Button 
                         variant="ghost" 
-                        className={`flex-1 justify-start text-gray-300 hover:bg-gray-700 py-1 h-auto ${
+                        className={`flex-1 justify-start text-gray-300 hover:bg-gray-700 active:bg-gray-600 transition-colors duration-200 py-1 h-auto ${
                           selectedChapter === chapter.id ? 'bg-gray-700' : ''
                         }`}
                         onClick={() => setSelectedChapter(chapter.id)}
@@ -407,7 +407,7 @@ const ManuscriptEditor = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6"
+                          className="h-6 w-6 active:scale-95 transition-transform duration-200"
                           onClick={() => startEditingChapter(chapter)}
                         >
                           <Pencil className="h-4 w-4" />
@@ -415,7 +415,7 @@ const ManuscriptEditor = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6"
+                          className="h-6 w-6 active:scale-95 transition-transform duration-200"
                           onClick={() => handleMoveChapter(chapter.id, 'up')}
                           disabled={index === 0}
                         >
@@ -424,7 +424,7 @@ const ManuscriptEditor = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6"
+                          className="h-6 w-6 active:scale-95 transition-transform duration-200"
                           onClick={() => handleMoveChapter(chapter.id, 'down')}
                           disabled={index === chapters.length - 1}
                         >
@@ -433,7 +433,7 @@ const ManuscriptEditor = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6"
+                          className="h-6 w-6 active:scale-95 transition-transform duration-200"
                           onClick={() => handleDeleteChapter(chapter.id)}
                         >
                           <Trash2 className="h-4 w-4 text-red-500" />
@@ -446,7 +446,7 @@ const ManuscriptEditor = () => {
 
               <Button 
                 variant="ghost" 
-                className="w-full justify-start text-gray-300 hover:bg-gray-700 py-1 h-auto"
+                className="w-full justify-start text-gray-300 hover:bg-gray-700 active:bg-gray-600 transition-colors duration-200 py-1 h-auto"
                 onClick={handleAddChapter}
               >
                 <div className="flex items-center">
@@ -457,7 +457,7 @@ const ManuscriptEditor = () => {
 
               <Button 
                 variant="ghost" 
-                className="w-full justify-start text-gray-300 hover:bg-gray-700 py-1 h-auto"
+                className="w-full justify-start text-gray-300 hover:bg-gray-700 active:bg-gray-600 transition-colors duration-200 py-1 h-auto"
                 onClick={() => toggleSection('act1')}
               >
                 <div className="flex items-center">
@@ -488,7 +488,7 @@ const ManuscriptEditor = () => {
 
               <Button 
                 variant="ghost" 
-                className="w-full justify-start text-gray-300 hover:bg-gray-700 py-1 h-auto"
+                className="w-full justify-start text-gray-300 hover:bg-gray-700 active:bg-gray-600 transition-colors duration-200 py-1 h-auto"
                 onClick={() => toggleSection('act2')}
               >
                 <div className="flex items-center">
@@ -530,7 +530,7 @@ const ManuscriptEditor = () => {
               variant="ghost" 
               size="icon"
               onClick={handleBack}
-              className="hover:bg-gray-100"
+              className="hover:bg-gray-100 active:bg-gray-200 transition-colors duration-200"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -543,7 +543,7 @@ const ManuscriptEditor = () => {
             <Button
               variant="default"
               onClick={handleSave}
-              className="bg-primary hover:bg-primary-600 flex items-center gap-2"
+              className="bg-primary hover:bg-primary-600 active:scale-95 transition-all duration-200 flex items-center gap-2"
             >
               <Save className="h-4 w-4" />
               Save
