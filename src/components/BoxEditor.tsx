@@ -128,9 +128,13 @@ const BoxEditor = ({ title, content, onTitleChange, onContentChange }: BoxEditor
           <Textarea
             value={content}
             onChange={(e) => onContentChange(e.target.value)}
-            className="w-full min-h-[400px] text-base border rounded-md p-3 resize-vertical leading-relaxed"
-            placeholder="Write your story here..."
-            style={{ fontFamily: "'Georgia', serif" }}
+            className="w-full min-h-[400px] text-base border rounded-md p-4 resize-vertical leading-relaxed focus-visible:ring-1 focus-visible:ring-primary"
+            placeholder="Begin writing here..."
+            style={{ 
+              fontFamily: "'Georgia', serif",
+              fontSize: '1.1rem',
+              lineHeight: '1.8'
+            }}
           />
 
           <div className="flex gap-2 mt-4">
