@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card } from './ui/card';
-import { ImagePlus, Plus, X, ChevronDown } from 'lucide-react';
+import { ImagePlus, Plus, X } from 'lucide-react';
 import { useToast } from './ui/use-toast';
 import { Textarea } from './ui/textarea';
 import {
@@ -130,17 +130,23 @@ const BoxEditor = ({ title, content, onTitleChange, onContentChange }: BoxEditor
 
       <div className="flex gap-4">
         <div className="flex-1">
-          <Textarea
-            value={content}
-            onChange={handleContentChange}
-            className="w-full min-h-[400px] text-base border rounded-md p-4 resize-vertical leading-relaxed focus-visible:ring-1 focus-visible:ring-primary"
-            placeholder="Begin writing here..."
-            style={{ 
-              fontFamily: "'Georgia', serif",
-              fontSize: '1.1rem',
-              lineHeight: '1.8'
-            }}
-          />
+          <div className="relative w-full min-h-[400px] mb-4">
+            <Textarea
+              value={content}
+              onChange={handleContentChange}
+              className="w-full h-full min-h-[400px] text-lg border rounded-lg p-6 resize-vertical leading-relaxed focus-visible:ring-1 focus-visible:ring-primary"
+              placeholder="Begin writing here..."
+              style={{ 
+                fontFamily: "'Georgia', serif",
+                fontSize: '1.2rem',
+                lineHeight: '1.8',
+                minHeight: '400px'
+              }}
+            />
+            <div className="absolute top-2 left-2 text-sm text-gray-400">
+              Story
+            </div>
+          </div>
 
           <div className="flex gap-2 mt-4">
             <Select onValueChange={handleAttributeSelect}>
