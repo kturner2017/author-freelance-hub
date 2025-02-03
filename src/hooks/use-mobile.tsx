@@ -18,4 +18,4 @@ const useMobile = () => {
   return !!isMobile
 }
 
-export default useMobile;
+export default useMobile

@@ -31,6 +31,16 @@ const ManuscriptEditor = () => {
     }));
   };
 
+  const handleAddAct = () => {
+    console.log('Adding new act');
+    // Add act implementation here
+  };
+
+  const handleAddBox = () => {
+    console.log('Adding new box');
+    // Add box implementation here
+  };
+
   return (
     <div className="flex h-screen bg-white">
       {/* Left Sidebar */}
@@ -115,6 +125,14 @@ const ManuscriptEditor = () => {
             <h2 className="text-xl font-semibold">Manuscript</h2>
           </div>
           <div className="flex items-center gap-2">
+            <Button 
+              variant="default"
+              onClick={handleAddAct}
+              className="bg-primary hover:bg-primary-600"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Act
+            </Button>
             <Button variant="ghost" size="icon">
               <Copy className="h-5 w-5" />
             </Button>
@@ -153,9 +171,13 @@ const ManuscriptEditor = () => {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-semibold">Act I</h3>
-                <Button size="sm">
+                <Button 
+                  size="sm"
+                  onClick={handleAddBox}
+                  className="bg-primary hover:bg-primary-600"
+                >
                   <Plus className="h-4 w-4 mr-2" />
-                  Add
+                  Add Box
                 </Button>
               </div>
               
