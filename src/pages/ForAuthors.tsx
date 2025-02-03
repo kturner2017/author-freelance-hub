@@ -6,14 +6,6 @@ import { useNavigate } from "react-router-dom";
 const ForAuthors = () => {
   const navigate = useNavigate();
 
-  const handlePublishingSupport = () => {
-    navigate('/editor', {
-      state: {
-        selectedTopics: ['Cover Design', 'Sales', 'Marketing', 'Distribution Channels']
-      }
-    });
-  };
-
   return (
     <div className="min-h-screen bg-white">
       <Navigation />
@@ -58,7 +50,7 @@ const ForAuthors = () => {
             </div>
             <div 
               className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
-              onClick={handlePublishingSupport}
+              onClick={() => navigate('/publishing-support')}
             >
               <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mb-4">
                 <BookOpen className="w-6 h-6 text-primary" />
@@ -97,7 +89,7 @@ const ForAuthors = () => {
             Ready to Begin Your Author Journey?
           </h2>
           <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
-            Join thousands of authors who have found success with Authify's comprehensive platform.
+            Join thousands of authors who have found success with our comprehensive platform.
           </p>
           <Button 
             variant="secondary" 
