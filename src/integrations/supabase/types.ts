@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      manuscript_boxes: {
+        Row: {
+          act: string
+          box_id: string
+          chapter_id: string
+          content: string | null
+          created_at: string | null
+          id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          act: string
+          box_id: string
+          chapter_id: string
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          act?: string
+          box_id?: string
+          chapter_id?: string
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       manuscript_files: {
         Row: {
           act: string

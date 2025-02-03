@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
 import { ScrollArea } from './ui/scroll-area';
 import { Card, CardContent } from './ui/card';
-import { Toggle } from './ui/toggle';
 import BoxEditor from './BoxEditor';
 import { useToast } from './ui/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { 
+import { supabase } from '@/integrations/supabase/client';
+import {
   ChevronDown,
   ChevronRight,
   Plus,
@@ -17,9 +17,8 @@ import {
   CheckSquare,
   LayoutGrid,
   List,
-  Menu,
-  Folder,
   File,
+  Folder,
   BookOpen,
   LayoutDashboard,
   ArrowUp,
@@ -88,17 +87,97 @@ const ManuscriptEditor = () => {
     author: "K. TURNER"
   };
 
-  const handleSave = () => {
+  const [boxes, setBoxes] = useState<{ [key: string]: Box }>(INITIAL_BOXES);
+
+  // Load boxes from Supabase when component mounts
+  useEffect(() => {
+    const loadBoxes = async () => {
+      const { data, error } = await supabase
+        .from('manuscript_boxes')
+        .select('*')
+        .eq('chapter_id', selectedChapter);
+
+      if (error) {
+        console.error('Error loading boxes:', error);
+        toast({
+          title: "Error loading boxes",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (data) {
+        const boxesMap: { [key: string]: Box } = {};
+        data.forEach(box => {
+          boxesMap[box.box_id] = {
+            id: box.box_id,
+            title: box.title,
+            content: box.content || '',
+            act: box.act as 'act1' | 'act2' | 'act3'
+          };
+        });
+        setBoxes(boxesMap);
+        console.log('Loaded boxes:', boxesMap);
+      }
+    };
+
+    loadBoxes();
+  }, [selectedChapter]);
+
+  const handleSave = async () => {
+    console.log('Saving boxes:', boxes);
+    
+    // Convert boxes object to array for Supabase
+    const boxesArray = Object.values(boxes).map(box => ({
+      box_id: box.id,
+      title: box.title,
+      content: box.content,
+      act: box.act,
+      chapter_id: selectedChapter
+    }));
+
+    // First, delete existing boxes for this chapter
+    const { error: deleteError } = await supabase
+      .from('manuscript_boxes')
+      .delete()
+      .eq('chapter_id', selectedChapter);
+
+    if (deleteError) {
+      console.error('Error deleting existing boxes:', deleteError);
+      toast({
+        title: "Error saving changes",
+        description: deleteError.message,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Then insert new boxes
+    const { error: insertError } = await supabase
+      .from('manuscript_boxes')
+      .insert(boxesArray);
+
+    if (insertError) {
+      console.error('Error saving boxes:', insertError);
+      toast({
+        title: "Error saving changes",
+        description: insertError.message,
+        variant: "destructive"
+      });
+      return;
+    }
+
     toast({
       title: "Changes saved",
       description: "Your changes have been saved successfully."
     });
-    console.log('Saving changes');
+    console.log('Changes saved successfully');
   };
 
   const handleBack = () => {
-    navigate('/editor');
-    console.log('Navigating back to editor');
+    navigate(-1);
+    console.log('Navigating back');
   };
 
   const handleAddAct = () => {
@@ -202,8 +281,6 @@ const ManuscriptEditor = () => {
     console.log('Selected act:', section);
   };
 
-  const [boxes, setBoxes] = useState<{ [key: string]: Box }>(INITIAL_BOXES);
-  
   const handleAddBox = () => {
     const newBoxId = `box-${Object.keys(boxes).length + 1}`;
     const newBox: Box = {
