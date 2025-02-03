@@ -23,6 +23,24 @@ interface Box {
   content: string;
 }
 
+const INITIAL_BOXES = {
+  'ordinary-world': {
+    id: 'ordinary-world',
+    title: 'Ordinary World',
+    content: 'Bilbo Baggins, a very well-to-do hobbit of Bag End, sits outside his front porch. He smokes a wooden pipe, as usual.'
+  },
+  'call-to-adventure': {
+    id: 'call-to-adventure',
+    title: 'Call to Adventure',
+    content: 'Gandalf arrives and tells him that he\'s looking for someone to share in an adventure that he\'s arranging.'
+  },
+  'refusal-of-call': {
+    id: 'refusal-of-call',
+    title: 'Refusal of the Call',
+    content: 'Bilbo declines, stating that adventures are nasty uncomfortable things that make you late for dinner.'
+  }
+};
+
 const ManuscriptEditor = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [expandedSections, setExpandedSections] = useState({
@@ -41,15 +59,14 @@ const ManuscriptEditor = () => {
 
   const handleAddAct = () => {
     console.log('Adding new act');
-    // Add act implementation here
   };
 
   const handleAddBox = () => {
     console.log('Adding new box');
-    // Add box implementation here
   };
 
   const handleBoxClick = (box: Box) => {
+    console.log('Box clicked:', box);
     setSelectedBox(box);
   };
 
@@ -64,8 +81,6 @@ const ManuscriptEditor = () => {
       setSelectedBox({ ...selectedBox, content });
     }
   };
-
-  // ... keep existing code (sidebar JSX)
 
   return (
     <div className="flex h-screen bg-white">
@@ -101,13 +116,25 @@ const ManuscriptEditor = () => {
                 </Button>
                 {expandedSections.act1 && (
                   <div className="ml-4 space-y-1">
-                    <Button variant="ghost" className="w-full justify-start text-sm text-gray-400 hover:bg-gray-700 py-1 h-auto">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-sm text-gray-400 hover:bg-gray-700 py-1 h-auto"
+                      onClick={() => handleBoxClick(INITIAL_BOXES['ordinary-world'])}
+                    >
                       Ordinary World
                     </Button>
-                    <Button variant="ghost" className="w-full justify-start text-sm text-gray-400 hover:bg-gray-700 py-1 h-auto">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-sm text-gray-400 hover:bg-gray-700 py-1 h-auto"
+                      onClick={() => handleBoxClick(INITIAL_BOXES['call-to-adventure'])}
+                    >
                       Call to Adventure
                     </Button>
-                    <Button variant="ghost" className="w-full justify-start text-sm text-gray-400 hover:bg-gray-700 py-1 h-auto">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-sm text-gray-400 hover:bg-gray-700 py-1 h-auto"
+                      onClick={() => handleBoxClick(INITIAL_BOXES['refusal-of-call'])}
+                    >
                       Refusal of the Call
                     </Button>
                   </div>
@@ -209,37 +236,18 @@ const ManuscriptEditor = () => {
                 </div>
                 
                 <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'}>
-                  <Card 
-                    className="hover:shadow-lg transition-shadow cursor-pointer"
-                    onClick={() => handleBoxClick({
-                      id: '1',
-                      title: 'Ordinary World',
-                      content: 'Bilbo Baggins, a very well-to-do hobbit of Bag End, sits outside his front porch. He smokes a wooden pipe, as usual.'
-                    })}
-                  >
-                    <CardContent className="p-4">
-                      <h4 className="font-semibold mb-2">Ordinary World</h4>
-                      <p className="text-sm text-gray-600">
-                        Bilbo Baggins, a very well-to-do hobbit of Bag End, sits outside his front porch. He smokes a wooden pipe, as usual.
-                      </p>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card 
-                    className="hover:shadow-lg transition-shadow cursor-pointer"
-                    onClick={() => handleBoxClick({
-                      id: '2',
-                      title: 'Call to Adventure',
-                      content: 'Gandalf arrives and tells him that he\'s looking for someone to share in an adventure that he\'s arranging.'
-                    })}
-                  >
-                    <CardContent className="p-4">
-                      <h4 className="font-semibold mb-2">Call to Adventure</h4>
-                      <p className="text-sm text-gray-600">
-                        Gandalf arrives and tells him that he's looking for someone to share in an adventure that he's arranging.
-                      </p>
-                    </CardContent>
-                  </Card>
+                  {Object.values(INITIAL_BOXES).map((box) => (
+                    <Card 
+                      key={box.id}
+                      className="hover:shadow-lg transition-shadow cursor-pointer"
+                      onClick={() => handleBoxClick(box)}
+                    >
+                      <CardContent className="p-4">
+                        <h4 className="font-semibold mb-2">{box.title}</h4>
+                        <p className="text-sm text-gray-600">{box.content}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
               </div>
             </div>
