@@ -5,6 +5,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { Card, CardContent } from './ui/card';
 import { Toggle } from './ui/toggle';
 import BoxEditor from './BoxEditor';
+import { useToast } from './ui/use-toast';
 import { 
   ChevronDown,
   ChevronRight,
@@ -60,6 +61,26 @@ const ManuscriptEditor = () => {
   });
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   const [selectedAct, setSelectedAct] = useState<'act1' | 'act2' | 'act3'>('act1');
+  const [chapters, setChapters] = useState<string[]>(['Chapter 1']);
+  const [selectedChapter, setSelectedChapter] = useState<string>('Chapter 1');
+  const { toast } = useToast();
+
+  // Mock book data (in a real app, this would come from a prop or context)
+  const bookData = {
+    title: "Gomer",
+    author: "K. TURNER"
+  };
+
+  const handleAddChapter = () => {
+    const newChapterNumber = chapters.length + 1;
+    const newChapter = `Chapter ${newChapterNumber}`;
+    setChapters([...chapters, newChapter]);
+    toast({
+      title: "Chapter added",
+      description: `${newChapter} has been created.`
+    });
+    console.log('Added new chapter:', newChapter);
+  };
 
   const toggleSection = (section: 'act1' | 'act2' | 'act3') => {
     setExpandedSections(prev => ({
@@ -69,10 +90,6 @@ const ManuscriptEditor = () => {
     setSelectedAct(section);
     setSelectedBox(null);
     console.log('Selected act:', section);
-  };
-
-  const handleAddAct = () => {
-    console.log('Adding new act');
   };
 
   const handleAddBox = () => {
@@ -104,6 +121,10 @@ const ManuscriptEditor = () => {
     <div className="flex h-screen bg-white">
       {/* Left Sidebar */}
       <div className="w-64 bg-[#2c3643] text-white flex flex-col">
+        <div className="p-4 border-b border-gray-700">
+          <h2 className="text-lg font-semibold text-white">{bookData.title}</h2>
+          <p className="text-sm text-gray-400">by {bookData.author}</p>
+        </div>
         <ScrollArea className="flex-1">
           <div className="p-2">
             <div className="space-y-1">
@@ -117,38 +138,63 @@ const ManuscriptEditor = () => {
                 </div>
               </Button>
 
-              <div className="space-y-1">
+              {chapters.map((chapter, index) => (
                 <Button 
+                  key={chapter}
                   variant="ghost" 
-                  className="w-full justify-start text-gray-300 hover:bg-gray-700 py-1 h-auto"
-                  onClick={() => toggleSection('act1')}
+                  className={`w-full justify-start text-gray-300 hover:bg-gray-700 py-1 h-auto ${
+                    selectedChapter === chapter ? 'bg-gray-700' : ''
+                  }`}
+                  onClick={() => setSelectedChapter(chapter)}
                 >
                   <div className="flex items-center">
-                    {expandedSections.act1 ? (
-                      <ChevronDown className="h-4 w-4 mr-2" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4 mr-2" />
-                    )}
-                    <Folder className="h-4 w-4 mr-2" />
-                    Act I
+                    <File className="h-4 w-4 mr-2" />
+                    {chapter}
                   </div>
                 </Button>
-                {expandedSections.act1 && (
-                  <div className="ml-4 space-y-1">
-                    {getBoxesForAct('act1').map(box => (
-                      <Button 
-                        key={box.id}
-                        variant="ghost" 
-                        className="w-full justify-start text-sm text-gray-400 hover:bg-gray-700 py-1 h-auto"
-                        onClick={() => handleBoxClick(box)}
-                      >
-                        <File className="h-4 w-4 mr-2" />
-                        {box.title}
-                      </Button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              ))}
+
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start text-gray-300 hover:bg-gray-700 py-1 h-auto"
+                onClick={handleAddChapter}
+              >
+                <div className="flex items-center">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Chapter
+                </div>
+              </Button>
+
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start text-gray-300 hover:bg-gray-700 py-1 h-auto"
+                onClick={() => toggleSection('act1')}
+              >
+                <div className="flex items-center">
+                  {expandedSections.act1 ? (
+                    <ChevronDown className="h-4 w-4 mr-2" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 mr-2" />
+                  )}
+                  <Folder className="h-4 w-4 mr-2" />
+                  Act I
+                </div>
+              </Button>
+              {expandedSections.act1 && (
+                <div className="ml-4 space-y-1">
+                  {getBoxesForAct('act1').map(box => (
+                    <Button 
+                      key={box.id}
+                      variant="ghost" 
+                      className="w-full justify-start text-sm text-gray-400 hover:bg-gray-700 py-1 h-auto"
+                      onClick={() => handleBoxClick(box)}
+                    >
+                      <File className="h-4 w-4 mr-2" />
+                      {box.title}
+                    </Button>
+                  ))}
+                </div>
+              )}
 
               <Button 
                 variant="ghost" 
@@ -178,7 +224,10 @@ const ManuscriptEditor = () => {
             <Button variant="ghost" size="icon">
               <Menu className="h-5 w-5" />
             </Button>
-            <h2 className="text-xl font-semibold">Manuscript</h2>
+            <div>
+              <h2 className="text-xl font-semibold">{selectedChapter}</h2>
+              <p className="text-sm text-gray-500">{bookData.title}</p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center border rounded-lg p-1 mr-4">
@@ -246,7 +295,7 @@ const ManuscriptEditor = () => {
           {editorView === 'document' ? (
             <div className="max-w-4xl mx-auto">
               <div className="prose prose-lg">
-                <h1>Chapter 1</h1>
+                <h1>{selectedChapter}</h1>
                 <p className="text-gray-500">Begin writing here...</p>
               </div>
             </div>
