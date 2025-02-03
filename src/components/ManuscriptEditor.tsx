@@ -3,6 +3,7 @@ import { Button } from './ui/button';
 import { Separator } from './ui/separator';
 import { ScrollArea } from './ui/scroll-area';
 import { Card, CardContent } from './ui/card';
+import { Toggle } from './ui/toggle';
 import BoxEditor from './BoxEditor';
 import { 
   ChevronDown,
@@ -16,7 +17,9 @@ import {
   List,
   Menu,
   Folder,
-  File
+  File,
+  BookOpen,
+  LayoutDashboard
 } from 'lucide-react';
 
 interface Box {
@@ -31,24 +34,25 @@ const INITIAL_BOXES = {
     id: 'ordinary-world',
     title: 'Ordinary World',
     content: 'Bilbo Baggins, a very well-to-do hobbit of Bag End, sits outside his front porch. He smokes a wooden pipe, as usual.',
-    act: 'act1'
+    act: 'act1' as const
   },
   'call-to-adventure': {
     id: 'call-to-adventure',
     title: 'Call to Adventure',
     content: 'Gandalf arrives and tells him that he\'s looking for someone to share in an adventure that he\'s arranging.',
-    act: 'act1'
+    act: 'act1' as const
   },
   'refusal-of-call': {
     id: 'refusal-of-call',
     title: 'Refusal of the Call',
     content: 'Bilbo declines, stating that adventures are nasty uncomfortable things that make you late for dinner.',
-    act: 'act1'
+    act: 'act1' as const
   }
 };
 
 const ManuscriptEditor = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [editorView, setEditorView] = useState<'boxes' | 'document'>('boxes');
   const [expandedSections, setExpandedSections] = useState({
     'act1': true,
     'act2': false,
@@ -177,6 +181,26 @@ const ManuscriptEditor = () => {
             <h2 className="text-xl font-semibold">Manuscript</h2>
           </div>
           <div className="flex items-center gap-2">
+            <div className="flex items-center border rounded-lg p-1 mr-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`flex items-center gap-2 ${editorView === 'boxes' ? 'bg-gray-100' : ''}`}
+                onClick={() => setEditorView('boxes')}
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                <span>Boxes</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`flex items-center gap-2 ${editorView === 'document' ? 'bg-gray-100' : ''}`}
+                onClick={() => setEditorView('document')}
+              >
+                <BookOpen className="h-4 w-4" />
+                <span>Document</span>
+              </Button>
+            </div>
             <Button 
               variant="default"
               onClick={handleAddAct}
@@ -219,7 +243,14 @@ const ManuscriptEditor = () => {
 
         {/* Content Area */}
         <ScrollArea className="flex-1 p-6">
-          {selectedBox ? (
+          {editorView === 'document' ? (
+            <div className="max-w-4xl mx-auto">
+              <div className="prose prose-lg">
+                <h1>Chapter 1</h1>
+                <p className="text-gray-500">Begin writing here...</p>
+              </div>
+            </div>
+          ) : selectedBox ? (
             <BoxEditor
               title={selectedBox.title}
               content={selectedBox.content}
