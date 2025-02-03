@@ -4,6 +4,7 @@ import { Input } from './ui/input';
 import { Card } from './ui/card';
 import { ImagePlus, Plus, X, ChevronDown } from 'lucide-react';
 import { useToast } from './ui/use-toast';
+import { Textarea } from './ui/textarea';
 import {
   Select,
   SelectContent,
@@ -124,11 +125,12 @@ const BoxEditor = ({ title, content, onTitleChange, onContentChange }: BoxEditor
 
       <div className="flex gap-4">
         <div className="flex-1">
-          <textarea
+          <Textarea
             value={content}
             onChange={(e) => onContentChange(e.target.value)}
-            className="w-full min-h-[100px] text-base border rounded-md p-3 resize-none"
-            placeholder="Enter description..."
+            className="w-full min-h-[400px] text-base border rounded-md p-3 resize-vertical leading-relaxed"
+            placeholder="Write your story here..."
+            style={{ fontFamily: "'Georgia', serif" }}
           />
 
           <div className="flex gap-2 mt-4">
