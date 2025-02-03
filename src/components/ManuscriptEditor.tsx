@@ -14,7 +14,9 @@ import {
   CheckSquare,
   LayoutGrid,
   List,
-  Menu
+  Menu,
+  Folder,
+  File
 } from 'lucide-react';
 
 interface Box {
@@ -111,6 +113,7 @@ const ManuscriptEditor = () => {
                     ) : (
                       <ChevronRight className="h-4 w-4 mr-2" />
                     )}
+                    <Folder className="h-4 w-4 mr-2" />
                     Act I
                   </div>
                 </Button>
@@ -121,6 +124,7 @@ const ManuscriptEditor = () => {
                       className="w-full justify-start text-sm text-gray-400 hover:bg-gray-700 py-1 h-auto"
                       onClick={() => handleBoxClick(INITIAL_BOXES['ordinary-world'])}
                     >
+                      <File className="h-4 w-4 mr-2" />
                       Ordinary World
                     </Button>
                     <Button 
@@ -128,6 +132,7 @@ const ManuscriptEditor = () => {
                       className="w-full justify-start text-sm text-gray-400 hover:bg-gray-700 py-1 h-auto"
                       onClick={() => handleBoxClick(INITIAL_BOXES['call-to-adventure'])}
                     >
+                      <File className="h-4 w-4 mr-2" />
                       Call to Adventure
                     </Button>
                     <Button 
@@ -135,6 +140,7 @@ const ManuscriptEditor = () => {
                       className="w-full justify-start text-sm text-gray-400 hover:bg-gray-700 py-1 h-auto"
                       onClick={() => handleBoxClick(INITIAL_BOXES['refusal-of-call'])}
                     >
+                      <File className="h-4 w-4 mr-2" />
                       Refusal of the Call
                     </Button>
                   </div>
@@ -152,6 +158,7 @@ const ManuscriptEditor = () => {
                   ) : (
                     <ChevronRight className="h-4 w-4 mr-2" />
                   )}
+                  <Folder className="h-4 w-4 mr-2" />
                   Act II
                 </div>
               </Button>
