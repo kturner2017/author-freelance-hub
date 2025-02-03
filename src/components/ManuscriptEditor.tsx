@@ -107,7 +107,7 @@ const ManuscriptEditor = () => {
         return;
       }
 
-      if (data) {
+      if (data && data.length > 0) {
         const boxesMap: { [key: string]: Box } = {};
         data.forEach(box => {
           boxesMap[box.box_id] = {
@@ -118,7 +118,11 @@ const ManuscriptEditor = () => {
           };
         });
         setBoxes(boxesMap);
-        console.log('Loaded boxes:', boxesMap);
+        console.log('Loaded boxes from Supabase:', boxesMap);
+      } else {
+        // If no data in Supabase, use initial sample boxes
+        setBoxes(INITIAL_BOXES);
+        console.log('No boxes in Supabase, using initial sample boxes:', INITIAL_BOXES);
       }
     };
 
