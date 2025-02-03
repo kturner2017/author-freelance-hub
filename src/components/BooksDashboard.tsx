@@ -1,15 +1,49 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card } from './ui/card';
 import { Plus, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from './ui/use-toast';
 
 const BooksDashboard = () => {
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const handleCreateBook = () => {
     navigate('/editor/manuscript');
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const fileExtension = file.name.split('.').pop()?.toLowerCase();
+    const allowedFormats = ['docx', 'pdf', 'txt'];
+
+    if (!allowedFormats.includes(fileExtension || '')) {
+      toast({
+        title: "Invalid file format",
+        description: "Please upload a DOCX, PDF, or TXT file.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Here you would typically handle the file upload
+    console.log('Importing file:', file.name);
+    toast({
+      title: "Import started",
+      description: `Importing ${file.name}...`,
+    });
+
+    // Reset the input
+    event.target.value = '';
   };
 
   return (
@@ -56,18 +90,32 @@ const BooksDashboard = () => {
           </div>
         </div>
 
+        {/* Hidden file input */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          className="hidden"
+          accept=".docx,.pdf,.txt"
+          onChange={handleFileImport}
+        />
+
         {/* Books Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* Create Book Card */}
           <Card className="p-6 flex flex-col items-center justify-center text-center bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer min-h-[280px]" onClick={handleCreateBook}>
             <Plus className="w-12 h-12 text-primary mb-4" />
             <h3 className="font-medium mb-2">Create book</h3>
+            <p className="text-sm text-gray-500">Start writing from scratch</p>
           </Card>
 
           {/* Import Book Card */}
-          <Card className="p-6 flex flex-col items-center justify-center text-center bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer min-h-[280px]">
+          <Card 
+            className="p-6 flex flex-col items-center justify-center text-center bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer min-h-[280px]"
+            onClick={handleImportClick}
+          >
             <Upload className="w-12 h-12 text-primary mb-4" />
             <h3 className="font-medium mb-2">Import book</h3>
+            <p className="text-sm text-gray-500">Upload DOCX, PDF, or TXT</p>
           </Card>
 
           {/* Example Book Card */}
