@@ -6,6 +6,14 @@ import { useNavigate } from "react-router-dom";
 const ForAuthors = () => {
   const navigate = useNavigate();
 
+  const handlePublishingSupport = () => {
+    navigate('/editor', {
+      state: {
+        selectedTopics: ['Cover Design', 'Sales', 'Marketing', 'Distribution Channels']
+      }
+    });
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Navigation />
@@ -48,7 +56,10 @@ const ForAuthors = () => {
                 Professional-grade editor with formatting tools and templates for every genre.
               </p>
             </div>
-            <div className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+            <div 
+              className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+              onClick={handlePublishingSupport}
+            >
               <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mb-4">
                 <BookOpen className="w-6 h-6 text-primary" />
               </div>
