@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
-import { Briefcase, Users, HandShake, DollarSign } from "lucide-react";
+import { Briefcase, Users, Handshake, DollarSign } from "lucide-react";
 
 const ProfessionalNetwork = () => {
   return (
@@ -36,7 +36,7 @@ const ProfessionalNetwork = () => {
 
             <div className="p-8 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow">
               <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mb-4">
-                <HandShake className="w-6 h-6 text-primary" />
+                <Handshake className="w-6 h-6 text-primary" />
               </div>
               <h3 className="text-2xl font-serif font-bold text-primary mb-4">Manage Contracts</h3>
               <p className="text-gray-600 mb-6">
