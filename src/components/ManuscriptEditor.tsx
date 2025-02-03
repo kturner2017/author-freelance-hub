@@ -55,9 +55,9 @@ const ManuscriptEditor = () => {
     'act3': false
   });
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
-  const [selectedAct, setSelectedAct] = useState<string>('act1');
+  const [selectedAct, setSelectedAct] = useState<'act1' | 'act2' | 'act3'>('act1');
 
-  const toggleSection = (section: string) => {
+  const toggleSection = (section: 'act1' | 'act2' | 'act3') => {
     setExpandedSections(prev => ({
       ...prev,
       [section]: !prev[section]
@@ -92,7 +92,7 @@ const ManuscriptEditor = () => {
     }
   };
 
-  const getBoxesForAct = (act: string) => {
+  const getBoxesForAct = (act: 'act1' | 'act2' | 'act3') => {
     return Object.values(INITIAL_BOXES).filter(box => box.act === act);
   };
 

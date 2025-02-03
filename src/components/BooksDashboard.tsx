@@ -98,6 +98,11 @@ const BooksDashboard = () => {
     event.target.value = '';
   };
 
+  const handleBookClick = () => {
+    console.log('Navigating to manuscript editor');
+    navigate('/editor/manuscript');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -247,7 +252,10 @@ const BooksDashboard = () => {
           </Card>
 
           {/* Example Book Card */}
-          <Card className="overflow-hidden cursor-pointer min-h-[280px] flex flex-col">
+          <Card 
+            className="overflow-hidden cursor-pointer min-h-[280px] flex flex-col hover:shadow-lg transition-shadow"
+            onClick={handleBookClick}
+          >
             <div className="bg-white p-6 flex-1">
               <h3 className="text-xl font-medium mb-2">Gomer</h3>
               <p className="text-gray-500">K. TURNER</p>
