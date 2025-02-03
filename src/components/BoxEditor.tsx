@@ -114,6 +114,11 @@ const BoxEditor = ({ title, content, onTitleChange, onContentChange }: BoxEditor
     console.log('Updated explanation for:', attribute);
   };
 
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    console.log('Content changed:', e.target.value);
+    onContentChange(e.target.value);
+  };
+
   return (
     <div className="space-y-6">
       <Input
@@ -127,7 +132,7 @@ const BoxEditor = ({ title, content, onTitleChange, onContentChange }: BoxEditor
         <div className="flex-1">
           <Textarea
             value={content}
-            onChange={(e) => onContentChange(e.target.value)}
+            onChange={handleContentChange}
             className="w-full min-h-[400px] text-base border rounded-md p-4 resize-vertical leading-relaxed focus-visible:ring-1 focus-visible:ring-primary"
             placeholder="Begin writing here..."
             style={{ 
