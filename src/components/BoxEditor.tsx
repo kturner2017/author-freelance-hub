@@ -2,8 +2,15 @@ import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card } from './ui/card';
-import { ImagePlus, Plus, X } from 'lucide-react';
+import { ImagePlus, Plus, X, ChevronDown } from 'lucide-react';
 import { useToast } from './ui/use-toast';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 interface BoxEditorProps {
   title: string;
@@ -12,8 +19,35 @@ interface BoxEditorProps {
   onContentChange: (content: string) => void;
 }
 
+const PERSONALITY_ATTRIBUTES = [
+  { emoji: '😊', label: 'Friendly' },
+  { emoji: '🤔', label: 'Analytical' },
+  { emoji: '💪', label: 'Determined' },
+  { emoji: '🎭', label: 'Dramatic' },
+  { emoji: '🦁', label: 'Brave' },
+  { emoji: '🎨', label: 'Creative' },
+  { emoji: '🤝', label: 'Loyal' },
+  { emoji: '🌟', label: 'Charismatic' },
+  { emoji: '🧠', label: 'Intelligent' },
+  { emoji: '🎯', label: 'Focused' },
+  { emoji: '🦋', label: 'Free-spirited' },
+  { emoji: '🎭', label: 'Mysterious' },
+  { emoji: '⚖️', label: 'Just' },
+  { emoji: '🌱', label: 'Nurturing' },
+  { emoji: '🔥', label: 'Passionate' },
+  { emoji: '🎪', label: 'Entertaining' },
+  { emoji: '🎓', label: 'Wise' },
+  { emoji: '🌍', label: 'Worldly' },
+  { emoji: '🎪', label: 'Adventurous' },
+  { emoji: '🎭', label: 'Complex' },
+  { emoji: '🌈', label: 'Optimistic' },
+  { emoji: '🌙', label: 'Introspective' },
+  { emoji: '⚡', label: 'Dynamic' }
+];
+
 const BoxEditor = ({ title, content, onTitleChange, onContentChange }: BoxEditorProps) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedAttributes, setSelectedAttributes] = useState<string[]>([]);
   const { toast } = useToast();
   
   const handleImageUpload = () => {
@@ -24,7 +58,7 @@ const BoxEditor = ({ title, content, onTitleChange, onContentChange }: BoxEditor
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
-        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        if (file.size > 5 * 1024 * 1024) {
           toast({
             title: "Error",
             description: "Image size should be less than 5MB",
@@ -53,12 +87,18 @@ const BoxEditor = ({ title, content, onTitleChange, onContentChange }: BoxEditor
 
   const handleAddAttribute = () => {
     console.log('Add attribute clicked');
-    // Implement add attribute logic here
   };
 
-  const handleAddGroup = () => {
-    console.log('Add group clicked');
-    // Implement add group logic here
+  const handleAttributeSelect = (attribute: string) => {
+    if (!selectedAttributes.includes(attribute)) {
+      setSelectedAttributes([...selectedAttributes, attribute]);
+      console.log('Added attribute:', attribute);
+    }
+  };
+
+  const handleRemoveAttribute = (attribute: string) => {
+    setSelectedAttributes(selectedAttributes.filter(attr => attr !== attribute));
+    console.log('Removed attribute:', attribute);
   };
 
   return (
@@ -80,44 +120,47 @@ const BoxEditor = ({ title, content, onTitleChange, onContentChange }: BoxEditor
           />
 
           <div className="flex gap-2 mt-4">
-            <Button variant="outline" size="sm" onClick={handleAddAttribute}>
-              <Plus className="h-4 w-4 mr-1" />
-              Add attribute
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleAddGroup}>
-              <Plus className="h-4 w-4 mr-1" />
-              Add group
-            </Button>
+            <Select onValueChange={handleAttributeSelect}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Add attribute" />
+              </SelectTrigger>
+              <SelectContent>
+                {PERSONALITY_ATTRIBUTES.map((attr) => (
+                  <SelectItem key={attr.label} value={attr.label}>
+                    <span className="flex items-center gap-2">
+                      {attr.emoji} {attr.label}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="mt-4 space-y-3">
-            <Card className="p-3">
-              <div className="flex items-center gap-2">
-                <span className="text-sm">📍</span>
-                <Input 
-                  placeholder="Point of view" 
-                  className="bg-gray-50"
-                />
-              </div>
-            </Card>
-            <Card className="p-3">
-              <div className="flex items-center gap-2">
-                <span className="text-sm">⚡</span>
-                <Input 
-                  placeholder="Superpowers" 
-                  className="bg-gray-50"
-                />
-              </div>
-            </Card>
-            <Card className="p-3">
-              <div className="flex items-center gap-2">
-                <span className="text-sm">👑</span>
-                <Input 
-                  placeholder="Leader" 
-                  className="bg-gray-50"
-                />
-              </div>
-            </Card>
+            {selectedAttributes.map((attribute) => {
+              const attr = PERSONALITY_ATTRIBUTES.find(a => a.label === attribute);
+              return (
+                <Card key={attribute} className="p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">{attr?.emoji}</span>
+                      <Input 
+                        value={attribute}
+                        readOnly
+                        className="bg-gray-50"
+                      />
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveAttribute(attribute)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         </div>
 
