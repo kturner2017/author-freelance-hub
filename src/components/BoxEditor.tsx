@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card } from './ui/card';
-import { ImagePlus, Plus } from 'lucide-react';
+import { ImagePlus, Plus, X } from 'lucide-react';
+import { useToast } from './ui/use-toast';
 
 interface BoxEditorProps {
   title: string;
@@ -12,9 +13,42 @@ interface BoxEditorProps {
 }
 
 const BoxEditor = ({ title, content, onTitleChange, onContentChange }: BoxEditorProps) => {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const { toast } = useToast();
+  
   const handleImageUpload = () => {
-    console.log('Image upload clicked');
-    // Implement image upload logic here
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+          toast({
+            title: "Error",
+            description: "Image size should be less than 5MB",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const result = e.target?.result as string;
+          setSelectedImage(result);
+          console.log('Image loaded:', result.substring(0, 50) + '...');
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+
+    input.click();
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    console.log('Image removed');
   };
 
   const handleAddAttribute = () => {
@@ -88,16 +122,34 @@ const BoxEditor = ({ title, content, onTitleChange, onContentChange }: BoxEditor
         </div>
 
         <div className="w-64">
-          <Button 
-            variant="outline" 
-            className="w-full h-32 border-dashed"
-            onClick={handleImageUpload}
-          >
-            <div className="flex flex-col items-center gap-2">
-              <ImagePlus className="h-6 w-6" />
-              <span>Add Image</span>
+          {selectedImage ? (
+            <div className="relative">
+              <img 
+                src={selectedImage} 
+                alt="Uploaded preview" 
+                className="w-full h-32 object-cover rounded-md"
+              />
+              <Button
+                variant="destructive"
+                size="icon"
+                className="absolute top-2 right-2"
+                onClick={removeImage}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
-          </Button>
+          ) : (
+            <Button 
+              variant="outline" 
+              className="w-full h-32 border-dashed"
+              onClick={handleImageUpload}
+            >
+              <div className="flex flex-col items-center gap-2">
+                <ImagePlus className="h-6 w-6" />
+                <span>Add Image</span>
+              </div>
+            </Button>
+          )}
         </div>
       </div>
     </div>
