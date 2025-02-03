@@ -60,7 +60,10 @@ const ForAuthors = () => {
                 Expert guidance on formatting, cover design, and distribution channels.
               </p>
             </div>
-            <div className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+            <div 
+              className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+              onClick={() => navigate('/professional-network')}
+            >
               <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mb-4">
                 <Users className="w-6 h-6 text-primary" />
               </div>
