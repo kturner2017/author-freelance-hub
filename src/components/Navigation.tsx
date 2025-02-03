@@ -11,7 +11,7 @@ export const Navigation = () => {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <h1 className="text-2xl font-serif font-bold text-primary">Reedsy Clone</h1>
+              <h1 className="text-2xl font-serif font-bold text-primary">Authify</h1>
             </div>
           </div>
           
