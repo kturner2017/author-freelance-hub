@@ -23,23 +23,27 @@ interface Box {
   id: string;
   title: string;
   content: string;
+  act: 'act1' | 'act2' | 'act3';
 }
 
 const INITIAL_BOXES = {
   'ordinary-world': {
     id: 'ordinary-world',
     title: 'Ordinary World',
-    content: 'Bilbo Baggins, a very well-to-do hobbit of Bag End, sits outside his front porch. He smokes a wooden pipe, as usual.'
+    content: 'Bilbo Baggins, a very well-to-do hobbit of Bag End, sits outside his front porch. He smokes a wooden pipe, as usual.',
+    act: 'act1'
   },
   'call-to-adventure': {
     id: 'call-to-adventure',
     title: 'Call to Adventure',
-    content: 'Gandalf arrives and tells him that he\'s looking for someone to share in an adventure that he\'s arranging.'
+    content: 'Gandalf arrives and tells him that he\'s looking for someone to share in an adventure that he\'s arranging.',
+    act: 'act1'
   },
   'refusal-of-call': {
     id: 'refusal-of-call',
     title: 'Refusal of the Call',
-    content: 'Bilbo declines, stating that adventures are nasty uncomfortable things that make you late for dinner.'
+    content: 'Bilbo declines, stating that adventures are nasty uncomfortable things that make you late for dinner.',
+    act: 'act1'
   }
 };
 
@@ -51,12 +55,16 @@ const ManuscriptEditor = () => {
     'act3': false
   });
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
+  const [selectedAct, setSelectedAct] = useState<string>('act1');
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => ({
       ...prev,
       [section]: !prev[section]
     }));
+    setSelectedAct(section);
+    setSelectedBox(null);
+    console.log('Selected act:', section);
   };
 
   const handleAddAct = () => {
@@ -82,6 +90,10 @@ const ManuscriptEditor = () => {
     if (selectedBox) {
       setSelectedBox({ ...selectedBox, content });
     }
+  };
+
+  const getBoxesForAct = (act: string) => {
+    return Object.values(INITIAL_BOXES).filter(box => box.act === act);
   };
 
   return (
@@ -119,30 +131,17 @@ const ManuscriptEditor = () => {
                 </Button>
                 {expandedSections.act1 && (
                   <div className="ml-4 space-y-1">
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start text-sm text-gray-400 hover:bg-gray-700 py-1 h-auto"
-                      onClick={() => handleBoxClick(INITIAL_BOXES['ordinary-world'])}
-                    >
-                      <File className="h-4 w-4 mr-2" />
-                      Ordinary World
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start text-sm text-gray-400 hover:bg-gray-700 py-1 h-auto"
-                      onClick={() => handleBoxClick(INITIAL_BOXES['call-to-adventure'])}
-                    >
-                      <File className="h-4 w-4 mr-2" />
-                      Call to Adventure
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start text-sm text-gray-400 hover:bg-gray-700 py-1 h-auto"
-                      onClick={() => handleBoxClick(INITIAL_BOXES['refusal-of-call'])}
-                    >
-                      <File className="h-4 w-4 mr-2" />
-                      Refusal of the Call
-                    </Button>
+                    {getBoxesForAct('act1').map(box => (
+                      <Button 
+                        key={box.id}
+                        variant="ghost" 
+                        className="w-full justify-start text-sm text-gray-400 hover:bg-gray-700 py-1 h-auto"
+                        onClick={() => handleBoxClick(box)}
+                      >
+                        <File className="h-4 w-4 mr-2" />
+                        {box.title}
+                      </Button>
+                    ))}
                   </div>
                 )}
               </div>
@@ -231,7 +230,9 @@ const ManuscriptEditor = () => {
             <div className="space-y-8">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-semibold">Act I</h3>
+                  <h3 className="text-xl font-semibold">
+                    {selectedAct === 'act1' ? 'Act I' : selectedAct === 'act2' ? 'Act II' : 'Act III'}
+                  </h3>
                   <Button 
                     size="sm"
                     onClick={handleAddBox}
@@ -243,7 +244,7 @@ const ManuscriptEditor = () => {
                 </div>
                 
                 <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'}>
-                  {Object.values(INITIAL_BOXES).map((box) => (
+                  {getBoxesForAct(selectedAct).map((box) => (
                     <Card 
                       key={box.id}
                       className="hover:shadow-lg transition-shadow cursor-pointer"
