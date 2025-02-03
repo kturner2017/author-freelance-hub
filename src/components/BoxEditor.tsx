@@ -19,6 +19,11 @@ interface BoxEditorProps {
   onContentChange: (content: string) => void;
 }
 
+interface AttributeWithExplanation {
+  attribute: string;
+  explanation: string;
+}
+
 const PERSONALITY_ATTRIBUTES = [
   { emoji: '😊', label: 'Friendly' },
   { emoji: '🤔', label: 'Analytical' },
@@ -47,7 +52,7 @@ const PERSONALITY_ATTRIBUTES = [
 
 const BoxEditor = ({ title, content, onTitleChange, onContentChange }: BoxEditorProps) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [selectedAttributes, setSelectedAttributes] = useState<string[]>([]);
+  const [selectedAttributes, setSelectedAttributes] = useState<AttributeWithExplanation[]>([]);
   const { toast } = useToast();
   
   const handleImageUpload = () => {
@@ -90,15 +95,22 @@ const BoxEditor = ({ title, content, onTitleChange, onContentChange }: BoxEditor
   };
 
   const handleAttributeSelect = (attribute: string) => {
-    if (!selectedAttributes.includes(attribute)) {
-      setSelectedAttributes([...selectedAttributes, attribute]);
+    if (!selectedAttributes.find(attr => attr.attribute === attribute)) {
+      setSelectedAttributes([...selectedAttributes, { attribute, explanation: '' }]);
       console.log('Added attribute:', attribute);
     }
   };
 
   const handleRemoveAttribute = (attribute: string) => {
-    setSelectedAttributes(selectedAttributes.filter(attr => attr !== attribute));
+    setSelectedAttributes(selectedAttributes.filter(attr => attr.attribute !== attribute));
     console.log('Removed attribute:', attribute);
+  };
+
+  const handleExplanationChange = (attribute: string, explanation: string) => {
+    setSelectedAttributes(selectedAttributes.map(attr => 
+      attr.attribute === attribute ? { ...attr, explanation } : attr
+    ));
+    console.log('Updated explanation for:', attribute);
   };
 
   return (
@@ -137,17 +149,23 @@ const BoxEditor = ({ title, content, onTitleChange, onContentChange }: BoxEditor
           </div>
 
           <div className="mt-4 space-y-3">
-            {selectedAttributes.map((attribute) => {
+            {selectedAttributes.map(({ attribute, explanation }) => {
               const attr = PERSONALITY_ATTRIBUTES.find(a => a.label === attribute);
               return (
                 <Card key={attribute} className="p-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-2 flex-1">
                       <span className="text-sm">{attr?.emoji}</span>
                       <Input 
                         value={attribute}
                         readOnly
-                        className="bg-gray-50"
+                        className="bg-gray-50 w-[150px]"
+                      />
+                      <Input
+                        value={explanation}
+                        onChange={(e) => handleExplanationChange(attribute, e.target.value)}
+                        placeholder="Explain this attribute..."
+                        className="flex-1"
                       />
                     </div>
                     <Button
