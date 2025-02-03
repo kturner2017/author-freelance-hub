@@ -1,8 +1,11 @@
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
 import { Pen, BookOpen, Users, Rocket } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const ForAuthors = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-white">
       <Navigation />
@@ -16,7 +19,11 @@ const ForAuthors = () => {
           <p className="text-lg md:text-xl text-gray-700 mb-8 max-w-2xl mx-auto animate-fade-in animate-fade-in-delay-1">
             Join a community of authors and professionals dedicated to bringing your book to life. From writing to publishing, we're here to support your journey.
           </p>
-          <Button size="lg" className="animate-fade-in animate-fade-in-delay-2">
+          <Button 
+            size="lg" 
+            className="animate-fade-in animate-fade-in-delay-2"
+            onClick={() => navigate('/editor')}
+          >
             Start Writing Today
           </Button>
         </div>
@@ -29,7 +36,10 @@ const ForAuthors = () => {
             Everything You Need to Succeed
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+            <div 
+              className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+              onClick={() => navigate('/editor')}
+            >
               <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mb-4">
                 <Pen className="w-6 h-6 text-primary" />
               </div>
@@ -78,7 +88,11 @@ const ForAuthors = () => {
           <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
             Join thousands of authors who have found success with Authify's comprehensive platform.
           </p>
-          <Button variant="secondary" size="lg">
+          <Button 
+            variant="secondary" 
+            size="lg"
+            onClick={() => navigate('/editor')}
+          >
             Create Your Account
           </Button>
         </div>
