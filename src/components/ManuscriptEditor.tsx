@@ -209,6 +209,35 @@ const ManuscriptEditor = () => {
     console.log('Added new box:', newBox);
   };
 
+  const handleBoxClick = (box: Box) => {
+    console.log('Box clicked:', box);
+    setSelectedBox(box);
+  };
+
+  const handleBoxTitleChange = (title: string) => {
+    if (selectedBox) {
+      const updatedBox = { ...selectedBox, title };
+      setSelectedBox(updatedBox);
+      setBoxes(prevBoxes => ({
+        ...prevBoxes,
+        [selectedBox.id]: updatedBox
+      }));
+      console.log('Updated box title:', title);
+    }
+  };
+
+  const handleBoxContentChange = (content: string) => {
+    if (selectedBox) {
+      const updatedBox = { ...selectedBox, content };
+      setSelectedBox(updatedBox);
+      setBoxes(prevBoxes => ({
+        ...prevBoxes,
+        [selectedBox.id]: updatedBox
+      }));
+      console.log('Updated box content:', content);
+    }
+  };
+
   const getBoxesForAct = (act: 'act1' | 'act2' | 'act3') => {
     return Object.values(boxes).filter(box => box.act === act);
   };
