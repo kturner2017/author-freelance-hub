@@ -96,11 +96,7 @@ const ManuscriptContent = ({
               <h3 className="text-xl font-semibold">
                 {selectedAct === 'act1' ? 'Act I' : selectedAct === 'act2' ? 'Act II' : 'Act III'}
               </h3>
-              <Button 
-                size="sm"
-                onClick={onAddBox}
-                className="bg-primary hover:bg-primary-600"
-              >
+              <Button onClick={onAddBox}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Box
               </Button>
@@ -108,8 +104,11 @@ const ManuscriptContent = ({
             
             <div className="mb-6">
               <FileUploader 
-                act={selectedAct} 
-                chapterId={selectedChapter}
+                boxId={selectedBox?.id || ''} 
+                onUploadComplete={() => {
+                  // Refresh the box data if needed
+                  console.log('File upload completed');
+                }}
               />
             </div>
 

@@ -113,7 +113,7 @@ const FileUploader = ({ boxId, onUploadComplete }: FileUploaderProps) => {
         className="mt-2"
         onClick={(e) => {
           e.stopPropagation();
-          const input = document.querySelector('input[type="file"]');
+          const input = document.querySelector('input[type="file"]') as HTMLInputElement;
           if (input) {
             input.click();
           }
