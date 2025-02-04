@@ -1,20 +1,24 @@
 import { BookOpen, Users, Award } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const features = [
   {
     name: "Professional Writing Tools",
     description: "Write and format your book with our intuitive editor designed specifically for authors.",
     icon: BookOpen,
+    link: "/editor",
   },
   {
     name: "Expert Freelancers",
     description: "Connect with vetted editors, designers, and marketers to polish your book.",
     icon: Users,
+    link: "/professional-network",
   },
   {
     name: "Quality Guaranteed",
     description: "Work with the best professionals in the industry, backed by our satisfaction guarantee.",
     icon: Award,
+    link: "/publishing-support",
   },
 ];
 
@@ -32,8 +36,12 @@ export const Features = () => {
         <div className="mt-10">
           <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((feature) => (
-              <div key={feature.name} className="pt-6">
-                <div className="flow-root bg-secondary rounded-lg px-6 pb-8">
+              <Link 
+                to={feature.link} 
+                key={feature.name}
+                className="pt-6 transition-transform hover:scale-105"
+              >
+                <div className="flow-root bg-secondary rounded-lg px-6 pb-8 h-full cursor-pointer">
                   <div className="-mt-6">
                     <div>
                       <span className="inline-flex items-center justify-center p-3 bg-primary rounded-md shadow-lg">
@@ -48,7 +56,7 @@ export const Features = () => {
                     </p>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
