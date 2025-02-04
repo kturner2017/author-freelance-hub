@@ -194,6 +194,33 @@ export type Database = {
           },
         ]
       }
+      manuscript_chapters: {
+        Row: {
+          chapter_id: string
+          content: string | null
+          created_at: string | null
+          id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          chapter_id: string
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          chapter_id?: string
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       manuscript_files: {
         Row: {
           box_id: string

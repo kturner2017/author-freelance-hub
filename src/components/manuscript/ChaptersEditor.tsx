@@ -7,6 +7,9 @@ import { ScrollArea } from '../ui/scroll-area';
 import { ChevronLeft, Plus, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '../ui/card';
+import { Database } from '@/integrations/supabase/types';
+
+type ManuscriptChapter = Database['public']['Tables']['manuscript_chapters']['Row'];
 
 interface Chapter {
   id: string;
@@ -48,7 +51,7 @@ const ChaptersEditor = () => {
 
       if (data && data.length > 0) {
         const chaptersMap: { [key: string]: Chapter } = {};
-        data.forEach(chapter => {
+        data.forEach((chapter: ManuscriptChapter) => {
           chaptersMap[chapter.chapter_id] = {
             id: chapter.id,
             chapter_id: chapter.chapter_id,
@@ -116,7 +119,7 @@ const ChaptersEditor = () => {
         const newChapters = chaptersToInsert.map(chapterId => ({
           chapter_id: chapterId,
           title: chapters[chapterId].title,
-          content: chapters[chapterId].content || '',
+          content: chapters[chapterId].content,
         }));
 
         const { error: insertError } = await supabase
