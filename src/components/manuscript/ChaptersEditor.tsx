@@ -200,7 +200,7 @@ const ChaptersEditor = () => {
 
   return (
     <div className="h-screen flex flex-col">
-      <div className="h-16 border-b flex items-center px-4 justify-between bg-[#0F172A] text-white">
+      <div className="h-20 border-b flex items-center px-6 justify-between bg-[#0F172A] text-white">
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
@@ -219,7 +219,7 @@ const ChaptersEditor = () => {
             <Home className="h-5 w-5" />
           </Button>
           <div>
-            <h2 className="text-lg font-semibold leading-tight">Chapters Editor</h2>
+            <h1 className="text-2xl font-serif font-semibold leading-tight">Chapters Editor</h1>
             <p className="text-sm text-gray-300 leading-tight">Manuscript</p>
           </div>
         </div>
@@ -243,7 +243,7 @@ const ChaptersEditor = () => {
             variant="outline" 
             size="sm"
             onClick={() => navigate('/editor/manuscript/boxes')}
-            className="border-white text-[#0F172A] bg-white hover:bg-white/90 transition-colors"
+            className="border-white text-white hover:bg-white/10 transition-colors"
           >
             Switch to Boxes View
           </Button>
@@ -277,7 +277,7 @@ const ChaptersEditor = () => {
           <ScrollArea className="h-full">
             {selectedChapter ? (
               <div className="p-6 max-w-4xl mx-auto">
-                <h1 className="text-3xl font-serif mb-6">{selectedChapter.title}</h1>
+                <h2 className="text-3xl font-serif mb-6">{selectedChapter.title}</h2>
                 <RichTextEditor
                   content={selectedChapter.content}
                   onChange={handleContentChange}
