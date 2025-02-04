@@ -6,7 +6,7 @@ import TextAnalysis from '../TextAnalysis';
 import calculateScores from '@/utils/readabilityScores';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface Chapter {
@@ -133,21 +133,43 @@ const ChaptersEditor = () => {
 
   return (
     <div className="h-screen flex flex-col">
-      <div className="h-14 border-b flex items-center px-4 justify-between bg-white">
+      <div className="h-16 border-b flex items-center px-4 justify-between bg-white/80 backdrop-blur-lg shadow-sm">
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
             size="icon"
             onClick={() => navigate('/editor')}
+            className="hover:bg-gray-100"
           >
             <ChevronLeft className="h-5 w-5" />
           </Button>
-          <h2 className="text-xl font-semibold">Chapter Editor</h2>
+          <div>
+            <h2 className="text-lg font-semibold leading-tight">Chapter Editor</h2>
+            <p className="text-sm text-gray-500 leading-tight">Manuscript</p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button onClick={handleSave}>Save</Button>
-          <Button onClick={handleAddChapter}>Add Chapter</Button>
-          <Button variant="outline" onClick={() => navigate('/editor/manuscript/boxes')}>
+          <Button 
+            size="sm"
+            onClick={handleSave}
+            className="shadow-sm hover:shadow-md transition-all"
+          >
+            Save
+          </Button>
+          <Button 
+            size="sm"
+            onClick={handleAddChapter}
+            className="shadow-sm hover:shadow-md transition-all"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Chapter
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => navigate('/editor/manuscript/boxes')}
+            className="shadow-sm hover:shadow-md transition-all"
+          >
             Switch to Boxes View
           </Button>
         </div>

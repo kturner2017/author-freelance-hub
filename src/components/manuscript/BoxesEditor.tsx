@@ -182,21 +182,43 @@ const BoxesEditor = () => {
 
   return (
     <div className="h-screen flex flex-col">
-      <div className="h-16 border-b flex items-center px-4 justify-between bg-white">
+      <div className="h-16 border-b flex items-center px-4 justify-between bg-white/80 backdrop-blur-lg shadow-sm">
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
             size="icon"
             onClick={() => navigate('/editor')}
+            className="hover:bg-gray-100"
           >
             <ChevronLeft className="h-5 w-5" />
           </Button>
-          <h2 className="text-xl font-semibold">Boxes Editor</h2>
+          <div>
+            <h2 className="text-lg font-semibold leading-tight">Boxes Editor</h2>
+            <p className="text-sm text-gray-500 leading-tight">Manuscript</p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button onClick={handleSave}>Save</Button>
-          <Button onClick={handleAddBox}>Add Box</Button>
-          <Button variant="outline" onClick={() => navigate('/editor/manuscript')}>
+          <Button 
+            size="sm"
+            onClick={handleSave}
+            className="shadow-sm hover:shadow-md transition-all"
+          >
+            Save
+          </Button>
+          <Button 
+            size="sm"
+            onClick={handleAddBox}
+            className="shadow-sm hover:shadow-md transition-all"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Box
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => navigate('/editor/manuscript')}
+            className="shadow-sm hover:shadow-md transition-all"
+          >
             Switch to Chapters View
           </Button>
         </div>
