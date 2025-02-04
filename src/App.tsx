@@ -8,6 +8,8 @@ import PublishingSupport from './pages/PublishingSupport';
 import ProfessionalNetwork from './pages/ProfessionalNetwork';
 import PostProject from './pages/PostProject';
 import FindProfessional from './pages/FindProfessional';
+import LaunchStrategies from './pages/LaunchStrategies';
+import LaunchStrategyDetail from './pages/LaunchStrategyDetail';
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
         <Route path="/professional-network" element={<ProfessionalNetwork />} />
         <Route path="/professional-network/post-project" element={<PostProject />} />
         <Route path="/professional-network/find" element={<FindProfessional />} />
+        <Route path="/launch-strategies" element={<LaunchStrategies />} />
+        <Route path="/launch-strategies/:id" element={<LaunchStrategyDetail />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

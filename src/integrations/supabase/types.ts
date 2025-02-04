@@ -36,6 +36,42 @@ export type Database = {
         }
         Relationships: []
       }
+      launch_strategies: {
+        Row: {
+          benefits: string[]
+          created_at: string | null
+          description: string
+          estimated_cost: string
+          id: string
+          summary: string
+          timeline: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          benefits?: string[]
+          created_at?: string | null
+          description: string
+          estimated_cost: string
+          id?: string
+          summary: string
+          timeline: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          benefits?: string[]
+          created_at?: string | null
+          description?: string
+          estimated_cost?: string
+          id?: string
+          summary?: string
+          timeline?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       manuscript_boxes: {
         Row: {
           act: string
