@@ -1,4 +1,4 @@
 project_id = "vbvvjmcpgpgzzsrgdjwx"
 
-[functions.upload-project-file]
+[functions.analyze-text]
 verify_jwt = false

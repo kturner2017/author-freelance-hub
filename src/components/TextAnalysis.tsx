@@ -1,13 +1,52 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Progress } from './ui/progress';
 import type { ReadabilityScores } from '@/utils/readabilityScores';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TextAnalysisProps {
   scores: ReadabilityScores;
   content: string;
 }
 
+interface AIAnalysis {
+  suggestions: string[];
+  scores: {
+    grammar: number;
+    toxicity: number;
+    style: number;
+    structure: number;
+  };
+}
+
 const TextAnalysis = ({ scores, content }: TextAnalysisProps) => {
+  const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  useEffect(() => {
+    const analyzeText = async () => {
+      if (!content || content.length < 50) return;
+      
+      setIsAnalyzing(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('analyze-text', {
+          body: { text: content }
+        });
+
+        if (error) throw error;
+        console.log('AI Analysis results:', data);
+        setAiAnalysis(data);
+      } catch (error) {
+        console.error('Error during AI analysis:', error);
+      } finally {
+        setIsAnalyzing(false);
+      }
+    };
+
+    const debounceTimeout = setTimeout(analyzeText, 1000);
+    return () => clearTimeout(debounceTimeout);
+  }, [content]);
+
   const getReadabilityFeedback = () => {
     const suggestions = [];
     
@@ -33,37 +72,6 @@ const TextAnalysis = ({ scores, content }: TextAnalysisProps) => {
       }
     }
 
-    if (suggestions.length === 0) {
-      suggestions.push("Your text appears to be well-structured and readable. Great job!");
-    }
-
-    return suggestions;
-  };
-
-  const getGrammarSuggestions = () => {
-    const suggestions = [];
-    
-    // Basic patterns to check (this is simplified - for real grammar checking you'd want to use a proper NLP library)
-    const commonErrors = [
-      { pattern: /\s+,/g, suggestion: "Remove spaces before commas" },
-      { pattern: /\s+\./g, suggestion: "Remove spaces before periods" },
-      { pattern: /\b(their|there|they're|your|you're|its|it's|whose|who's)\b/gi, 
-        suggestion: "Double-check common confusable words (their/there/they're, your/you're, its/it's)" },
-      { pattern: /\b(affect|effect|accept|except|advice|advise)\b/gi,
-        suggestion: "Verify usage of commonly confused words (affect/effect, accept/except, advice/advise)" },
-      { pattern: /\b(alot)\b/gi, suggestion: "'A lot' should be written as two words" },
-    ];
-
-    commonErrors.forEach(({ pattern, suggestion }) => {
-      if (pattern.test(content)) {
-        suggestions.push(suggestion);
-      }
-    });
-
-    if (suggestions.length === 0) {
-      suggestions.push("No common grammar issues detected.");
-    }
-
     return suggestions;
   };
 
@@ -73,28 +81,67 @@ const TextAnalysis = ({ scores, content }: TextAnalysisProps) => {
         <CardHeader>
           <CardTitle>Writing Analysis</CardTitle>
           <CardDescription>
-            Suggestions to improve your writing
+            AI-powered suggestions to improve your writing
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            <div>
-              <h3 className="font-semibold mb-2">Readability Suggestions</h3>
-              <ul className="list-disc pl-6 space-y-2">
-                {getReadabilityFeedback().map((suggestion, index) => (
-                  <li key={index} className="text-sm text-gray-600">{suggestion}</li>
-                ))}
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-2">Grammar & Style Check</h3>
-              <ul className="list-disc pl-6 space-y-2">
-                {getGrammarSuggestions().map((suggestion, index) => (
-                  <li key={index} className="text-sm text-gray-600">{suggestion}</li>
-                ))}
-              </ul>
-            </div>
+            {isAnalyzing ? (
+              <div className="text-sm text-gray-600">
+                Analyzing your text...
+              </div>
+            ) : (
+              <>
+                {aiAnalysis && (
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="font-semibold mb-2">AI Analysis Scores</h3>
+                      <div className="space-y-2">
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>Grammar Quality</span>
+                            <span>{Math.round(aiAnalysis.scores.grammar * 100)}%</span>
+                          </div>
+                          <Progress value={aiAnalysis.scores.grammar * 100} />
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>Writing Style</span>
+                            <span>{Math.round(aiAnalysis.scores.style * 100)}%</span>
+                          </div>
+                          <Progress value={aiAnalysis.scores.style * 100} />
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>Sentence Structure</span>
+                            <span>{Math.round(aiAnalysis.scores.structure * 100)}%</span>
+                          </div>
+                          <Progress value={aiAnalysis.scores.structure * 100} />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="font-semibold mb-2">AI Suggestions</h3>
+                      <ul className="list-disc pl-6 space-y-2">
+                        {aiAnalysis.suggestions.map((suggestion, index) => (
+                          <li key={index} className="text-sm text-gray-600">{suggestion}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <h3 className="font-semibold mb-2">Readability Analysis</h3>
+                  <ul className="list-disc pl-6 space-y-2">
+                    {getReadabilityFeedback().map((suggestion, index) => (
+                      <li key={index} className="text-sm text-gray-600">{suggestion}</li>
+                    ))}
+                  </ul>
+                </div>
+              </>
+            )}
           </div>
         </CardContent>
       </Card>
