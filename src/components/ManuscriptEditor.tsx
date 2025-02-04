@@ -19,22 +19,10 @@ interface Chapter {
 }
 
 const INITIAL_BOXES = {
-  'ordinary-world': {
-    id: 'ordinary-world',
-    title: 'Ordinary World',
-    content: 'Bilbo Baggins, a very well-to-do hobbit of Bag End, sits outside his front porch. He smokes a wooden pipe, as usual.',
-    act: 'act1' as const
-  },
-  'call-to-adventure': {
-    id: 'call-to-adventure',
-    title: 'Call to Adventure',
-    content: 'Gandalf arrives and tells him that he\'s looking for someone to share in an adventure that he\'s arranging.',
-    act: 'act1' as const
-  },
-  'refusal-of-call': {
-    id: 'refusal-of-call',
-    title: 'Refusal of the Call',
-    content: 'Bilbo declines, stating that adventures are nasty uncomfortable things that make you late for dinner.',
+  'box-1': {
+    id: 'box-1',
+    title: 'New Box',
+    content: '',
     act: 'act1' as const
   }
 };
