@@ -224,6 +224,47 @@ export type Database = {
         }
         Relationships: []
       }
+      project_files: {
+        Row: {
+          content_type: string | null
+          created_at: string | null
+          file_path: string
+          filename: string
+          id: string
+          project_id: string | null
+          size: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          content_type?: string | null
+          created_at?: string | null
+          file_path: string
+          filename: string
+          id?: string
+          project_id?: string | null
+          size?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          content_type?: string | null
+          created_at?: string | null
+          file_path?: string
+          filename?: string
+          id?: string
+          project_id?: string | null
+          size?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_files_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           author: string

@@ -1,1 +1,4 @@
 project_id = "vbvvjmcpgpgzzsrgdjwx"
+
+[functions.upload-project-file]
+verify_jwt = false
