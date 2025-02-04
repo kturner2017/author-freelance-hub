@@ -14,11 +14,12 @@ interface ContractTemplate {
   description: string;
   content: string;
   category: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 const ContractTemplates = () => {
   const [templates, setTemplates] = useState<ContractTemplate[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState<ContractTemplate | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,7 +34,7 @@ const ContractTemplates = () => {
         }
 
         if (data) {
-          setTemplates(data);
+          setTemplates(data as ContractTemplate[]);
         }
       } catch (error) {
         console.error('Error fetching templates:', error);

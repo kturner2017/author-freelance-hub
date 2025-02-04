@@ -36,6 +36,36 @@ export type Database = {
         }
         Relationships: []
       }
+      contract_templates: {
+        Row: {
+          category: string
+          content: string
+          created_at: string | null
+          description: string
+          id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string | null
+          description: string
+          id?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       freelancers: {
         Row: {
           bio: string
