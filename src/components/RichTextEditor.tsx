@@ -6,6 +6,9 @@ import Highlight from '@tiptap/extension-highlight';
 import CodeBlock from '@tiptap/extension-code-block';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
+import ReadabilityChart from './ReadabilityChart';
+import calculateScores from '@/utils/readabilityScores';
+import { useState, useEffect } from 'react';
 import { 
   Bold, 
   Italic, 
@@ -32,6 +35,8 @@ interface RichTextEditorProps {
 }
 
 const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
+  const [readabilityScores, setReadabilityScores] = useState(calculateScores(''));
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -50,7 +55,11 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       },
     },
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      const newContent = editor.getHTML();
+      onChange(newContent);
+      // Strip HTML tags for readability calculation
+      const plainText = editor.getText();
+      setReadabilityScores(calculateScores(plainText));
     },
   });
 
@@ -75,6 +84,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
 
   return (
     <div className="border rounded-lg">
+      <ReadabilityChart scores={readabilityScores} />
       <div className="bg-gray-100 p-2 rounded-t-lg border-b flex flex-wrap items-center gap-2">
         {/* Text Style Controls */}
         <Button
