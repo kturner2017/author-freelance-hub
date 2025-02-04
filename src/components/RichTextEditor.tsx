@@ -31,24 +31,24 @@ import {
   IndentDecrease
 } from 'lucide-react';
 
-interface RichTextEditorProps {
-  content: string;
-  onChange: (content: string) => void;
-}
-
 const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
   const [readabilityScores, setReadabilityScores] = useState(calculateScores(''));
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
+  // Improved debounced analysis function
   const performAnalysis = useCallback(
     debounce(async (text: string) => {
+      // Don't analyze if text is too short
       if (text.length < 50) return;
+      
+      // Clean up the text - remove HTML tags
+      const cleanText = text.replace(/<[^>]*>/g, '').trim();
       
       setIsAnalyzing(true);
       try {
         const { data, error } = await supabase.functions.invoke('analyze-text', {
-          body: { text }
+          body: { text: cleanText }
         });
 
         if (error) throw error;
@@ -59,7 +59,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       } finally {
         setIsAnalyzing(false);
       }
-    }, 1000),
+    }, 2000), // Increased debounce time to 2 seconds
     []
   );
 
@@ -98,16 +98,17 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
     },
   });
 
-  // Update readability scores when content changes externally
   useEffect(() => {
     if (editor && content) {
       editor.commands.setContent(content);
       const plainText = editor.getText();
-      console.log('Initial content text:', plainText);
       const scores = calculateScores(plainText);
-      console.log('Initial scores:', scores);
       setReadabilityScores(scores);
-      performAnalysis(plainText);
+      
+      // Only trigger analysis if content is long enough
+      if (plainText.length >= 50) {
+        performAnalysis(plainText);
+      }
     }
   }, [content, editor, performAnalysis]);
 

@@ -7,49 +7,36 @@ const corsHeaders = {
 }
 
 async function analyzeText(text: string, hf: HfInference) {
-  console.log('Starting text analysis...');
+  console.log('Starting text analysis with cleaned text:', text.substring(0, 100));
   
   try {
     // Grammar analysis using GPT-2 detector
     const grammarResponse = await hf.textClassification({
       model: 'textattack/roberta-base-CoLA',
-      inputs: text.slice(0, 500), // Limit text length for API
+      inputs: text.slice(0, 500),
     });
     console.log('Grammar analysis result:', grammarResponse);
 
-    // Style analysis using sentiment model (as a proxy for writing quality)
+    // Style analysis using sentiment model
     const styleResponse = await hf.textClassification({
       model: 'nlptown/bert-base-multilingual-uncased-sentiment',
       inputs: text.slice(0, 500),
     });
     console.log('Style analysis result:', styleResponse);
 
-    // Generate writing suggestions
-    const suggestionsResponse = await hf.textGeneration({
-      model: 'gpt2',
-      inputs: `Analyze this text and provide writing improvement suggestions: ${text.slice(0, 200)}`,
-      parameters: {
-        max_length: 100,
-        temperature: 0.7,
-        top_p: 0.9,
-      },
-    });
-    console.log('Suggestions generation result:', suggestionsResponse);
-
-    // Calculate show vs tell ratio
+    // Show vs Tell analysis
     const showTellAnalysis = analyzeShowVsTell(text);
     
     return {
       scores: {
         grammar: grammarResponse[0].score,
-        style: (parseInt(styleResponse[0].label.split(' ')[0]) / 5), // Convert 1-5 scale to 0-1
+        style: (parseInt(styleResponse[0].label.split(' ')[0]) / 5),
         showVsTell: showTellAnalysis.ratio,
       },
       details: {
         showVsTell: showTellAnalysis,
       },
       suggestions: [
-        suggestionsResponse.generated_text,
         ...(grammarResponse[0].score < 0.7 ? ['Consider reviewing the text for grammatical accuracy'] : []),
         ...(showTellAnalysis.ratio < 0.4 ? [
           'Try to show more through descriptive language rather than telling',
@@ -64,7 +51,6 @@ async function analyzeText(text: string, hf: HfInference) {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -110,7 +96,7 @@ serve(async (req) => {
         }
       }), 
       {
-        status: 200, // Return 200 even on error to handle it gracefully in the UI
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
