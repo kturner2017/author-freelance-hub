@@ -225,14 +225,14 @@ const ChaptersEditor = () => {
       <Button 
         size="sm"
         onClick={handleSave}
-        className="bg-white text-[#0F172A] hover:bg-gray-100 transition-colors"
+        className="bg-white text-primary hover:bg-gray-100 transition-colors"
       >
         Save
       </Button>
       <Button 
         size="sm"
         onClick={handleAddChapter}
-        className="bg-white text-[#0F172A] hover:bg-gray-100 transition-colors"
+        className="bg-white text-primary hover:bg-gray-100 transition-colors"
       >
         <Plus className="h-4 w-4 mr-2" />
         Add Chapter
