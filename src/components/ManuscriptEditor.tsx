@@ -103,60 +103,123 @@ const ManuscriptEditor = () => {
   }, [selectedChapter]);
 
   const handleSave = async () => {
-    if (editorView === 'document') {
-      console.log('Saving document content:', documentContent);
+    try {
+      if (editorView === 'document') {
+        console.log('Saving document content:', documentContent);
+        
+        // Save to manuscript_boxes table as a special "document" box
+        const { error: deleteError } = await supabase
+          .from('manuscript_boxes')
+          .delete()
+          .eq('chapter_id', selectedChapter)
+          .eq('box_id', 'document-content');
+
+        if (deleteError) {
+          console.error('Error deleting existing document content:', deleteError);
+          throw deleteError;
+        }
+
+        const { error: insertError } = await supabase
+          .from('manuscript_boxes')
+          .insert({
+            box_id: 'document-content',
+            title: 'Document Content',
+            content: documentContent,
+            act: 'act1', // Default act for document content
+            chapter_id: selectedChapter
+          });
+
+        if (insertError) {
+          console.error('Error saving document content:', insertError);
+          throw insertError;
+        }
+
+        toast({
+          title: "Document saved",
+          description: "Your chapter content has been saved successfully."
+        });
+        return;
+      }
+
+      console.log('Saving boxes:', boxes);
+      
+      const boxesArray = Object.values(boxes).map(box => ({
+        box_id: box.id,
+        title: box.title,
+        content: box.content || '',
+        act: box.act,
+        chapter_id: selectedChapter
+      }));
+
+      const { error: deleteError } = await supabase
+        .from('manuscript_boxes')
+        .delete()
+        .eq('chapter_id', selectedChapter);
+
+      if (deleteError) {
+        console.error('Error deleting existing boxes:', deleteError);
+        toast({
+          title: "Error saving changes",
+          description: deleteError.message,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const { error: insertError } = await supabase
+        .from('manuscript_boxes')
+        .insert(boxesArray);
+
+      if (insertError) {
+        console.error('Error saving boxes:', insertError);
+        toast({
+          title: "Error saving changes",
+          description: insertError.message,
+          variant: "destructive"
+        });
+        return;
+      }
+
       toast({
-        title: "Story saved",
-        description: "Your chapter content has been saved successfully."
+        title: "Changes saved",
+        description: "Your changes have been saved successfully."
       });
-      return;
-    }
-
-    console.log('Saving boxes:', boxes);
-    
-    const boxesArray = Object.values(boxes).map(box => ({
-      box_id: box.id,
-      title: box.title,
-      content: box.content || '',
-      act: box.act,
-      chapter_id: selectedChapter
-    }));
-
-    const { error: deleteError } = await supabase
-      .from('manuscript_boxes')
-      .delete()
-      .eq('chapter_id', selectedChapter);
-
-    if (deleteError) {
-      console.error('Error deleting existing boxes:', deleteError);
+      console.log('Changes saved successfully');
+    } catch (error) {
+      console.error('Error in save operation:', error);
       toast({
         title: "Error saving changes",
-        description: deleteError.message,
+        description: "There was a problem saving your changes. Please try again.",
         variant: "destructive"
       });
-      return;
     }
-
-    const { error: insertError } = await supabase
-      .from('manuscript_boxes')
-      .insert(boxesArray);
-
-    if (insertError) {
-      console.error('Error saving boxes:', insertError);
-      toast({
-        title: "Error saving changes",
-        description: insertError.message,
-        variant: "destructive"
-      });
-      return;
-    }
-
-    toast({
-      title: "Changes saved",
-      description: "Your changes have been saved successfully."
-    });
-    console.log('Changes saved successfully');
   };
+
+  // Load document content when chapter changes
+  useEffect(() => {
+    const loadDocumentContent = async () => {
+      const { data, error } = await supabase
+        .from('manuscript_boxes')
+        .select('content')
+        .eq('chapter_id', selectedChapter)
+        .eq('box_id', 'document-content')
+        .single();
+
+      if (error) {
+        console.error('Error loading document content:', error);
+        return;
+      }
+
+      if (data) {
+        setDocumentContent(data.content || '');
+        console.log('Loaded document content:', data.content);
+      }
+    };
+
+    if (editorView === 'document') {
+      loadDocumentContent();
+    }
+  }, [selectedChapter, editorView]);
 
   const handleAddChapter = () => {
     const newId = (chapters.length + 1).toString();
