@@ -6,6 +6,8 @@ import { Plus } from 'lucide-react';
 import BoxEditor from '../BoxEditor';
 import RichTextEditor from '../RichTextEditor';
 import FileUploader from '../FileUploader';
+import TextAnalysis from '../TextAnalysis';
+import calculateScores from '@/utils/readabilityScores';
 
 interface Box {
   id: string;
@@ -47,6 +49,8 @@ const ManuscriptContent = ({
     return Object.values(boxes).filter(box => box.act === act);
   };
 
+  const readabilityScores = calculateScores(documentContent);
+
   return (
     <ScrollArea className="flex-1 p-6">
       {editorView === 'document' ? (
@@ -59,6 +63,11 @@ const ManuscriptContent = ({
           <RichTextEditor
             content={documentContent}
             onChange={onDocumentContentChange}
+          />
+
+          <TextAnalysis 
+            scores={readabilityScores}
+            content={documentContent}
           />
         </div>
       ) : selectedBox ? (

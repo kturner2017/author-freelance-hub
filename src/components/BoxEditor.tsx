@@ -1,20 +1,13 @@
-import React, { useState } from 'react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
+import React, { useState, useEffect } from 'react';
 import { Card } from './ui/card';
-import { ImagePlus, Plus, X } from 'lucide-react';
-import { useToast } from './ui/use-toast';
+import { Input } from './ui/input';
+import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
+import { Label } from './ui/label';
+import { useToast } from './ui/use-toast';
+import { Save } from 'lucide-react';
 import ReadabilityChart from './ReadabilityChart';
-import TextAnalysis from './TextAnalysis';
 import calculateScores from '@/utils/readabilityScores';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
 
 interface BoxEditorProps {
   title: string;
@@ -23,227 +16,77 @@ interface BoxEditorProps {
   onContentChange: (content: string) => void;
 }
 
-interface AttributeWithExplanation {
-  attribute: string;
-  explanation: string;
-}
-
-const PERSONALITY_ATTRIBUTES = [
-  { emoji: '😊', label: 'Friendly' },
-  { emoji: '🤔', label: 'Analytical' },
-  { emoji: '💪', label: 'Determined' },
-  { emoji: '🎭', label: 'Dramatic' },
-  { emoji: '🦁', label: 'Brave' },
-  { emoji: '🎨', label: 'Creative' },
-  { emoji: '🤝', label: 'Loyal' },
-  { emoji: '🌟', label: 'Charismatic' },
-  { emoji: '🧠', label: 'Intelligent' },
-  { emoji: '🎯', label: 'Focused' },
-  { emoji: '🦋', label: 'Free-spirited' },
-  { emoji: '🎭', label: 'Mysterious' },
-  { emoji: '⚖️', label: 'Just' },
-  { emoji: '🌱', label: 'Nurturing' },
-  { emoji: '🔥', label: 'Passionate' },
-  { emoji: '🎪', label: 'Entertaining' },
-  { emoji: '🎓', label: 'Wise' },
-  { emoji: '🌍', label: 'Worldly' },
-  { emoji: '🎪', label: 'Adventurous' },
-  { emoji: '🎭', label: 'Complex' },
-  { emoji: '🌈', label: 'Optimistic' },
-  { emoji: '🌙', label: 'Introspective' },
-  { emoji: '⚡', label: 'Dynamic' }
-];
-
-const BoxEditor = ({ title, content, onTitleChange, onContentChange }: BoxEditorProps) => {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [selectedAttributes, setSelectedAttributes] = useState<AttributeWithExplanation[]>([]);
-  const { toast } = useToast();
+const BoxEditor = ({ 
+  title, 
+  content, 
+  onTitleChange, 
+  onContentChange 
+}: BoxEditorProps) => {
+  const [localTitle, setLocalTitle] = useState(title);
+  const [localContent, setLocalContent] = useState(content);
   const [readabilityScores, setReadabilityScores] = useState(calculateScores(''));
-  
-  const handleImageUpload = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        if (file.size > 5 * 1024 * 1024) {
-          toast({
-            title: "Error",
-            description: "Image size should be less than 5MB",
-            variant: "destructive"
-          });
-          return;
-        }
+  const { toast } = useToast();
 
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target?.result as string;
-          setSelectedImage(result);
-          console.log('Image loaded:', result.substring(0, 50) + '...');
-        };
-        reader.readAsDataURL(file);
-      }
-    };
+  useEffect(() => {
+    setLocalTitle(title);
+    setLocalContent(content);
+  }, [title, content]);
 
-    input.click();
-  };
-
-  const removeImage = () => {
-    setSelectedImage(null);
-    console.log('Image removed');
-  };
-
-  const handleAddAttribute = () => {
-    console.log('Add attribute clicked');
-  };
-
-  const handleAttributeSelect = (attribute: string) => {
-    if (!selectedAttributes.find(attr => attr.attribute === attribute)) {
-      setSelectedAttributes([...selectedAttributes, { attribute, explanation: '' }]);
-      console.log('Added attribute:', attribute);
-    }
-  };
-
-  const handleRemoveAttribute = (attribute: string) => {
-    setSelectedAttributes(selectedAttributes.filter(attr => attr.attribute !== attribute));
-    console.log('Removed attribute:', attribute);
-  };
-
-  const handleExplanationChange = (attribute: string, explanation: string) => {
-    setSelectedAttributes(selectedAttributes.map(attr => 
-      attr.attribute === attribute ? { ...attr, explanation } : attr
-    ));
-    console.log('Updated explanation for:', attribute);
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalTitle(e.target.value);
+    onTitleChange(e.target.value);
   };
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newContent = e.target.value;
+    setLocalContent(newContent);
     onContentChange(newContent);
     setReadabilityScores(calculateScores(newContent));
-    console.log('Content changed, new readability scores calculated');
+  };
+
+  const handleSave = () => {
+    onTitleChange(localTitle);
+    onContentChange(localContent);
+    toast({
+      title: "Changes saved",
+      description: "Your box has been updated successfully."
+    });
   };
 
   return (
-    <div className="space-y-6">
-      <Input
-        value={title}
-        onChange={(e) => onTitleChange(e.target.value)}
-        className="text-2xl font-bold border-none px-0 focus-visible:ring-0"
-        placeholder="Enter title..."
-      />
-
-      <div className="flex gap-4">
-        <div className="flex-1">
-          <ReadabilityChart scores={readabilityScores} />
-          
-          <div className="relative w-full min-h-[400px] mb-4">
-            <Textarea
-              value={content}
-              onChange={handleContentChange}
-              className="w-full h-full min-h-[400px] text-lg border rounded-lg p-6 resize-vertical leading-relaxed focus-visible:ring-1 focus-visible:ring-primary"
-              placeholder="Begin writing here..."
-              style={{ 
-                fontFamily: "'Georgia', serif",
-                fontSize: '1.2rem',
-                lineHeight: '1.8',
-                minHeight: '400px'
-              }}
+    <div className="space-y-6 max-w-4xl mx-auto">
+      <Card className="p-6">
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="title">Title</Label>
+            <Input
+              id="title"
+              value={localTitle}
+              onChange={handleTitleChange}
+              className="mt-1"
             />
-            <div className="absolute top-2 left-2 text-sm text-gray-400">
-              Story
-            </div>
           </div>
 
-          {/* Add TextAnalysis component here */}
-          <TextAnalysis 
-            scores={readabilityScores}
-            content={content}
-          />
+          <ReadabilityChart scores={readabilityScores} />
 
-          <div className="flex gap-2 mt-4">
-            <Select onValueChange={handleAttributeSelect}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Add attribute" />
-              </SelectTrigger>
-              <SelectContent>
-                {PERSONALITY_ATTRIBUTES.map((attr) => (
-                  <SelectItem key={attr.label} value={attr.label}>
-                    <span className="flex items-center gap-2">
-                      {attr.emoji} {attr.label}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div>
+            <Label htmlFor="content">Content</Label>
+            <Textarea
+              id="content"
+              value={localContent}
+              onChange={handleContentChange}
+              className="mt-1 min-h-[200px]"
+            />
           </div>
 
-          <div className="mt-4 space-y-3">
-            {selectedAttributes.map(({ attribute, explanation }) => {
-              const attr = PERSONALITY_ATTRIBUTES.find(a => a.label === attribute);
-              return (
-                <Card key={attribute} className="p-3">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-2 flex-1">
-                      <span className="text-sm">{attr?.emoji}</span>
-                      <Input 
-                        value={attribute}
-                        readOnly
-                        className="bg-gray-50 w-[150px]"
-                      />
-                      <Input
-                        value={explanation}
-                        onChange={(e) => handleExplanationChange(attribute, e.target.value)}
-                        placeholder="Explain this attribute..."
-                        className="flex-1"
-                      />
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveAttribute(attribute)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="w-64">
-          {selectedImage ? (
-            <div className="relative">
-              <img 
-                src={selectedImage} 
-                alt="Uploaded preview" 
-                className="w-full h-32 object-cover rounded-md"
-              />
-              <Button
-                variant="destructive"
-                size="icon"
-                className="absolute top-2 right-2"
-                onClick={removeImage}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          ) : (
-            <Button 
-              variant="outline" 
-              className="w-full h-32 border-dashed"
-              onClick={handleImageUpload}
-            >
-              <div className="flex flex-col items-center gap-2">
-                <ImagePlus className="h-6 w-6" />
-                <span>Add Image</span>
-              </div>
+          <div className="flex justify-end">
+            <Button onClick={handleSave}>
+              <Save className="w-4 h-4 mr-2" />
+              Save Changes
             </Button>
-          )}
+          </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };
