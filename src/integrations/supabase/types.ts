@@ -36,6 +36,54 @@ export type Database = {
         }
         Relationships: []
       }
+      freelancers: {
+        Row: {
+          bio: string
+          created_at: string | null
+          education: string[] | null
+          experience: string[] | null
+          expertise_areas: Database["public"]["Enums"]["expertise_area"][]
+          full_name: string
+          headline: string
+          hourly_rate: number | null
+          id: string
+          portfolio_links: string[] | null
+          skills: string[]
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          bio: string
+          created_at?: string | null
+          education?: string[] | null
+          experience?: string[] | null
+          expertise_areas?: Database["public"]["Enums"]["expertise_area"][]
+          full_name: string
+          headline: string
+          hourly_rate?: number | null
+          id?: string
+          portfolio_links?: string[] | null
+          skills?: string[]
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          bio?: string
+          created_at?: string | null
+          education?: string[] | null
+          experience?: string[] | null
+          expertise_areas?: Database["public"]["Enums"]["expertise_area"][]
+          full_name?: string
+          headline?: string
+          hourly_rate?: number | null
+          id?: string
+          portfolio_links?: string[] | null
+          skills?: string[]
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       launch_strategies: {
         Row: {
           benefits: string[]
@@ -217,7 +265,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      expertise_area:
+        | "editing"
+        | "cover_design"
+        | "marketing"
+        | "ghostwriting"
+        | "illustration"
+        | "formatting"
+        | "proofreading"
     }
     CompositeTypes: {
       [_ in never]: never
