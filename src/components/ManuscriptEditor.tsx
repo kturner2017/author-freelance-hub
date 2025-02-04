@@ -1,37 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from './ui/button';
-import { Separator } from './ui/separator';
-import { ScrollArea } from './ui/scroll-area';
-import { Card, CardContent } from './ui/card';
-import { Textarea } from './ui/textarea';
-import BoxEditor from './BoxEditor';
-import { useToast } from './ui/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from './ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import {
-  ChevronDown,
-  ChevronRight,
-  Plus,
-  Settings,
-  Copy,
-  Trash2,
-  CheckSquare,
-  LayoutGrid,
-  List,
-  File,
-  Folder,
-  BookOpen,
-  LayoutDashboard,
-  ArrowUp,
-  ArrowDown,
-  Pencil,
-  X,
-  Check,
-  ArrowLeft,
-  Save
-} from 'lucide-react';
-import FileUploader from './FileUploader';
-import RichTextEditor from './RichTextEditor';
+import ManuscriptSidebar from './manuscript/ManuscriptSidebar';
+import ManuscriptToolbar from './manuscript/ManuscriptToolbar';
+import ManuscriptContent from './manuscript/ManuscriptContent';
 
 interface Box {
   id: string;
@@ -84,7 +57,6 @@ const ManuscriptEditor = () => {
   const [documentContent, setDocumentContent] = useState('');
   const { toast } = useToast();
 
-  // Mock book data
   const bookData = {
     title: "Gomer",
     author: "K. TURNER"
@@ -92,7 +64,6 @@ const ManuscriptEditor = () => {
 
   const [boxes, setBoxes] = useState<{ [key: string]: Box }>(INITIAL_BOXES);
 
-  // Load boxes from Supabase when component mounts
   useEffect(() => {
     const loadBoxes = async () => {
       const { data, error } = await supabase
@@ -123,7 +94,6 @@ const ManuscriptEditor = () => {
         setBoxes(boxesMap);
         console.log('Loaded boxes from Supabase:', boxesMap);
       } else {
-        // If no data in Supabase, use initial sample boxes
         setBoxes(INITIAL_BOXES);
         console.log('No boxes in Supabase, using initial sample boxes:', INITIAL_BOXES);
       }
@@ -134,7 +104,6 @@ const ManuscriptEditor = () => {
 
   const handleSave = async () => {
     if (editorView === 'document') {
-      // Save document content logic here
       console.log('Saving document content:', documentContent);
       toast({
         title: "Story saved",
@@ -145,7 +114,6 @@ const ManuscriptEditor = () => {
 
     console.log('Saving boxes:', boxes);
     
-    // Convert boxes object to array for Supabase, including ALL boxes
     const boxesArray = Object.values(boxes).map(box => ({
       box_id: box.id,
       title: box.title,
@@ -154,7 +122,6 @@ const ManuscriptEditor = () => {
       chapter_id: selectedChapter
     }));
 
-    // First, delete existing boxes for this chapter
     const { error: deleteError } = await supabase
       .from('manuscript_boxes')
       .delete()
@@ -170,7 +137,6 @@ const ManuscriptEditor = () => {
       return;
     }
 
-    // Then insert new boxes
     const { error: insertError } = await supabase
       .from('manuscript_boxes')
       .insert(boxesArray);
@@ -190,19 +156,6 @@ const ManuscriptEditor = () => {
       description: "Your changes have been saved successfully."
     });
     console.log('Changes saved successfully');
-  };
-
-  const handleBack = () => {
-    navigate(-1);
-    console.log('Navigating back');
-  };
-
-  const handleAddAct = () => {
-    console.log('Adding new act');
-    toast({
-      title: "Adding new act",
-      description: "This feature is not yet implemented."
-    });
   };
 
   const handleAddChapter = () => {
@@ -261,43 +214,6 @@ const ManuscriptEditor = () => {
     });
   };
 
-  const startEditingChapter = (chapter: Chapter) => {
-    setEditingChapterId(chapter.id);
-    setEditingChapterTitle(chapter.title);
-  };
-
-  const saveChapterEdit = () => {
-    if (!editingChapterId) return;
-    
-    const updatedChapters = chapters.map(chapter =>
-      chapter.id === editingChapterId
-        ? { ...chapter, title: editingChapterTitle }
-        : chapter
-    );
-    
-    setChapters(updatedChapters);
-    setEditingChapterId(null);
-    toast({
-      title: "Chapter renamed",
-      description: "Chapter name has been updated."
-    });
-  };
-
-  const cancelChapterEdit = () => {
-    setEditingChapterId(null);
-    setEditingChapterTitle('');
-  };
-
-  const toggleSection = (section: 'act1' | 'act2' | 'act3') => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
-    setSelectedAct(section);
-    setSelectedBox(null);
-    console.log('Selected act:', section);
-  };
-
   const handleAddBox = () => {
     const newBoxId = `box-${Object.keys(boxes).length + 1}`;
     const newBox: Box = {
@@ -320,374 +236,103 @@ const ManuscriptEditor = () => {
     console.log('Added new box:', newBox);
   };
 
-  const handleBoxClick = (box: Box) => {
-    console.log('Box clicked:', box);
-    setSelectedBox(box);
-  };
-
-  const handleBoxTitleChange = (title: string) => {
-    if (selectedBox) {
-      const updatedBox = { ...selectedBox, title };
-      setSelectedBox(updatedBox);
-      setBoxes(prevBoxes => ({
-        ...prevBoxes,
-        [selectedBox.id]: updatedBox
-      }));
-      console.log('Updated box title:', title);
-    }
-  };
-
-  const handleBoxContentChange = (content: string) => {
-    if (selectedBox) {
-      const updatedBox = { ...selectedBox, content };
-      setSelectedBox(updatedBox);
-      setBoxes(prevBoxes => ({
-        ...prevBoxes,
-        [selectedBox.id]: updatedBox
-      }));
-      console.log('Updated box content:', content);
-    }
-  };
-
-  const getBoxesForAct = (act: 'act1' | 'act2' | 'act3') => {
-    return Object.values(boxes).filter(box => box.act === act);
-  };
-
   return (
     <div className="flex h-screen bg-white">
-      {/* Left Sidebar */}
-      <div className="w-64 bg-[#2c3643] text-white flex flex-col">
-        <div className="p-4 border-b border-gray-700">
-          <h2 className="text-lg font-semibold text-white">{bookData.title}</h2>
-          <p className="text-sm text-gray-400">by {bookData.author}</p>
-        </div>
-        <ScrollArea className="flex-1">
-          <div className="p-2">
-            <div className="space-y-1">
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start text-gray-300 hover:bg-gray-700 active:bg-gray-600 transition-colors duration-200 py-1 h-auto"
-              >
-                <div className="flex items-center">
-                  <ChevronRight className="h-4 w-4 mr-2" />
-                  Get Started
-                </div>
-              </Button>
+      <ManuscriptSidebar
+        bookData={bookData}
+        chapters={chapters}
+        selectedChapter={selectedChapter}
+        expandedSections={expandedSections}
+        editingChapterId={editingChapterId}
+        editingChapterTitle={editingChapterTitle}
+        boxes={boxes}
+        onChapterSelect={setSelectedChapter}
+        onChapterAdd={handleAddChapter}
+        onChapterDelete={handleDeleteChapter}
+        onChapterMove={handleMoveChapter}
+        onChapterEditStart={(chapter) => {
+          setEditingChapterId(chapter.id);
+          setEditingChapterTitle(chapter.title);
+        }}
+        onChapterEditSave={() => {
+          if (!editingChapterId) return;
+          setChapters(chapters.map(chapter =>
+            chapter.id === editingChapterId
+              ? { ...chapter, title: editingChapterTitle }
+              : chapter
+          ));
+          setEditingChapterId(null);
+          toast({
+            title: "Chapter renamed",
+            description: "Chapter name has been updated."
+          });
+        }}
+        onChapterEditCancel={() => {
+          setEditingChapterId(null);
+          setEditingChapterTitle('');
+        }}
+        onChapterTitleChange={setEditingChapterTitle}
+        onSectionToggle={(section) => {
+          setExpandedSections(prev => ({
+            ...prev,
+            [section]: !prev[section]
+          }));
+          setSelectedAct(section);
+          setSelectedBox(null);
+        }}
+        onBoxSelect={setSelectedBox}
+      />
 
-              {chapters.map((chapter, index) => (
-                <div key={chapter.id} className="flex items-center group">
-                  {editingChapterId === chapter.id ? (
-                    <div className="flex items-center w-full gap-1 pr-2">
-                      <input
-                        type="text"
-                        value={editingChapterTitle}
-                        onChange={(e) => setEditingChapterTitle(e.target.value)}
-                        className="flex-1 bg-gray-700 text-white px-2 py-1 rounded"
-                        autoFocus
-                      />
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={saveChapterEdit}
-                      >
-                        <Check className="h-4 w-4 text-green-500" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={cancelChapterEdit}
-                      >
-                        <X className="h-4 w-4 text-red-500" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <>
-                      <Button 
-                        variant="ghost" 
-                        className={`flex-1 justify-start text-gray-300 hover:bg-gray-700 active:bg-gray-600 transition-colors duration-200 py-1 h-auto ${
-                          selectedChapter === chapter.id ? 'bg-gray-700' : ''
-                        }`}
-                        onClick={() => setSelectedChapter(chapter.id)}
-                      >
-                        <div className="flex items-center">
-                          <File className="h-4 w-4 mr-2" />
-                          {chapter.title}
-                        </div>
-                      </Button>
-                      <div className="hidden group-hover:flex items-center gap-1 pr-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 active:scale-95 transition-transform duration-200"
-                          onClick={() => startEditingChapter(chapter)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 active:scale-95 transition-transform duration-200"
-                          onClick={() => handleMoveChapter(chapter.id, 'up')}
-                          disabled={index === 0}
-                        >
-                          <ArrowUp className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 active:scale-95 transition-transform duration-200"
-                          onClick={() => handleMoveChapter(chapter.id, 'down')}
-                          disabled={index === chapters.length - 1}
-                        >
-                          <ArrowDown className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 active:scale-95 transition-transform duration-200"
-                          onClick={() => handleDeleteChapter(chapter.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ))}
-
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start text-gray-300 hover:bg-gray-700 active:bg-gray-600 transition-colors duration-200 py-1 h-auto"
-                onClick={handleAddChapter}
-              >
-                <div className="flex items-center">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Chapter
-                </div>
-              </Button>
-
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start text-gray-300 hover:bg-gray-700 active:bg-gray-600 transition-colors duration-200 py-1 h-auto"
-                onClick={() => toggleSection('act1')}
-              >
-                <div className="flex items-center">
-                  {expandedSections.act1 ? (
-                    <ChevronDown className="h-4 w-4 mr-2" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 mr-2" />
-                  )}
-                  <Folder className="h-4 w-4 mr-2" />
-                  Act I
-                </div>
-              </Button>
-              {expandedSections.act1 && (
-                <div className="ml-4 space-y-1">
-                  {getBoxesForAct('act1').map(box => (
-                    <Button 
-                      key={box.id}
-                      variant="ghost" 
-                      className="w-full justify-start text-sm text-gray-400 hover:bg-gray-700 py-1 h-auto"
-                      onClick={() => handleBoxClick(box)}
-                    >
-                      <File className="h-4 w-4 mr-2" />
-                      {box.title}
-                    </Button>
-                  ))}
-                </div>
-              )}
-
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start text-gray-300 hover:bg-gray-700 active:bg-gray-600 transition-colors duration-200 py-1 h-auto"
-                onClick={() => toggleSection('act2')}
-              >
-                <div className="flex items-center">
-                  {expandedSections.act2 ? (
-                    <ChevronDown className="h-4 w-4 mr-2" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 mr-2" />
-                  )}
-                  <Folder className="h-4 w-4 mr-2" />
-                  Act II
-                </div>
-              </Button>
-              {expandedSections.act2 && (
-                <div className="ml-4 space-y-1">
-                  {getBoxesForAct('act2').map(box => (
-                    <Button 
-                      key={box.id}
-                      variant="ghost" 
-                      className="w-full justify-start text-sm text-gray-400 hover:bg-gray-700 py-1 h-auto"
-                      onClick={() => handleBoxClick(box)}
-                    >
-                      <File className="h-4 w-4 mr-2" />
-                      {box.title}
-                    </Button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </ScrollArea>
-      </div>
-
-      {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Top Bar */}
-        <div className="h-14 border-b flex items-center px-4 justify-between bg-white">
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={handleBack}
-              className="hover:bg-gray-100 active:bg-gray-200 transition-colors duration-200"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h2 className="text-xl font-semibold">{selectedChapter}</h2>
-              <p className="text-sm text-gray-500">{bookData.title}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="default"
-              onClick={handleSave}
-              className="bg-primary hover:bg-primary-600 active:scale-95 transition-all duration-200 flex items-center gap-2"
-            >
-              <Save className="h-4 w-4" />
-              Save
-            </Button>
-            <div className="flex items-center border rounded-lg p-1 mr-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`flex items-center gap-2 ${editorView === 'boxes' ? 'bg-gray-100' : ''}`}
-                onClick={() => setEditorView('boxes')}
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                <span>Boxes</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`flex items-center gap-2 ${editorView === 'document' ? 'bg-gray-100' : ''}`}
-                onClick={() => setEditorView('document')}
-              >
-                <BookOpen className="h-4 w-4" />
-                <span>Document</span>
-              </Button>
-            </div>
-            <Button 
-              variant="default"
-              onClick={handleAddAct}
-              className="bg-primary hover:bg-primary-600"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Act
-            </Button>
-            <Button variant="ghost" size="icon">
-              <Copy className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon">
-              <Trash2 className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon">
-              <CheckSquare className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon">
-              <Settings className="h-5 w-5" />
-            </Button>
-            <Separator orientation="vertical" className="h-6" />
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => setViewMode('grid')}
-              className={viewMode === 'grid' ? 'bg-gray-100' : ''}
-            >
-              <LayoutGrid className="h-5 w-5" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => setViewMode('list')}
-              className={viewMode === 'list' ? 'bg-gray-100' : ''}
-            >
-              <List className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
+        <ManuscriptToolbar
+          bookData={bookData}
+          selectedChapter={selectedChapter}
+          editorView={editorView}
+          viewMode={viewMode}
+          onBack={() => navigate(-1)}
+          onSave={handleSave}
+          onViewChange={setEditorView}
+          onViewModeChange={setViewMode}
+          onAddAct={() => {
+            toast({
+              title: "Adding new act",
+              description: "This feature is not yet implemented."
+            });
+          }}
+        />
 
-        {/* Content Area */}
-        <ScrollArea className="flex-1 p-6">
-          {editorView === 'document' ? (
-            <div className="max-w-4xl mx-auto">
-              <div className="mb-6">
-                <h1 className="text-3xl font-serif mb-2">Chapter {selectedChapter}</h1>
-                <p className="text-gray-500">Write your story below</p>
-              </div>
-              
-              <RichTextEditor
-                content={documentContent}
-                onChange={(content) => {
-                  setDocumentContent(content);
-                  console.log('Document content updated');
-                }}
-              />
-            </div>
-          ) : selectedBox ? (
-            <BoxEditor
-              title={selectedBox.title}
-              content={selectedBox.content}
-              onTitleChange={handleBoxTitleChange}
-              onContentChange={handleBoxContentChange}
-            />
-          ) : (
-            <div className="space-y-8">
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-semibold">
-                    {selectedAct === 'act1' ? 'Act I' : selectedAct === 'act2' ? 'Act II' : 'Act III'}
-                  </h3>
-                  <Button 
-                    size="sm"
-                    onClick={handleAddBox}
-                    className="bg-primary hover:bg-primary-600"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Box
-                  </Button>
-                </div>
-                
-                {/* File Uploader */}
-                <div className="mb-6">
-                  <FileUploader 
-                    act={selectedAct} 
-                    chapterId={selectedChapter}
-                  />
-                </div>
-
-                <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'}>
-                  {getBoxesForAct(selectedAct).map((box) => (
-                    <Card 
-                      key={box.id}
-                      className="hover:shadow-lg transition-shadow cursor-pointer"
-                      onClick={() => handleBoxClick(box)}
-                    >
-                      <CardContent className="p-4">
-                        <h4 className="font-semibold mb-2">{box.title}</h4>
-                        <p className="text-sm text-gray-600">{box.content}</p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-        </ScrollArea>
+        <ManuscriptContent
+          editorView={editorView}
+          viewMode={viewMode}
+          selectedBox={selectedBox}
+          selectedAct={selectedAct}
+          selectedChapter={selectedChapter}
+          documentContent={documentContent}
+          boxes={boxes}
+          onBoxClick={setSelectedBox}
+          onBoxTitleChange={(title) => {
+            if (selectedBox) {
+              const updatedBox = { ...selectedBox, title };
+              setSelectedBox(updatedBox);
+              setBoxes(prevBoxes => ({
+                ...prevBoxes,
+                [selectedBox.id]: updatedBox
+              }));
+            }
+          }}
+          onBoxContentChange={(content) => {
+            if (selectedBox) {
+              const updatedBox = { ...selectedBox, content };
+              setSelectedBox(updatedBox);
+              setBoxes(prevBoxes => ({
+                ...prevBoxes,
+                [selectedBox.id]: updatedBox
+              }));
+            }
+          }}
+          onDocumentContentChange={setDocumentContent}
+          onAddBox={handleAddBox}
+        />
       </div>
     </div>
   );

@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      book_parts: {
+        Row: {
+          created_at: string | null
+          id: string
+          sort_order: number
+          title: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          sort_order: number
+          title: string
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          sort_order?: number
+          title?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       manuscript_boxes: {
         Row: {
           act: string
@@ -17,6 +44,7 @@ export type Database = {
           content: string | null
           created_at: string | null
           id: string
+          part_id: string | null
           title: string
           updated_at: string | null
         }
@@ -27,6 +55,7 @@ export type Database = {
           content?: string | null
           created_at?: string | null
           id?: string
+          part_id?: string | null
           title: string
           updated_at?: string | null
         }
@@ -37,10 +66,19 @@ export type Database = {
           content?: string | null
           created_at?: string | null
           id?: string
+          part_id?: string | null
           title?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "manuscript_boxes_part_id_fkey"
+            columns: ["part_id"]
+            isOneToOne: false
+            referencedRelation: "book_parts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       manuscript_files: {
         Row: {
@@ -72,6 +110,33 @@ export type Database = {
           filename?: string
           id?: string
           size?: number | null
+        }
+        Relationships: []
+      }
+      matter_templates: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          id: string
+          title: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          title: string
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          title?: string
+          type?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
