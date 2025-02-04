@@ -84,12 +84,14 @@ const ManuscriptEditor = () => {
       if (data && data.length > 0) {
         const boxesMap: { [key: string]: Box } = {};
         data.forEach(box => {
-          boxesMap[box.box_id] = {
-            id: box.box_id,
-            title: box.title,
-            content: box.content || '',
-            act: box.act as 'act1' | 'act2' | 'act3'
-          };
+          if (box.box_id !== 'document-content') { // Skip document content when loading boxes
+            boxesMap[box.box_id] = {
+              id: box.box_id,
+              title: box.title,
+              content: box.content || '',
+              act: box.act as 'act1' | 'act2' | 'act3'
+            };
+          }
         });
         setBoxes(boxesMap);
         console.log('Loaded boxes from Supabase:', boxesMap);
@@ -107,31 +109,48 @@ const ManuscriptEditor = () => {
       if (editorView === 'document') {
         console.log('Saving document content:', documentContent);
         
-        // Save to manuscript_boxes table as a special "document" box
-        const { error: deleteError } = await supabase
+        // First try to update existing document content
+        const { data: existingDoc, error: fetchError } = await supabase
           .from('manuscript_boxes')
-          .delete()
+          .select('*')
           .eq('chapter_id', selectedChapter)
-          .eq('box_id', 'document-content');
+          .eq('box_id', 'document-content')
+          .maybeSingle();
 
-        if (deleteError) {
-          console.error('Error deleting existing document content:', deleteError);
-          throw deleteError;
+        if (fetchError) {
+          console.error('Error checking for existing document:', fetchError);
+          throw fetchError;
         }
 
-        const { error: insertError } = await supabase
-          .from('manuscript_boxes')
-          .insert({
-            box_id: 'document-content',
-            title: 'Document Content',
-            content: documentContent,
-            act: 'act1', // Default act for document content
-            chapter_id: selectedChapter
-          });
+        let saveError;
+        if (existingDoc) {
+          // Update existing document
+          const { error } = await supabase
+            .from('manuscript_boxes')
+            .update({
+              content: documentContent,
+              updated_at: new Date().toISOString()
+            })
+            .eq('chapter_id', selectedChapter)
+            .eq('box_id', 'document-content');
+          saveError = error;
+        } else {
+          // Insert new document
+          const { error } = await supabase
+            .from('manuscript_boxes')
+            .insert({
+              box_id: 'document-content',
+              title: 'Document Content',
+              content: documentContent,
+              act: 'act1',
+              chapter_id: selectedChapter
+            });
+          saveError = error;
+        }
 
-        if (insertError) {
-          console.error('Error saving document content:', insertError);
-          throw insertError;
+        if (saveError) {
+          console.error('Error saving document content:', saveError);
+          throw saveError;
         }
 
         toast({
@@ -203,16 +222,24 @@ const ManuscriptEditor = () => {
         .select('content')
         .eq('chapter_id', selectedChapter)
         .eq('box_id', 'document-content')
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error loading document content:', error);
+        toast({
+          title: "Error loading document",
+          description: "There was a problem loading your document. Please try again.",
+          variant: "destructive"
+        });
         return;
       }
 
       if (data) {
         setDocumentContent(data.content || '');
         console.log('Loaded document content:', data.content);
+      } else {
+        setDocumentContent('');
+        console.log('No existing document content found for this chapter');
       }
     };
 
