@@ -5,6 +5,7 @@ import { Card } from './ui/card';
 import { ImagePlus, Plus, X } from 'lucide-react';
 import { useToast } from './ui/use-toast';
 import { Textarea } from './ui/textarea';
+import ReadabilityChart from './ReadabilityChart';
 import TextAnalysis from './TextAnalysis';
 import calculateScores from '@/utils/readabilityScores';
 import {
@@ -135,6 +136,8 @@ const BoxEditor = ({ title, content, onTitleChange, onContentChange }: BoxEditor
 
       <div className="flex gap-4">
         <div className="flex-1">
+          <ReadabilityChart scores={readabilityScores} />
+          
           <div className="relative w-full min-h-[400px] mb-4">
             <Textarea
               value={content}
