@@ -6,6 +6,7 @@ import BooksDashboard from './components/BooksDashboard';
 import ManuscriptEditor from './components/ManuscriptEditor';
 import PublishingSupport from './pages/PublishingSupport';
 import ProfessionalNetwork from './pages/ProfessionalNetwork';
+import PostProject from './pages/PostProject';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/editor/manuscript" element={<ManuscriptEditor />} />
         <Route path="/publishing-support" element={<PublishingSupport />} />
         <Route path="/professional-network" element={<ProfessionalNetwork />} />
+        <Route path="/professional-network/post-project" element={<PostProject />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
