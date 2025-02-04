@@ -56,6 +56,8 @@ const ManuscriptEditor = () => {
   useEffect(() => {
     const loadDocumentContent = async () => {
       console.log('Loading document content for chapter:', selectedChapter);
+      setDocumentContent(''); // Clear content while loading
+      
       const { data, error } = await supabase
         .from('manuscript_boxes')
         .select('content')
@@ -83,14 +85,18 @@ const ManuscriptEditor = () => {
     };
 
     loadDocumentContent();
-  }, [selectedChapter]);
+  }, [selectedChapter, toast]);
 
+  // Load boxes when chapter changes
   useEffect(() => {
     const loadBoxes = async () => {
+      setBoxes(INITIAL_BOXES); // Clear boxes while loading
+      
       const { data, error } = await supabase
         .from('manuscript_boxes')
         .select('*')
-        .eq('chapter_id', selectedChapter);
+        .eq('chapter_id', selectedChapter)
+        .neq('box_id', 'document-content');
 
       if (error) {
         console.error('Error loading boxes:', error);
@@ -105,14 +111,12 @@ const ManuscriptEditor = () => {
       if (data && data.length > 0) {
         const boxesMap: { [key: string]: Box } = {};
         data.forEach(box => {
-          if (box.box_id !== 'document-content') { // Skip document content when loading boxes
-            boxesMap[box.box_id] = {
-              id: box.box_id,
-              title: box.title,
-              content: box.content || '',
-              act: box.act as 'act1' | 'act2' | 'act3'
-            };
-          }
+          boxesMap[box.box_id] = {
+            id: box.box_id,
+            title: box.title,
+            content: box.content || '',
+            act: box.act as 'act1' | 'act2' | 'act3'
+          };
         });
         setBoxes(boxesMap);
         console.log('Loaded boxes from Supabase:', boxesMap);
@@ -123,7 +127,7 @@ const ManuscriptEditor = () => {
     };
 
     loadBoxes();
-  }, [selectedChapter]);
+  }, [selectedChapter, toast]);
 
   const handleSave = async () => {
     try {
@@ -368,7 +372,8 @@ const ManuscriptEditor = () => {
         boxes={boxes}
         onChapterSelect={(chapterId) => {
           setSelectedChapter(chapterId);
-          setEditorView('document'); // Switch to document view when selecting a chapter
+          setSelectedBox(null);
+          setEditorView('document');
         }}
         onChapterAdd={handleAddChapter}
         onChapterDelete={handleDeleteChapter}
