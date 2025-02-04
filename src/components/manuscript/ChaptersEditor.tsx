@@ -8,6 +8,7 @@ import { ChevronLeft, Plus, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '../ui/card';
 import { Database } from '@/integrations/supabase/types';
+import RichTextEditor from '../RichTextEditor';
 
 type ManuscriptChapter = Database['public']['Tables']['manuscript_chapters']['Row'];
 
@@ -60,8 +61,15 @@ const ChaptersEditor = () => {
           };
         });
         setChapters(chaptersMap);
+        // Select the first chapter by default
+        const firstChapter = Object.values(chaptersMap)[0];
+        if (firstChapter) {
+          setSelectedChapter(firstChapter);
+        }
       } else {
         setChapters(INITIAL_CHAPTERS);
+        // Select the initial chapter by default
+        setSelectedChapter(INITIAL_CHAPTERS['chapter-1']);
       }
     };
 
@@ -166,6 +174,26 @@ const ChaptersEditor = () => {
     });
   };
 
+  const handleChapterSelect = (chapter: Chapter) => {
+    console.log('Selecting chapter:', chapter);
+    setSelectedChapter(chapter);
+  };
+
+  const handleContentChange = async (content: string) => {
+    if (!selectedChapter) return;
+    
+    const updatedChapter = {
+      ...selectedChapter,
+      content: content
+    };
+    
+    setSelectedChapter(updatedChapter);
+    setChapters(prev => ({
+      ...prev,
+      [updatedChapter.chapter_id]: updatedChapter
+    }));
+  };
+
   return (
     <div className="h-screen flex flex-col">
       <div className="h-16 border-b flex items-center px-4 justify-between bg-[#0F172A] text-white">
@@ -218,29 +246,47 @@ const ChaptersEditor = () => {
         </div>
       </div>
 
-      <ScrollArea className="flex-1 p-6">
-        <div className="space-y-8">
-          <div>
-            <h3 className="text-xl font-semibold">Chapters</h3>
-            <div className="space-y-4">
+      <div className="flex-1 flex">
+        {/* Chapters List */}
+        <div className="w-64 border-r bg-gray-50">
+          <ScrollArea className="h-full">
+            <div className="p-4 space-y-2">
               {Object.values(chapters).map((chapter) => (
                 <Card 
                   key={chapter.id}
-                  className="hover:shadow-lg transition-shadow cursor-pointer"
-                  onClick={() => setSelectedChapter(chapter)}
+                  className={`hover:shadow-lg transition-shadow cursor-pointer ${
+                    selectedChapter?.id === chapter.id ? 'border-blue-500 shadow-md' : ''
+                  }`}
+                  onClick={() => handleChapterSelect(chapter)}
                 >
                   <CardContent className="p-4">
-                    <h4 className="font-semibold mb-2">{chapter.title}</h4>
-                    <p className="text-sm text-gray-600 line-clamp-3">
-                      {chapter.content}
-                    </p>
+                    <h4 className="font-semibold">{chapter.title}</h4>
                   </CardContent>
                 </Card>
               ))}
             </div>
-          </div>
+          </ScrollArea>
         </div>
-      </ScrollArea>
+
+        {/* Chapter Content */}
+        <div className="flex-1">
+          <ScrollArea className="h-full">
+            {selectedChapter ? (
+              <div className="p-6 max-w-4xl mx-auto">
+                <h1 className="text-3xl font-serif mb-6">{selectedChapter.title}</h1>
+                <RichTextEditor
+                  content={selectedChapter.content}
+                  onChange={handleContentChange}
+                />
+              </div>
+            ) : (
+              <div className="p-6 text-center text-gray-500">
+                Select a chapter to start editing
+              </div>
+            )}
+          </ScrollArea>
+        </div>
+      </div>
     </div>
   );
 };
