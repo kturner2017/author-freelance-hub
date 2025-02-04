@@ -61,7 +61,7 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing }: TextAnalysis
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 mt-8">
       <Card>
         <CardHeader>
           <CardTitle>Writing Analysis</CardTitle>
@@ -93,18 +93,8 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing }: TextAnalysis
             {aiAnalysis && !isAnalyzing && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="font-semibold mb-4">AI Analysis Scores</h3>
+                  <h3 className="font-semibold mb-4">Show vs Tell Analysis</h3>
                   <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Grammar Quality</span>
-                        <span>{Math.round(aiAnalysis.scores.grammar * 100)}%</span>
-                      </div>
-                      <Progress value={aiAnalysis.scores.grammar * 100} className="h-2" />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Measures the grammatical correctness and clarity
-                      </p>
-                    </div>
                     <div>
                       <div className="flex justify-between text-sm mb-1">
                         <span>Show vs Tell Ratio</span>
@@ -115,22 +105,12 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing }: TextAnalysis
                         Balance between descriptive and narrative writing
                       </p>
                     </div>
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Writing Style</span>
-                        <span>{Math.round(aiAnalysis.scores.style * 100)}%</span>
-                      </div>
-                      <Progress value={aiAnalysis.scores.style * 100} className="h-2" />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Evaluates sentence variety and writing techniques
-                      </p>
-                    </div>
                   </div>
                 </div>
 
                 {aiAnalysis.details?.showVsTell && (
                   <div>
-                    <h3 className="font-semibold mb-4">Show vs Tell Analysis</h3>
+                    <h3 className="font-semibold mb-4">Show vs Tell Details</h3>
                     <div className="space-y-4">
                       {aiAnalysis.details.showVsTell.tellingSentences.length > 0 && (
                         <div className="bg-yellow-50 rounded-lg p-4">
@@ -155,6 +135,32 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing }: TextAnalysis
                     </div>
                   </div>
                 )}
+
+                <div>
+                  <h3 className="font-semibold mb-4">AI Analysis Scores</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Grammar Quality</span>
+                        <span>{Math.round(aiAnalysis.scores.grammar * 100)}%</span>
+                      </div>
+                      <Progress value={aiAnalysis.scores.grammar * 100} className="h-2" />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Measures the grammatical correctness and clarity
+                      </p>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Writing Style</span>
+                        <span>{Math.round(aiAnalysis.scores.style * 100)}%</span>
+                      </div>
+                      <Progress value={aiAnalysis.scores.style * 100} className="h-2" />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Evaluates sentence variety and writing techniques
+                      </p>
+                    </div>
+                  </div>
+                </div>
 
                 {aiAnalysis.suggestions && aiAnalysis.suggestions.length > 0 && (
                   <div>
