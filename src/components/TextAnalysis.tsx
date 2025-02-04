@@ -1,63 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Progress } from './ui/progress';
 import { Loader2 } from 'lucide-react';
-import { Button } from './ui/button';
-import type { ReadabilityScores } from '@/utils/readabilityScores';
-import { supabase } from '@/integrations/supabase/client';
 
 interface TextAnalysisProps {
   scores: ReadabilityScores;
   content: string;
+  aiAnalysis: any;
+  isAnalyzing: boolean;
 }
 
-interface AIAnalysis {
-  suggestions: string[];
-  scores: {
-    grammar: number;
-    style: number;
-    showVsTell: number;
-    structure: number;
-    sentiment: number;
-  };
-  details?: {
-    showVsTell?: {
-      showingSentences: string[];
-      tellingSentences: string[];
-      ratio: number;
-    };
-  };
-}
-
-const TextAnalysis = ({ scores, content }: TextAnalysisProps) => {
-  const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const analyzeText = async () => {
-    if (!content || content.length < 50) {
-      setError('Text must be at least 50 characters long for analysis');
-      return;
-    }
-    
-    setIsAnalyzing(true);
-    setError(null);
-    try {
-      const { data, error } = await supabase.functions.invoke('analyze-text', {
-        body: { text: content }
-      });
-
-      if (error) throw error;
-      console.log('AI Analysis results:', data);
-      setAiAnalysis(data);
-    } catch (error) {
-      console.error('Error during AI analysis:', error);
-      setError('Failed to analyze text. Please try again later.');
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
+const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing }: TextAnalysisProps) => {
   const getReadabilityFeedback = () => {
     const suggestions = [];
     
@@ -106,28 +59,16 @@ const TextAnalysis = ({ scores, content }: TextAnalysisProps) => {
   };
 
   return (
-    <div className="space-y-4 mt-4">
+    <div className="space-y-4">
       <Card>
         <CardHeader>
           <CardTitle>Writing Analysis</CardTitle>
           <CardDescription>
-            AI-powered suggestions to improve your writing
+            Real-time AI-powered suggestions to improve your writing
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            {!aiAnalysis && !isAnalyzing && (
-              <div className="flex justify-center">
-                <Button 
-                  onClick={analyzeText}
-                  className="bg-primary hover:bg-primary/90"
-                  disabled={!content || content.length < 50}
-                >
-                  Analyze Text
-                </Button>
-              </div>
-            )}
-            
             {isAnalyzing && (
               <div className="flex items-center justify-center p-4">
                 <Loader2 className="w-6 h-6 animate-spin mr-2" />
@@ -183,7 +124,7 @@ const TextAnalysis = ({ scores, content }: TextAnalysisProps) => {
                         <div className="bg-yellow-50 rounded-lg p-4">
                           <p className="font-medium text-sm mb-2">Telling Sentences:</p>
                           <ul className="list-disc pl-5 space-y-1">
-                            {aiAnalysis.details.showVsTell.tellingSentences.map((sentence, idx) => (
+                            {aiAnalysis.details.showVsTell.tellingSentences.map((sentence: string, idx: number) => (
                               <li key={idx} className="text-sm text-gray-600">{sentence}</li>
                             ))}
                           </ul>
@@ -193,7 +134,7 @@ const TextAnalysis = ({ scores, content }: TextAnalysisProps) => {
                         <div className="bg-green-50 rounded-lg p-4">
                           <p className="font-medium text-sm mb-2">Strong Descriptive Sentences:</p>
                           <ul className="list-disc pl-5 space-y-1">
-                            {aiAnalysis.details.showVsTell.showingSentences.map((sentence, idx) => (
+                            {aiAnalysis.details.showVsTell.showingSentences.map((sentence: string, idx: number) => (
                               <li key={idx} className="text-sm text-gray-600">{sentence}</li>
                             ))}
                           </ul>
@@ -203,40 +144,40 @@ const TextAnalysis = ({ scores, content }: TextAnalysisProps) => {
                   </div>
                 )}
 
-                <div>
-                  <h3 className="font-semibold mb-4">Writing Suggestions</h3>
-                  <ul className="space-y-4">
-                    {aiAnalysis.suggestions.map((suggestion, index) => (
-                      <li key={index} className="bg-gray-50 rounded-lg p-4">
-                        <p className="text-sm text-gray-800">{suggestion}</p>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                {aiAnalysis.suggestions && aiAnalysis.suggestions.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold mb-4">Writing Suggestions</h3>
+                    <ul className="space-y-4">
+                      {aiAnalysis.suggestions.map((suggestion: string, index: number) => (
+                        <li key={index} className="bg-gray-50 rounded-lg p-4">
+                          <p className="text-sm text-gray-800">{suggestion}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             )}
 
-            {!isAnalyzing && (
-              <div>
-                <h3 className="font-semibold mb-4">Readability Analysis</h3>
-                <div className="space-y-6">
-                  {getReadabilityFeedback().map((feedback, index) => (
-                    <div key={index} className="bg-gray-50 rounded-lg p-4">
-                      <p className="text-sm text-gray-800 font-medium mb-2">
-                        {feedback.message}
-                      </p>
-                      <ul className="list-disc pl-5 space-y-1">
-                        {feedback.details.map((detail, detailIndex) => (
-                          <li key={detailIndex} className="text-sm text-gray-600">
-                            {detail}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
+            <div>
+              <h3 className="font-semibold mb-4">Readability Analysis</h3>
+              <div className="space-y-6">
+                {getReadabilityFeedback().map((feedback, index) => (
+                  <div key={index} className="bg-gray-50 rounded-lg p-4">
+                    <p className="text-sm text-gray-800 font-medium mb-2">
+                      {feedback.message}
+                    </p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      {feedback.details.map((detail, detailIndex) => (
+                        <li key={detailIndex} className="text-sm text-gray-600">
+                          {detail}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
           </div>
         </CardContent>
       </Card>
