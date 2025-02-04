@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Progress } from './ui/progress';
 import { Loader2 } from 'lucide-react';
+import { Button } from './ui/button';
 import type { ReadabilityScores } from '@/utils/readabilityScores';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -25,30 +26,29 @@ const TextAnalysis = ({ scores, content }: TextAnalysisProps) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const analyzeText = async () => {
-      if (!content || content.length < 50) return;
-      
-      setIsAnalyzing(true);
-      setError(null);
-      try {
-        const { data, error } = await supabase.functions.invoke('analyze-text', {
-          body: { text: content }
-        });
+  const analyzeText = async () => {
+    if (!content || content.length < 50) {
+      setError('Text must be at least 50 characters long for analysis');
+      return;
+    }
+    
+    setIsAnalyzing(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-text', {
+        body: { text: content }
+      });
 
-        if (error) throw error;
-        console.log('AI Analysis results:', data);
-        setAiAnalysis(data);
-      } catch (error) {
-        console.error('Error during AI analysis:', error);
-        setError('Failed to analyze text. Please try again later.');
-      } finally {
-        setIsAnalyzing(false);
-      }
-    };
-
-    analyzeText();
-  }, [content]);
+      if (error) throw error;
+      console.log('AI Analysis results:', data);
+      setAiAnalysis(data);
+    } catch (error) {
+      console.error('Error during AI analysis:', error);
+      setError('Failed to analyze text. Please try again later.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   const getReadabilityFeedback = () => {
     const suggestions = [];
@@ -131,6 +131,18 @@ const TextAnalysis = ({ scores, content }: TextAnalysisProps) => {
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
+            {!aiAnalysis && !isAnalyzing && (
+              <div className="flex justify-center">
+                <Button 
+                  onClick={analyzeText}
+                  className="bg-primary hover:bg-primary/90"
+                  disabled={!content || content.length < 50}
+                >
+                  Analyze Text
+                </Button>
+              </div>
+            )}
+            
             {isAnalyzing ? (
               <div className="flex items-center justify-center p-4">
                 <Loader2 className="w-6 h-6 animate-spin mr-2" />
