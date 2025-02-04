@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '../ui/card';
 import { Database } from '@/integrations/supabase/types';
 import RichTextEditor from '../RichTextEditor';
+import TextAnalysis from '../TextAnalysis';
 
 type ManuscriptChapter = Database['public']['Tables']['manuscript_chapters']['Row'];
 
@@ -277,6 +278,10 @@ const ChaptersEditor = () => {
                 <RichTextEditor
                   content={selectedChapter.content}
                   onChange={handleContentChange}
+                />
+                <TextAnalysis 
+                  scores={calculateScores(selectedChapter.content)}
+                  content={selectedChapter.content}
                 />
               </div>
             ) : (
