@@ -49,6 +49,18 @@ const ManuscriptContent = ({
     return Object.values(boxes).filter(box => box.act === act);
   };
 
+  const getDisplayContent = (content: string) => {
+    try {
+      const contentObj = JSON.parse(content);
+      if (contentObj.text) {
+        return contentObj.text;
+      }
+    } catch {
+      // If parsing fails, return the content as is
+    }
+    return content;
+  };
+
   const readabilityScores = calculateScores(documentContent);
 
   return (
@@ -110,7 +122,9 @@ const ManuscriptContent = ({
                 >
                   <CardContent className="p-4">
                     <h4 className="font-semibold mb-2">{box.title}</h4>
-                    <p className="text-sm text-gray-600 line-clamp-3">{box.content}</p>
+                    <p className="text-sm text-gray-600 line-clamp-3">
+                      {getDisplayContent(box.content)}
+                    </p>
                   </CardContent>
                 </Card>
               ))}
