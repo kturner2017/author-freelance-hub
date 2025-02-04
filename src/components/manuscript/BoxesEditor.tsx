@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
 import { Card, CardContent } from '../ui/card';
-import { ChevronLeft, Plus } from 'lucide-react';
+import { ChevronLeft, Plus, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import BoxEditor from '../BoxEditor';
 import FileUploader from '../FileUploader';
@@ -191,6 +191,14 @@ const BoxesEditor = () => {
             className="hover:bg-white/10 text-white"
           >
             <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => navigate('/')}
+            className="hover:bg-white/10 text-white"
+          >
+            <Home className="h-5 w-5" />
           </Button>
           <div>
             <h2 className="text-lg font-semibold leading-tight">Boxes Editor</h2>
