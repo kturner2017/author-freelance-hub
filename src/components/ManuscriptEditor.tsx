@@ -124,7 +124,7 @@ const ManuscriptEditor = () => {
 
         let saveError;
         if (existingDoc) {
-          // Update existing document
+          console.log('Updating existing document content');
           const { error } = await supabase
             .from('manuscript_boxes')
             .update({
@@ -135,7 +135,7 @@ const ManuscriptEditor = () => {
             .eq('box_id', 'document-content');
           saveError = error;
         } else {
-          // Insert new document
+          console.log('Creating new document content');
           const { error } = await supabase
             .from('manuscript_boxes')
             .insert({
@@ -162,48 +162,92 @@ const ManuscriptEditor = () => {
 
       console.log('Saving boxes:', boxes);
       
-      const boxesArray = Object.values(boxes).map(box => ({
-        box_id: box.id,
-        title: box.title,
-        content: box.content || '',
-        act: box.act,
-        chapter_id: selectedChapter
-      }));
-
-      const { error: deleteError } = await supabase
+      // Get existing boxes for this chapter
+      const { data: existingBoxes, error: fetchError } = await supabase
         .from('manuscript_boxes')
-        .delete()
+        .select('*')
         .eq('chapter_id', selectedChapter);
 
-      if (deleteError) {
-        console.error('Error deleting existing boxes:', deleteError);
-        toast({
-          title: "Error saving changes",
-          description: deleteError.message,
-          variant: "destructive"
-        });
-        return;
+      if (fetchError) {
+        console.error('Error fetching existing boxes:', fetchError);
+        throw fetchError;
       }
 
-      const { error: insertError } = await supabase
-        .from('manuscript_boxes')
-        .insert(boxesArray);
+      const existingBoxIds = existingBoxes?.map(box => box.box_id) || [];
+      const currentBoxIds = Object.keys(boxes);
 
-      if (insertError) {
-        console.error('Error saving boxes:', insertError);
-        toast({
-          title: "Error saving changes",
-          description: insertError.message,
-          variant: "destructive"
-        });
-        return;
+      // Boxes to be deleted (exist in DB but not in current state)
+      const boxesToDelete = existingBoxIds.filter(id => !currentBoxIds.includes(id));
+      
+      // Boxes to be updated (exist in both DB and current state)
+      const boxesToUpdate = currentBoxIds.filter(id => existingBoxIds.includes(id));
+      
+      // Boxes to be inserted (exist in current state but not in DB)
+      const boxesToInsert = currentBoxIds.filter(id => !existingBoxIds.includes(id));
+
+      console.log('Boxes to delete:', boxesToDelete);
+      console.log('Boxes to update:', boxesToUpdate);
+      console.log('Boxes to insert:', boxesToInsert);
+
+      // Delete boxes that no longer exist
+      if (boxesToDelete.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('manuscript_boxes')
+          .delete()
+          .eq('chapter_id', selectedChapter)
+          .in('box_id', boxesToDelete);
+
+        if (deleteError) {
+          console.error('Error deleting boxes:', deleteError);
+          throw deleteError;
+        }
+      }
+
+      // Update existing boxes
+      for (const boxId of boxesToUpdate) {
+        const box = boxes[boxId];
+        const { error: updateError } = await supabase
+          .from('manuscript_boxes')
+          .update({
+            title: box.title,
+            content: box.content,
+            act: box.act,
+            updated_at: new Date().toISOString()
+          })
+          .eq('chapter_id', selectedChapter)
+          .eq('box_id', boxId);
+
+        if (updateError) {
+          console.error(`Error updating box ${boxId}:`, updateError);
+          throw updateError;
+        }
+      }
+
+      // Insert new boxes
+      if (boxesToInsert.length > 0) {
+        const newBoxes = boxesToInsert.map(boxId => ({
+          box_id: boxId,
+          title: boxes[boxId].title,
+          content: boxes[boxId].content || '',
+          act: boxes[boxId].act,
+          chapter_id: selectedChapter
+        }));
+
+        const { error: insertError } = await supabase
+          .from('manuscript_boxes')
+          .insert(newBoxes);
+
+        if (insertError) {
+          console.error('Error inserting new boxes:', insertError);
+          throw insertError;
+        }
       }
 
       toast({
         title: "Changes saved",
         description: "Your changes have been saved successfully."
       });
-      console.log('Changes saved successfully');
+      console.log('All changes saved successfully');
     } catch (error) {
       console.error('Error in save operation:', error);
       toast({
