@@ -5,7 +5,33 @@ import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { useToast } from './ui/use-toast';
-import { Save, Plus, Trash } from 'lucide-react';
+import { 
+  Save, 
+  Plus, 
+  Trash,
+  User,
+  Heart,
+  Brain,
+  Shield,
+  Sword,
+  Star,
+  Target,
+  Flame,
+  Glasses,
+  HandMetal,
+  Crown,
+  Laugh,
+  Frown,
+  Footprints,
+  Hammer,
+  Palette,
+  Music,
+  BookOpen,
+  Coins,
+  HeartCrack,
+  Lightbulb,
+  Compass
+} from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -37,18 +63,44 @@ const BoxEditor = ({
   const [attributes, setAttributes] = useState<Attribute[]>([]);
   const { toast } = useToast();
 
+  const attributeTypes = [
+    { name: 'Physical Appearance', icon: User },
+    { name: 'Personality Core', icon: Heart },
+    { name: 'Intelligence', icon: Brain },
+    { name: 'Defense Mechanism', icon: Shield },
+    { name: 'Combat Style', icon: Sword },
+    { name: 'Special Ability', icon: Star },
+    { name: 'Life Goal', icon: Target },
+    { name: 'Passion', icon: Flame },
+    { name: 'Knowledge', icon: Glasses },
+    { name: 'Skill', icon: HandMetal },
+    { name: 'Status', icon: Crown },
+    { name: 'Humor', icon: Laugh },
+    { name: 'Fear', icon: Frown },
+    { name: 'Movement Style', icon: Footprints },
+    { name: 'Craft', icon: Hammer },
+    { name: 'Artistic Ability', icon: Palette },
+    { name: 'Musical Talent', icon: Music },
+    { name: 'Education', icon: BookOpen },
+    { name: 'Wealth', icon: Coins },
+    { name: 'Emotional Wound', icon: HeartCrack },
+    { name: 'Innovation', icon: Lightbulb },
+    { name: 'Moral Compass', icon: Compass },
+    { name: 'Background', icon: User },
+    { name: 'Relationship', icon: Heart },
+    { name: 'Occupation', icon: Brain }
+  ];
+
   useEffect(() => {
     setLocalTitle(title);
     setLocalContent(content);
     
-    // Try to parse attributes from content if they exist
     try {
       const contentObj = JSON.parse(content);
       if (contentObj.attributes) {
         setAttributes(contentObj.attributes);
       }
     } catch {
-      // If content is not JSON, treat it as regular text
       console.log('Content is plain text');
     }
   }, [title, content]);
@@ -73,7 +125,6 @@ const BoxEditor = ({
     newAttributes[index][field] = value;
     setAttributes(newAttributes);
     
-    // Update content with new attributes
     const contentObj = {
       text: localContent,
       attributes: newAttributes
@@ -85,7 +136,6 @@ const BoxEditor = ({
     const newAttributes = attributes.filter((_, i) => i !== index);
     setAttributes(newAttributes);
     
-    // Update content with removed attribute
     const contentObj = {
       text: localContent,
       attributes: newAttributes
@@ -105,18 +155,10 @@ const BoxEditor = ({
     });
   };
 
-  const attributeTypes = [
-    'Personality',
-    'Physical Trait',
-    'Background',
-    'Goal',
-    'Fear',
-    'Relationship',
-    'Occupation',
-    'Skill',
-    'Weakness',
-    'Other'
-  ];
+  const getIconForAttribute = (attributeName: string) => {
+    const attribute = attributeTypes.find(type => type.name === attributeName);
+    return attribute?.icon || User;
+  };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -156,42 +198,55 @@ const BoxEditor = ({
               </Button>
             </div>
 
-            {attributes.map((attribute, index) => (
-              <div key={index} className="flex gap-4 items-start">
-                <div className="flex-1">
-                  <Select
-                    value={attribute.name}
-                    onValueChange={(value) => handleAttributeChange(index, 'name', value)}
+            {attributes.map((attribute, index) => {
+              const IconComponent = getIconForAttribute(attribute.name);
+              return (
+                <div key={index} className="flex gap-4 items-start">
+                  <div className="flex-1">
+                    <Select
+                      value={attribute.name}
+                      onValueChange={(value) => handleAttributeChange(index, 'name', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select attribute type">
+                          {attribute.name && (
+                            <div className="flex items-center">
+                              <IconComponent className="w-4 h-4 mr-2" />
+                              {attribute.name}
+                            </div>
+                          )}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {attributeTypes.map((type) => (
+                          <SelectItem key={type.name} value={type.name}>
+                            <div className="flex items-center">
+                              <type.icon className="w-4 h-4 mr-2" />
+                              {type.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex-1">
+                    <Input
+                      value={attribute.value}
+                      onChange={(e) => handleAttributeChange(index, 'value', e.target.value)}
+                      placeholder="Attribute value"
+                    />
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleRemoveAttribute(index)}
+                    className="text-red-500 hover:text-red-600"
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select attribute type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {attributeTypes.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <Trash className="w-4 h-4" />
+                  </Button>
                 </div>
-                <div className="flex-1">
-                  <Input
-                    value={attribute.value}
-                    onChange={(e) => handleAttributeChange(index, 'value', e.target.value)}
-                    placeholder="Attribute value"
-                  />
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleRemoveAttribute(index)}
-                  className="text-red-500 hover:text-red-600"
-                >
-                  <Trash className="w-4 h-4" />
-                </Button>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="flex justify-end">
