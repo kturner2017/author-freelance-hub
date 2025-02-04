@@ -56,7 +56,9 @@ const ManuscriptEditor = () => {
   useEffect(() => {
     const loadDocumentContent = async () => {
       console.log('Loading document content for chapter:', selectedChapter);
-      setDocumentContent(''); // Clear content while loading
+      
+      // Clear existing content before loading new content
+      setDocumentContent('');
       
       const { data, error } = await supabase
         .from('manuscript_boxes')
@@ -90,7 +92,10 @@ const ManuscriptEditor = () => {
   // Load boxes when chapter changes
   useEffect(() => {
     const loadBoxes = async () => {
-      setBoxes(INITIAL_BOXES); // Clear boxes while loading
+      console.log('Loading boxes for chapter:', selectedChapter);
+      
+      // Clear existing boxes before loading new ones
+      setBoxes(INITIAL_BOXES);
       
       const { data, error } = await supabase
         .from('manuscript_boxes')
@@ -371,6 +376,7 @@ const ManuscriptEditor = () => {
         editingChapterTitle={editingChapterTitle}
         boxes={boxes}
         onChapterSelect={(chapterId) => {
+          console.log('Switching to chapter:', chapterId);
           setSelectedChapter(chapterId);
           setSelectedBox(null);
           setEditorView('document');
