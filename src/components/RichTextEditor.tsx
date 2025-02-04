@@ -39,7 +39,9 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        codeBlock: false, // Disable default codeBlock to avoid duplicate
+      }),
       Underline,
       TextAlign.configure({
         types: ['paragraph', 'heading'],
@@ -59,9 +61,24 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       onChange(newContent);
       // Strip HTML tags for readability calculation
       const plainText = editor.getText();
-      setReadabilityScores(calculateScores(plainText));
+      console.log('Calculating readability for text:', plainText);
+      const scores = calculateScores(plainText);
+      console.log('Calculated scores:', scores);
+      setReadabilityScores(scores);
     },
   });
+
+  // Update readability scores when content changes externally
+  useEffect(() => {
+    if (editor && content) {
+      editor.commands.setContent(content);
+      const plainText = editor.getText();
+      console.log('Initial content text:', plainText);
+      const scores = calculateScores(plainText);
+      console.log('Initial scores:', scores);
+      setReadabilityScores(scores);
+    }
+  }, [content, editor]);
 
   if (!editor) {
     return null;

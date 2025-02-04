@@ -10,11 +10,14 @@ const countSyllables = (word: string): number => {
   word = word.replace(/(?:[^laeiouy]|ed|[^laeiouy]e)$/, '');
   word = word.replace(/^y/, '');
   const syllables = word.match(/[aeiouy]{1,2}/g);
-  return syllables ? syllables.length : 0;
+  return syllables ? syllables.length : 1; // Ensure at least 1 syllable per word
 };
 
 const calculateScores = (text: string): ReadabilityScores => {
-  if (!text.trim()) {
+  // Clean the text first
+  const cleanText = text.replace(/\s+/g, ' ').trim();
+  
+  if (!cleanText) {
     return {
       fleschKincaid: 0,
       fleschReading: 0,
@@ -23,9 +26,11 @@ const calculateScores = (text: string): ReadabilityScores => {
     };
   }
 
+  console.log('Calculating scores for text:', cleanText.substring(0, 100) + '...');
+
   // Split into sentences and words
-  const sentences = text.split(/[.!?]+/).filter(Boolean);
-  const words = text.split(/\s+/).filter(word => word.length > 0);
+  const sentences = cleanText.split(/[.!?]+/).filter(Boolean);
+  const words = cleanText.split(/\s+/).filter(word => word.length > 0);
   
   if (words.length === 0 || sentences.length === 0) {
     return {
@@ -40,6 +45,14 @@ const calculateScores = (text: string): ReadabilityScores => {
   const totalSyllables = words.reduce((sum, word) => sum + countSyllables(word), 0);
   const avgSentenceLength = words.length / sentences.length;
   const avgSyllablesPerWord = totalSyllables / words.length;
+
+  console.log('Metrics:', {
+    words: words.length,
+    sentences: sentences.length,
+    syllables: totalSyllables,
+    avgSentenceLength,
+    avgSyllablesPerWord
+  });
 
   // Calculate Flesch-Kincaid Grade Level
   const fleschKincaid = 0.39 * avgSentenceLength + 11.8 * avgSyllablesPerWord - 15.59;
@@ -57,12 +70,15 @@ const calculateScores = (text: string): ReadabilityScores => {
   const S = (sentences.length / words.length) * 100; // sentences per 100 words
   const colemanLiau = 0.0588 * L - 0.296 * S - 15.8;
 
-  return {
+  const scores = {
     fleschKincaid: Math.max(0, Math.min(20, Math.round(fleschKincaid * 10) / 10)),
     fleschReading: Math.max(0, Math.min(100, Math.round(fleschReading * 10) / 10)),
     gunningFog: Math.max(0, Math.min(20, Math.round(gunningFog * 10) / 10)),
     colemanLiau: Math.max(0, Math.min(20, Math.round(colemanLiau * 10) / 10))
   };
+
+  console.log('Calculated scores:', scores);
+  return scores;
 };
 
 export default calculateScores;
