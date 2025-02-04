@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 export const Hero = () => {
   return (
@@ -13,13 +14,13 @@ export const Hero = () => {
           </p>
           <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8 animate-fade-in animate-fade-in-delay-2">
             <div className="rounded-md shadow">
-              <Button className="w-full px-8 py-3 text-lg">
-                Start Writing
+              <Button asChild className="w-full px-8 py-3 text-lg">
+                <Link to="/editor">Start Writing</Link>
               </Button>
             </div>
             <div className="mt-3 sm:mt-0 sm:ml-3">
-              <Button variant="outline" className="w-full px-8 py-3 text-lg">
-                Find Professionals
+              <Button asChild variant="outline" className="w-full px-8 py-3 text-lg">
+                <Link to="/professional-network/find">Find Professionals</Link>
               </Button>
             </div>
           </div>
