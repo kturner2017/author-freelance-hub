@@ -156,6 +156,7 @@ const BoxEditor = ({ title, content, onTitleChange, onContentChange }: BoxEditor
             </div>
           </div>
 
+          {/* Add TextAnalysis component here */}
           <TextAnalysis 
             scores={readabilityScores}
             content={content}
