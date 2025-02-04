@@ -117,7 +117,7 @@ const PostProject = () => {
     <div className="min-h-screen bg-white">
       <Navigation />
       
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-4 pt-24 pb-8">
         <h1 className="text-4xl font-serif font-bold text-primary mb-8">
           Post a New Project
         </h1>
