@@ -1,8 +1,10 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import Underline from '@tiptap/extension-underline';
+import TextAlign from '@tiptap/extension-text-align';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
-import { Bold, Italic, Underline, AlignLeft, List, ListOrdered, Undo, Redo } from 'lucide-react';
+import { Bold, Italic, Underline as UnderlineIcon, AlignLeft, List, ListOrdered, Undo, Redo } from 'lucide-react';
 
 interface RichTextEditorProps {
   content: string;
@@ -11,7 +13,13 @@ interface RichTextEditorProps {
 
 const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [
+      StarterKit,
+      Underline,
+      TextAlign.configure({
+        types: ['paragraph', 'heading']
+      })
+    ],
     content: content,
     editorProps: {
       attributes: {
@@ -70,7 +78,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
           onClick={() => editor.chain().focus().toggleUnderline().run()}
           className={`h-8 w-8 p-0 ${editor.isActive('underline') ? 'bg-gray-200' : ''}`}
         >
-          <Underline className="h-4 w-4" />
+          <UnderlineIcon className="h-4 w-4" />
         </Button>
         
         <Separator orientation="vertical" className="h-6" />
