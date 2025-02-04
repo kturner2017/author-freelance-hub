@@ -10,6 +10,7 @@ import { Card, CardContent } from '../ui/card';
 import { Database } from '@/integrations/supabase/types';
 import RichTextEditor from '../RichTextEditor';
 import TextAnalysis from '../TextAnalysis';
+import type { ReadabilityScores } from '@/types/readability';
 
 type ManuscriptChapter = Database['public']['Tables']['manuscript_chapters']['Row'];
 
@@ -34,6 +35,8 @@ const ChaptersEditor = () => {
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
   const [chapters, setChapters] = useState<{ [key: string]: Chapter }>(INITIAL_CHAPTERS);
   const { toast } = useToast();
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [aiAnalysis, setAiAnalysis] = useState(null);
 
   useEffect(() => {
     const loadChapters = async () => {
@@ -282,6 +285,8 @@ const ChaptersEditor = () => {
                 <TextAnalysis 
                   scores={calculateScores(selectedChapter.content)}
                   content={selectedChapter.content}
+                  aiAnalysis={aiAnalysis}
+                  isAnalyzing={isAnalyzing}
                 />
               </div>
             ) : (

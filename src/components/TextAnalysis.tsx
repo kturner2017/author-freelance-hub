@@ -2,8 +2,9 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Progress } from './ui/progress';
 import { Loader2 } from 'lucide-react';
+import type { ReadabilityScores } from '@/types/readability';
 
-interface TextAnalysisProps {
+export interface TextAnalysisProps {
   scores: ReadabilityScores;
   content: string;
   aiAnalysis: any;

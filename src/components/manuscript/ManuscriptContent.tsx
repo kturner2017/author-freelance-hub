@@ -8,6 +8,7 @@ import RichTextEditor from '../RichTextEditor';
 import FileUploader from '../FileUploader';
 import TextAnalysis from '../TextAnalysis';
 import calculateScores from '@/utils/readabilityScores';
+import { useState } from 'react';
 
 interface Box {
   id: string;
@@ -45,6 +46,9 @@ const ManuscriptContent = ({
   onDocumentContentChange,
   onAddBox
 }: ManuscriptContentProps) => {
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [aiAnalysis, setAiAnalysis] = useState(null);
+
   const getBoxesForAct = (act: 'act1' | 'act2' | 'act3') => {
     return Object.values(boxes).filter(box => box.act === act);
   };
@@ -80,6 +84,8 @@ const ManuscriptContent = ({
           <TextAnalysis 
             scores={readabilityScores}
             content={documentContent}
+            aiAnalysis={aiAnalysis}
+            isAnalyzing={isAnalyzing}
           />
         </div>
       ) : selectedBox ? (
