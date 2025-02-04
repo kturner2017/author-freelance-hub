@@ -12,8 +12,8 @@ const Navigation: React.FC = () => {
   const toggleMenu = () => setIsOpen(!isOpen);
 
   return (
-    <nav className="fixed w-full bg-white/80 backdrop-blur-md z-50 border-b h-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+    <nav className="fixed w-full bg-white/80 backdrop-blur-md z-50 border-b">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16">
         <div className="flex items-center justify-between h-full">
           <div className="flex justify-between w-full items-center">
             <div className="flex-shrink-0 flex items-center">
