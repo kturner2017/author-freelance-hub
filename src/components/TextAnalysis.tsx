@@ -60,6 +60,14 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing }: TextAnalysis
     return suggestions;
   };
 
+  // Safely access nested properties
+  const showVsTellScore = aiAnalysis?.scores?.showVsTell ?? 0;
+  const grammarScore = aiAnalysis?.scores?.grammar ?? 0;
+  const styleScore = aiAnalysis?.scores?.style ?? 0;
+  const tellingSentences = aiAnalysis?.details?.showVsTell?.tellingSentences ?? [];
+  const showingSentences = aiAnalysis?.details?.showVsTell?.showingSentences ?? [];
+  const suggestions = aiAnalysis?.suggestions ?? [];
+
   return (
     <div className="space-y-4 mt-8">
       <Card>
@@ -98,9 +106,9 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing }: TextAnalysis
                     <div>
                       <div className="flex justify-between text-sm mb-1">
                         <span>Show vs Tell Ratio</span>
-                        <span>{Math.round(aiAnalysis.scores.showVsTell * 100)}%</span>
+                        <span>{Math.round(showVsTellScore * 100)}%</span>
                       </div>
-                      <Progress value={aiAnalysis.scores.showVsTell * 100} className="h-2" />
+                      <Progress value={showVsTellScore * 100} className="h-2" />
                       <p className="text-xs text-gray-500 mt-1">
                         Balance between descriptive and narrative writing
                       </p>
@@ -108,25 +116,25 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing }: TextAnalysis
                   </div>
                 </div>
 
-                {aiAnalysis.details?.showVsTell && (
+                {(tellingSentences.length > 0 || showingSentences.length > 0) && (
                   <div>
                     <h3 className="font-semibold mb-4">Show vs Tell Details</h3>
                     <div className="space-y-4">
-                      {aiAnalysis.details.showVsTell.tellingSentences.length > 0 && (
+                      {tellingSentences.length > 0 && (
                         <div className="bg-yellow-50 rounded-lg p-4">
                           <p className="font-medium text-sm mb-2">Telling Sentences:</p>
                           <ul className="list-disc pl-5 space-y-1">
-                            {aiAnalysis.details.showVsTell.tellingSentences.map((sentence: string, idx: number) => (
+                            {tellingSentences.map((sentence: string, idx: number) => (
                               <li key={idx} className="text-sm text-gray-600">{sentence}</li>
                             ))}
                           </ul>
                         </div>
                       )}
-                      {aiAnalysis.details.showVsTell.showingSentences.length > 0 && (
+                      {showingSentences.length > 0 && (
                         <div className="bg-green-50 rounded-lg p-4">
                           <p className="font-medium text-sm mb-2">Strong Descriptive Sentences:</p>
                           <ul className="list-disc pl-5 space-y-1">
-                            {aiAnalysis.details.showVsTell.showingSentences.map((sentence: string, idx: number) => (
+                            {showingSentences.map((sentence: string, idx: number) => (
                               <li key={idx} className="text-sm text-gray-600">{sentence}</li>
                             ))}
                           </ul>
@@ -142,9 +150,9 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing }: TextAnalysis
                     <div>
                       <div className="flex justify-between text-sm mb-1">
                         <span>Grammar Quality</span>
-                        <span>{Math.round(aiAnalysis.scores.grammar * 100)}%</span>
+                        <span>{Math.round(grammarScore * 100)}%</span>
                       </div>
-                      <Progress value={aiAnalysis.scores.grammar * 100} className="h-2" />
+                      <Progress value={grammarScore * 100} className="h-2" />
                       <p className="text-xs text-gray-500 mt-1">
                         Measures the grammatical correctness and clarity
                       </p>
@@ -152,9 +160,9 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing }: TextAnalysis
                     <div>
                       <div className="flex justify-between text-sm mb-1">
                         <span>Writing Style</span>
-                        <span>{Math.round(aiAnalysis.scores.style * 100)}%</span>
+                        <span>{Math.round(styleScore * 100)}%</span>
                       </div>
-                      <Progress value={aiAnalysis.scores.style * 100} className="h-2" />
+                      <Progress value={styleScore * 100} className="h-2" />
                       <p className="text-xs text-gray-500 mt-1">
                         Evaluates sentence variety and writing techniques
                       </p>
@@ -162,11 +170,11 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing }: TextAnalysis
                   </div>
                 </div>
 
-                {aiAnalysis.suggestions && aiAnalysis.suggestions.length > 0 && (
+                {suggestions.length > 0 && (
                   <div>
                     <h3 className="font-semibold mb-4">Writing Suggestions</h3>
                     <ul className="space-y-4">
-                      {aiAnalysis.suggestions.map((suggestion: string, index: number) => (
+                      {suggestions.map((suggestion: string, index: number) => (
                         <li key={index} className="bg-gray-50 rounded-lg p-4">
                           <p className="text-sm text-gray-800">{suggestion}</p>
                         </li>
