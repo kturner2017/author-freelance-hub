@@ -6,9 +6,11 @@ import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
 import { ChevronLeft, Plus, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Card, CardContent } from '../ui/card';
 
 interface Chapter {
   id: string;
+  chapter_id: string;
   title: string;
   content: string;
 }
@@ -16,6 +18,7 @@ interface Chapter {
 const INITIAL_CHAPTERS: { [key: string]: Chapter } = {
   'chapter-1': {
     id: 'chapter-1',
+    chapter_id: 'chapter-1',
     title: 'New Chapter',
     content: '',
   }
@@ -47,7 +50,8 @@ const ChaptersEditor = () => {
         const chaptersMap: { [key: string]: Chapter } = {};
         data.forEach(chapter => {
           chaptersMap[chapter.chapter_id] = {
-            id: chapter.chapter_id,
+            id: chapter.id,
+            chapter_id: chapter.chapter_id,
             title: chapter.title,
             content: chapter.content || '',
           };
@@ -143,6 +147,7 @@ const ChaptersEditor = () => {
     const newChapterId = `chapter-${Object.keys(chapters).length + 1}`;
     const newChapter: Chapter = {
       id: newChapterId,
+      chapter_id: newChapterId,
       title: 'New Chapter',
       content: '',
     };
