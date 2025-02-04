@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
 import { Briefcase, Users, Handshake, DollarSign } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const ProfessionalNetwork = () => {
   return (
@@ -16,6 +17,14 @@ const ProfessionalNetwork = () => {
           <p className="text-lg md:text-xl text-gray-700 mb-8 max-w-2xl mx-auto">
             Find the right professionals to help bring your book to life. Connect with editors, designers, marketers, and other industry experts.
           </p>
+          <div className="flex gap-4 justify-center">
+            <Button asChild>
+              <Link to="/professional-network/find">Find Professionals</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link to="/professional-network/apply">Join as a Professional</Link>
+            </Button>
+          </div>
         </div>
       </section>
 
@@ -31,7 +40,9 @@ const ProfessionalNetwork = () => {
               <p className="text-gray-600 mb-6">
                 Browse through our network of vetted publishing professionals. Filter by expertise, experience, and budget to find the perfect match.
               </p>
-              <Button variant="outline" className="w-full">Browse Directory</Button>
+              <Button variant="outline" asChild className="w-full">
+                <Link to="/professional-network/find">Browse Directory</Link>
+              </Button>
             </div>
 
             <div className="p-8 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow">
@@ -53,7 +64,9 @@ const ProfessionalNetwork = () => {
               <p className="text-gray-600 mb-6">
                 Describe your project needs and receive proposals from qualified professionals. Set your budget and timeline.
               </p>
-              <Button variant="outline" className="w-full">Create Project</Button>
+              <Button variant="outline" asChild className="w-full">
+                <Link to="/professional-network/post-project">Create Project</Link>
+              </Button>
             </div>
 
             <div className="p-8 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow">
