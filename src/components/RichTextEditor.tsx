@@ -7,7 +7,6 @@ import CodeBlock from '@tiptap/extension-code-block';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
 import ReadabilityChart from './ReadabilityChart';
-import TextAnalysis from './TextAnalysis';
 import calculateScores from '@/utils/readabilityScores';
 import { useState, useEffect, useCallback } from 'react';
 import { debounce } from 'lodash';
@@ -304,13 +303,6 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
           className="min-h-[600px] bg-white rounded-b-lg"
         />
       </div>
-
-      <TextAnalysis 
-        scores={readabilityScores}
-        content={editor.getText()}
-        aiAnalysis={aiAnalysis}
-        isAnalyzing={isAnalyzing}
-      />
     </div>
   );
 };
