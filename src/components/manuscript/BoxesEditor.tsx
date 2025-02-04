@@ -225,7 +225,7 @@ const BoxesEditor = () => {
             variant="outline" 
             size="sm"
             onClick={() => navigate('/editor/manuscript')}
-            className="border-white text-white hover:bg-white/10 transition-colors"
+            className="border-white text-[#0F172A] bg-white hover:bg-white/90 transition-colors"
           >
             Switch to Chapters View
           </Button>
