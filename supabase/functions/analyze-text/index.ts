@@ -5,34 +5,54 @@ interface RequestBody {
   text: string;
 }
 
-interface CloudmersiveResponse {
-  Sentiment: {
-    SentimentClass: string;
-    SentimentScore: number;
-  };
-}
-
-interface GrammarAnalysisResponse {
-  GrammaticalErrors: Array<{
-    Message: string;
-    Type: string;
-    StartPosition: number;
-    Length: number;
-  }>;
-}
-
-// Common "telling" words that often indicate passive writing
+// Expanded telling indicators
 const tellingWords = [
-  'felt', 'heard', 'saw', 'noticed', 'realized', 'thought', 'knew', 'believed',
-  'wondered', 'decided', 'understood', 'watched', 'looked', 'seemed', 'appeared',
-  'was', 'were', 'had', 'could', 'would'
+  // Emotional states
+  'felt', 'feel', 'feels', 'feeling',
+  'was angry', 'was sad', 'was happy', 'was excited', 'was nervous',
+  'wondered', 'thought', 'believed', 'knew', 'realized', 'understood',
+  // Passive observations
+  'watched', 'looked', 'saw', 'noticed', 'observed',
+  'heard', 'listened',
+  'seemed', 'appeared',
+  // State of being
+  'was', 'were', 'had been', 'has been', 'have been',
+  'could', 'would', 'might', 'must have',
+  // Mental states
+  'decided', 'considered', 'contemplated', 'remembered',
+  'wanted', 'desired', 'wished', 'hoped',
+  // Abstract descriptions
+  'very', 'really', 'quite', 'rather', 'somewhat',
+  'beautiful', 'ugly', 'nice', 'bad', 'good'
 ];
 
-// Words that often indicate sensory descriptions (showing)
-const sensoryWords = [
-  'sparkled', 'gleamed', 'rustled', 'thundered', 'whispered', 'echoed',
-  'glowed', 'shimmered', 'danced', 'raced', 'crackled', 'soared',
-  'trembled', 'flickered', 'rumbled'
+// Expanded showing indicators
+const showingWords = [
+  // Strong verbs
+  'sparkled', 'gleamed', 'glowed', 'shimmered', 'blazed', 'flickered',
+  'thundered', 'rumbled', 'crashed', 'boomed', 'echoed', 'whispered',
+  'rustled', 'swished', 'swooshed', 'whistled', 'hummed',
+  'danced', 'pranced', 'stumbled', 'shuffled', 'raced', 'darted',
+  'trembled', 'shuddered', 'quivered', 'shook', 'vibrated',
+  // Sensory details
+  'scarlet', 'crimson', 'azure', 'emerald', 'golden',
+  'bitter', 'sweet', 'sour', 'tangy', 'spicy',
+  'rough', 'smooth', 'silky', 'gritty', 'sharp',
+  'putrid', 'fragrant', 'musty', 'fresh', 'stale',
+  // Specific nouns
+  'tears', 'sweat', 'blood', 'smile', 'frown', 'grimace',
+  'fingers', 'hands', 'feet', 'legs', 'arms', 'shoulders',
+  // Action verbs
+  'grabbed', 'clutched', 'seized', 'snatched',
+  'sprinted', 'jogged', 'limped', 'strutted',
+  'slammed', 'tossed', 'hurled', 'threw'
+];
+
+// Patterns that often indicate passive voice
+const passivePatterns = [
+  /\b(am|is|are|was|were|been|being|have|has|had)\s+\w+ed\b/i,
+  /\b(am|is|are|was|were|been|being|have|has|had)\s+been\s+\w+ed\b/i,
+  /\b(get|gets|got|gotten)\s+\w+ed\b/i
 ];
 
 function analyzeShowVsTell(text: string) {
@@ -41,7 +61,13 @@ function analyzeShowVsTell(text: string) {
     showingSentences: [] as string[],
     tellingSentences: [] as string[],
     suggestions: [] as string[],
-    showVsTellRatio: 0
+    showVsTellRatio: 0,
+    detailedAnalysis: {
+      passiveVoiceCount: 0,
+      emotionalTellingCount: 0,
+      sensoryShowingCount: 0,
+      strongVerbCount: 0
+    }
   };
 
   let showingCount = 0;
@@ -49,29 +75,54 @@ function analyzeShowVsTell(text: string) {
 
   sentences.forEach(sentence => {
     const words = sentence.toLowerCase().split(/\s+/);
-    let tellingWordsFound = words.filter(word => tellingWords.includes(word));
-    let sensoryWordsFound = words.filter(word => sensoryWords.includes(word));
+    let isShowing = false;
+    let isTelling = false;
     
-    // Check for passive voice indicators
-    const hasPassiveVoice = /\b(am|is|are|was|were|been|being|have|has|had)\s+\w+ed\b/i.test(sentence);
+    // Check for passive voice
+    const hasPassiveVoice = passivePatterns.some(pattern => pattern.test(sentence));
+    if (hasPassiveVoice) {
+      analysis.detailedAnalysis.passiveVoiceCount++;
+      isTelling = true;
+    }
+
+    // Check for telling words
+    const tellingWordsFound = words.filter(word => 
+      tellingWords.some(tell => word.includes(tell.toLowerCase()))
+    );
     
-    if (tellingWordsFound.length > 0 || hasPassiveVoice) {
+    if (tellingWordsFound.length > 0) {
       tellingCount++;
+      isTelling = true;
+      analysis.detailedAnalysis.emotionalTellingCount++;
+    }
+
+    // Check for showing words
+    const showingWordsFound = words.filter(word =>
+      showingWords.some(show => word.includes(show.toLowerCase()))
+    );
+
+    if (showingWordsFound.length > 0) {
+      showingCount++;
+      isShowing = true;
+      analysis.detailedAnalysis.sensoryShowingCount++;
+      analysis.detailedAnalysis.strongVerbCount += showingWordsFound.length;
+    }
+
+    // Categorize the sentence
+    if (isTelling) {
       analysis.tellingSentences.push(sentence.trim());
       
       // Generate specific suggestions
       if (hasPassiveVoice) {
-        analysis.suggestions.push(`Consider rewriting in active voice: "${sentence.trim()}"`);
+        analysis.suggestions.push(`Consider rewriting this passive voice sentence more actively: "${sentence.trim()}"`);
       }
       if (tellingWordsFound.length > 0) {
-        analysis.suggestions.push(
-          `Try showing instead of telling in: "${sentence.trim()}" (telling words: ${tellingWordsFound.join(', ')})`
-        );
+        const suggestion = `Try showing instead of telling in: "${sentence.trim()}" by replacing telling words (${tellingWordsFound.join(', ')}) with specific actions or descriptions`;
+        analysis.suggestions.push(suggestion);
       }
     }
     
-    if (sensoryWordsFound.length > 0) {
-      showingCount++;
+    if (isShowing) {
       analysis.showingSentences.push(sentence.trim());
     }
   });
@@ -80,11 +131,19 @@ function analyzeShowVsTell(text: string) {
   const total = showingCount + tellingCount;
   analysis.showVsTellRatio = total > 0 ? showingCount / total : 0;
 
-  // Add general suggestions based on the ratio
+  // Add general suggestions based on the analysis
   if (analysis.showVsTellRatio < 0.4) {
     analysis.suggestions.push(
-      "Your writing could benefit from more showing. Try using more sensory details and active verbs.",
-      "Consider describing characters' actions and physical reactions instead of stating their emotions."
+      "Your writing could benefit from more showing. Try using more sensory details and specific actions.",
+      "Consider describing characters' physical reactions and environmental details instead of stating emotions.",
+      "Replace abstract adjectives with concrete details that paint a picture."
+    );
+  }
+
+  if (analysis.detailedAnalysis.passiveVoiceCount > sentences.length * 0.2) {
+    analysis.suggestions.push(
+      "There's a high percentage of passive voice. Try to make your sentences more active and direct.",
+      "Focus on who or what is performing the action in each sentence."
     );
   }
 
@@ -148,12 +207,10 @@ serve(async (req) => {
     
     // Create an AbortController for timeouts
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+    const timeout = setTimeout(() => controller.abort(), 15000);
 
     try {
-      // Parallel requests for different types of analysis
       const [sentimentResponse, grammarResponse] = await Promise.all([
-        // Sentiment Analysis
         fetch('https://api.cloudmersive.com/nlp-v2/analytics/sentiment', {
           method: 'POST',
           headers: {
@@ -163,7 +220,6 @@ serve(async (req) => {
           body: JSON.stringify({ TextToAnalyze: text }),
           signal: controller.signal
         }),
-        // Grammar Analysis
         fetch('https://api.cloudmersive.com/nlp-v2/analytics/grammar', {
           method: 'POST',
           headers: {
@@ -185,7 +241,7 @@ serve(async (req) => {
         throw new Error('Failed to analyze text');
       }
 
-      const [sentimentData, grammarData]: [CloudmersiveResponse, GrammarAnalysisResponse] = await Promise.all([
+      const [sentimentData, grammarData] = await Promise.all([
         sentimentResponse.json(),
         grammarResponse.json()
       ]);
@@ -195,46 +251,32 @@ serve(async (req) => {
         grammar: grammarData
       });
 
-      // Perform show vs tell analysis
+      // Perform enhanced show vs tell analysis
       const showTellAnalysis = analyzeShowVsTell(text);
-      const styleAnalysis = analyzeWritingStyle(text);
-
-      // Generate comprehensive suggestions
-      const suggestions = [
-        // Grammar suggestions
-        ...(grammarData.GrammaticalErrors || []).map(error => 
-          `Grammar: ${error.Message}`
-        ),
-        // Show vs Tell suggestions
-        ...showTellAnalysis.suggestions,
-        // Style suggestions
-        ...styleAnalysis.suggestions
-      ];
-
-      // Calculate normalized scores
-      const grammarScore = grammarData.GrammaticalErrors ? 
-        1 - (grammarData.GrammaticalErrors.length / (text.length / 100)) : 0.85;
-      const showTellScore = showTellAnalysis.showVsTellRatio;
-      const sentimentScore = (sentimentData.Sentiment.SentimentScore + 1) / 2;
 
       // Return comprehensive analysis results
       const result = {
-        suggestions,
+        suggestions: [
+          ...showTellAnalysis.suggestions,
+          ...(grammarData.GrammaticalErrors || []).map(error => 
+            `Grammar: ${error.Message}`
+          )
+        ],
         scores: {
-          grammar: grammarScore,
-          style: styleAnalysis.styleScore,
-          showVsTell: showTellScore,
-          structure: sentences.length > 1 ? 0.75 : 0.5,
-          sentiment: sentimentScore
+          grammar: grammarData.GrammaticalErrors ? 
+            1 - (grammarData.GrammaticalErrors.length / (text.length / 100)) : 0.85,
+          showVsTell: showTellAnalysis.showVsTellRatio,
+          sentiment: (sentimentData.Sentiment.SentimentScore + 1) / 2
         },
         details: {
-          grammarErrors: grammarData.GrammaticalErrors || [],
-          sentiment: sentimentData.Sentiment,
           showVsTell: {
             showingSentences: showTellAnalysis.showingSentences,
             tellingSentences: showTellAnalysis.tellingSentences,
-            ratio: showTellAnalysis.showVsTellRatio
-          }
+            ratio: showTellAnalysis.showVsTellRatio,
+            analysis: showTellAnalysis.detailedAnalysis
+          },
+          grammarErrors: grammarData.GrammaticalErrors || [],
+          sentiment: sentimentData.Sentiment
         }
       };
 
@@ -257,13 +299,11 @@ serve(async (req) => {
       ],
       scores: {
         grammar: 0.8,
-        style: 0.8,
         showVsTell: 0.5,
-        structure: 0.8,
         sentiment: 0.5
       }
     }), {
-      status: 200, // Return 200 with fallback data instead of 500
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
