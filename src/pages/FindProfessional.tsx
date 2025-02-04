@@ -5,9 +5,11 @@ import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowUpDown, UserRound, Briefcase, DollarSign } from 'lucide-react';
+import type { Database } from '@/integrations/supabase/types';
 
-type SortField = 'project_name' | 'author' | 'book_title' | 'genre' | 'type' | 'created_at';
+type Freelancer = Database['public']['Tables']['freelancers']['Row'];
+type SortField = 'full_name' | 'headline' | 'hourly_rate' | 'created_at';
 type SortOrder = 'asc' | 'desc';
 
 const FindProfessional = () => {
@@ -15,17 +17,17 @@ const FindProfessional = () => {
   const [sortField, setSortField] = useState<SortField>('created_at');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
-  const { data: projects, isLoading } = useQuery({
-    queryKey: ['projects', sortField, sortOrder],
+  const { data: freelancers, isLoading } = useQuery({
+    queryKey: ['freelancers', sortField, sortOrder],
     queryFn: async () => {
-      console.log('Fetching projects with sort:', { sortField, sortOrder });
+      console.log('Fetching freelancers with sort:', { sortField, sortOrder });
       const { data, error } = await supabase
-        .from('projects')
+        .from('freelancers')
         .select('*')
         .order(sortField, { ascending: sortOrder === 'asc' });
 
       if (error) {
-        console.error('Error fetching projects:', error);
+        console.error('Error fetching freelancers:', error);
         throw error;
       }
 
@@ -53,45 +55,68 @@ const FindProfessional = () => {
     </Button>
   );
 
+  const formatExpertise = (areas: string[]) => {
+    return areas.join(', ');
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Navigation />
       
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <h1 className="text-4xl font-serif font-bold text-primary mb-8">
-          Find Professionals
-        </h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-serif font-bold text-primary">
+            Find Professionals
+          </h1>
+          <Button onClick={() => navigate('/professional-network/post-project')}>
+            Post a Project
+          </Button>
+        </div>
 
         {isLoading ? (
-          <div className="text-center py-8">Loading projects...</div>
+          <div className="text-center py-8">Loading professionals...</div>
         ) : (
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead><SortButton field="project_name" label="Project Name" /></TableHead>
-                  <TableHead><SortButton field="author" label="Author" /></TableHead>
-                  <TableHead><SortButton field="book_title" label="Book Title" /></TableHead>
-                  <TableHead><SortButton field="genre" label="Genre" /></TableHead>
-                  <TableHead><SortButton field="type" label="Type" /></TableHead>
-                  <TableHead><SortButton field="created_at" label="Posted Date" /></TableHead>
+                  <TableHead><SortButton field="full_name" label="Professional" /></TableHead>
+                  <TableHead><SortButton field="headline" label="Expertise" /></TableHead>
+                  <TableHead><SortButton field="hourly_rate" label="Rate" /></TableHead>
+                  <TableHead>Areas of Expertise</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {projects?.map((project) => (
+                {freelancers?.map((freelancer) => (
                   <TableRow 
-                    key={project.id}
+                    key={freelancer.id}
                     className="cursor-pointer hover:bg-gray-50"
-                    onClick={() => navigate(`/professional-network/find/${project.id}`)}
+                    onClick={() => navigate(`/professional-network/find/${freelancer.id}`)}
                   >
-                    <TableCell>{project.project_name}</TableCell>
-                    <TableCell>{project.author}</TableCell>
-                    <TableCell>{project.book_title}</TableCell>
-                    <TableCell>{project.genre}</TableCell>
-                    <TableCell>{project.type}</TableCell>
                     <TableCell>
-                      {new Date(project.created_at).toLocaleDateString()}
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                          <UserRound className="w-6 h-6 text-primary" />
+                        </div>
+                        <div>
+                          <div className="font-medium">{freelancer.full_name}</div>
+                          <div className="text-sm text-gray-500">{freelancer.headline}</div>
+                        </div>
+                      </div>
                     </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="w-4 h-4 text-gray-500" />
+                        <span>{freelancer.bio.substring(0, 100)}...</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-gray-500" />
+                        <span>${freelancer.hourly_rate}/hr</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{formatExpertise(freelancer.expertise_areas)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
