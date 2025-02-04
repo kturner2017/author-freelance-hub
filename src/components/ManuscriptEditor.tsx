@@ -52,6 +52,39 @@ const ManuscriptEditor = () => {
 
   const [boxes, setBoxes] = useState<{ [key: string]: Box }>(INITIAL_BOXES);
 
+  // Load document content when chapter changes
+  useEffect(() => {
+    const loadDocumentContent = async () => {
+      console.log('Loading document content for chapter:', selectedChapter);
+      const { data, error } = await supabase
+        .from('manuscript_boxes')
+        .select('content')
+        .eq('chapter_id', selectedChapter)
+        .eq('box_id', 'document-content')
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error loading document content:', error);
+        toast({
+          title: "Error loading document",
+          description: "There was a problem loading your document. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (data) {
+        console.log('Setting document content:', data.content);
+        setDocumentContent(data.content || '');
+      } else {
+        console.log('No existing document content found for this chapter');
+        setDocumentContent('');
+      }
+    };
+
+    loadDocumentContent();
+  }, [selectedChapter]);
+
   useEffect(() => {
     const loadBoxes = async () => {
       const { data, error } = await supabase
@@ -97,7 +130,6 @@ const ManuscriptEditor = () => {
       if (editorView === 'document') {
         console.log('Saving document content:', documentContent);
         
-        // First try to update existing document content
         const { data: existingDoc, error: fetchError } = await supabase
           .from('manuscript_boxes')
           .select('*')
@@ -246,40 +278,6 @@ const ManuscriptEditor = () => {
     }
   };
 
-  // Load document content when chapter changes
-  useEffect(() => {
-    const loadDocumentContent = async () => {
-      const { data, error } = await supabase
-        .from('manuscript_boxes')
-        .select('content')
-        .eq('chapter_id', selectedChapter)
-        .eq('box_id', 'document-content')
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error loading document content:', error);
-        toast({
-          title: "Error loading document",
-          description: "There was a problem loading your document. Please try again.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      if (data) {
-        setDocumentContent(data.content || '');
-        console.log('Loaded document content:', data.content);
-      } else {
-        setDocumentContent('');
-        console.log('No existing document content found for this chapter');
-      }
-    };
-
-    if (editorView === 'document') {
-      loadDocumentContent();
-    }
-  }, [selectedChapter, editorView]);
-
   const handleAddChapter = () => {
     const newId = (chapters.length + 1).toString();
     const newChapter = {
@@ -368,7 +366,10 @@ const ManuscriptEditor = () => {
         editingChapterId={editingChapterId}
         editingChapterTitle={editingChapterTitle}
         boxes={boxes}
-        onChapterSelect={setSelectedChapter}
+        onChapterSelect={(chapterId) => {
+          setSelectedChapter(chapterId);
+          setEditorView('document'); // Switch to document view when selecting a chapter
+        }}
         onChapterAdd={handleAddChapter}
         onChapterDelete={handleDeleteChapter}
         onChapterMove={handleMoveChapter}
