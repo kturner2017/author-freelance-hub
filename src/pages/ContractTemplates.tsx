@@ -1,26 +1,59 @@
+import { useEffect, useState } from 'react';
+import { FileText, Download, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
+interface ContractTemplate {
+  id: string;
+  title: string;
+  description: string;
+  content: string;
+  category: string;
+}
 
 const ContractTemplates = () => {
-  const templates = [
-    {
-      title: "Standard Editing Agreement",
-      description: "A comprehensive contract for book editing services, including developmental editing, copy editing, and proofreading.",
-      type: "Editing"
-    },
-    {
-      title: "Book Cover Design Contract",
-      description: "Agreement for cover design services, including rights, revisions, and final deliverables.",
-      type: "Design"
-    },
-    {
-      title: "Marketing Services Agreement",
-      description: "Contract for book marketing and promotion services, including social media, advertising, and PR.",
-      type: "Marketing"
-    }
-  ];
+  const [templates, setTemplates] = useState<ContractTemplate[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<ContractTemplate | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('contract_templates')
+          .select('*');
+
+        if (error) {
+          throw error;
+        }
+
+        if (data) {
+          setTemplates(data);
+        }
+      } catch (error) {
+        console.error('Error fetching templates:', error);
+        toast.error('Failed to load contract templates');
+      }
+    };
+
+    fetchTemplates();
+  }, []);
+
+  const handleDownload = (template: ContractTemplate) => {
+    const element = document.createElement('a');
+    const file = new Blob([template.content], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = `${template.title.toLowerCase().replace(/\s+/g, '-')}.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    toast.success('Template downloaded successfully');
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -32,24 +65,47 @@ const ContractTemplates = () => {
             <h1 className="text-4xl font-serif font-bold text-primary mb-2">Contract Templates</h1>
             <p className="text-gray-600">Choose from our pre-approved contract templates for various publishing services.</p>
           </div>
-          <Button>Create Custom Template</Button>
+          <Button onClick={() => navigate('/professional-network/contracts/templates/create')}>
+            Create Custom Template
+          </Button>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {templates.map((template, index) => (
-            <Card key={index} className="hover:shadow-lg transition-shadow">
+          {templates.map((template) => (
+            <Card key={template.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
-                <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mb-4">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <FileText className="w-6 h-6 text-primary" />
                 </div>
                 <CardTitle>{template.title}</CardTitle>
-                <CardDescription>{template.type}</CardDescription>
+                <CardDescription className="capitalize">{template.category}</CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 mb-4">{template.description}</p>
                 <div className="flex gap-2">
-                  <Button variant="outline" className="w-full">Preview</Button>
-                  <Button className="w-full">Use Template</Button>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="w-full">
+                        <Eye className="w-4 h-4 mr-2" />
+                        Preview
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>{template.title}</DialogTitle>
+                      </DialogHeader>
+                      <div className="whitespace-pre-wrap font-mono text-sm">
+                        {template.content}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                  <Button 
+                    className="w-full"
+                    onClick={() => handleDownload(template)}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Use Template
+                  </Button>
                 </div>
               </CardContent>
             </Card>
