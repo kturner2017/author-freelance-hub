@@ -1,25 +1,24 @@
 import React, { useState } from 'react';
 import { Button } from './ui/button';
-import { Upload, Trash2, FileText } from 'lucide-react';
+import { Upload, Trash2, FileText, Image, FileArchive } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './ui/use-toast';
 
 interface FileUploaderProps {
-  act: string;
-  chapterId: string;
+  boxId: string;
 }
 
-const FileUploader = ({ act, chapterId }: FileUploaderProps) => {
+const FileUploader = ({ boxId }: FileUploaderProps) => {
   const [uploading, setUploading] = useState(false);
   const [files, setFiles] = useState<any[]>([]);
   const { toast } = useToast();
 
   const fetchFiles = async () => {
+    console.log('Fetching files for box:', boxId);
     const { data, error } = await supabase
       .from('manuscript_files')
       .select('*')
-      .eq('act', act)
-      .eq('chapter_id', chapterId);
+      .eq('box_id', boxId);
 
     if (error) {
       console.error('Error fetching files:', error);
@@ -27,11 +26,12 @@ const FileUploader = ({ act, chapterId }: FileUploaderProps) => {
     }
 
     setFiles(data || []);
+    console.log('Files fetched:', data);
   };
 
   React.useEffect(() => {
     fetchFiles();
-  }, [act, chapterId]);
+  }, [boxId]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
@@ -40,10 +40,22 @@ const FileUploader = ({ act, chapterId }: FileUploaderProps) => {
       
       if (!file) return;
 
+      // Check file count
+      if (files.length >= 5) {
+        toast({
+          title: "Upload limit reached",
+          description: "Maximum of 5 files allowed per box.",
+          variant: "destructive"
+        });
+        return;
+      }
+
       // Sanitize filename
       const sanitizedFileName = file.name.replace(/[^\x00-\x7F]/g, '');
       const fileExt = sanitizedFileName.split('.').pop();
-      const filePath = `${act}/${chapterId}/${crypto.randomUUID()}.${fileExt}`;
+      const filePath = `${boxId}/${crypto.randomUUID()}.${fileExt}`;
+
+      console.log('Uploading file:', { filePath, contentType: file.type });
 
       const { error: uploadError } = await supabase.storage
         .from('manuscript_files')
@@ -60,8 +72,7 @@ const FileUploader = ({ act, chapterId }: FileUploaderProps) => {
           file_path: filePath,
           content_type: file.type,
           size: file.size,
-          act,
-          chapter_id: chapterId,
+          box_id: boxId,
         });
 
       if (dbError) {
@@ -121,6 +132,12 @@ const FileUploader = ({ act, chapterId }: FileUploaderProps) => {
     }
   };
 
+  const getFileIcon = (contentType: string) => {
+    if (contentType.startsWith('image/')) return Image;
+    if (contentType.startsWith('application/')) return FileArchive;
+    return FileText;
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
@@ -134,31 +151,38 @@ const FileUploader = ({ act, chapterId }: FileUploaderProps) => {
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             onChange={handleFileUpload}
             disabled={uploading}
+            accept="image/*,.pdf,.doc,.docx,.txt"
           />
           <Upload className="h-4 w-4 mr-2" />
           {uploading ? 'Uploading...' : 'Upload File'}
         </Button>
+        <span className="text-sm text-gray-500">
+          {files.length}/5 files uploaded
+        </span>
       </div>
 
       <div className="space-y-2">
-        {files.map((file) => (
-          <div
-            key={file.id}
-            className="flex items-center justify-between p-2 border rounded-md"
-          >
-            <div className="flex items-center gap-2">
-              <FileText className="h-4 w-4 text-gray-500" />
-              <span className="text-sm">{file.filename}</span>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => handleDelete(file.id, file.file_path)}
+        {files.map((file) => {
+          const FileIcon = getFileIcon(file.content_type);
+          return (
+            <div
+              key={file.id}
+              className="flex items-center justify-between p-2 border rounded-md"
             >
-              <Trash2 className="h-4 w-4 text-red-500" />
-            </Button>
-          </div>
-        ))}
+              <div className="flex items-center gap-2">
+                <FileIcon className="h-4 w-4 text-gray-500" />
+                <span className="text-sm">{file.filename}</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleDelete(file.id, file.file_path)}
+              >
+                <Trash2 className="h-4 w-4 text-red-500" />
+              </Button>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

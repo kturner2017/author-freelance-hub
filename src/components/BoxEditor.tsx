@@ -39,6 +39,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from './ui/select';
+import FileUploader from './FileUploader';
 
 interface Attribute {
   name: string;
@@ -183,6 +184,11 @@ const BoxEditor = ({
               className="mt-1 min-h-[100px]"
               placeholder="Enter character description..."
             />
+          </div>
+
+          <div className="space-y-4">
+            <Label>Files</Label>
+            <FileUploader boxId={title} />
           </div>
 
           <div className="space-y-4">

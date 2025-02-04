@@ -196,8 +196,7 @@ export type Database = {
       }
       manuscript_files: {
         Row: {
-          act: string
-          chapter_id: string
+          box_id: string
           content_type: string | null
           created_at: string | null
           file_path: string
@@ -206,8 +205,7 @@ export type Database = {
           size: number | null
         }
         Insert: {
-          act: string
-          chapter_id: string
+          box_id: string
           content_type?: string | null
           created_at?: string | null
           file_path: string
@@ -216,8 +214,7 @@ export type Database = {
           size?: number | null
         }
         Update: {
-          act?: string
-          chapter_id?: string
+          box_id?: string
           content_type?: string | null
           created_at?: string | null
           file_path?: string
