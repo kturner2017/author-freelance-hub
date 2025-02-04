@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
+import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   Save,
@@ -12,7 +13,8 @@ import {
   CheckSquare,
   Settings,
   LayoutGrid,
-  List
+  List,
+  Home
 } from 'lucide-react';
 
 interface ManuscriptToolbarProps {
@@ -40,9 +42,20 @@ const ManuscriptToolbar = ({
   onViewModeChange,
   onAddAct
 }: ManuscriptToolbarProps) => {
+  const navigate = useNavigate();
+
   return (
     <div className="h-14 border-b flex items-center px-4 justify-between bg-white">
       <div className="flex items-center gap-2">
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={() => navigate('/')}
+          className="hover:bg-gray-100 active:bg-gray-200 transition-colors duration-200"
+          title="Go to Home"
+        >
+          <Home className="h-5 w-5" />
+        </Button>
         <Button 
           variant="ghost" 
           size="icon"
