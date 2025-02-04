@@ -110,7 +110,7 @@ const ManuscriptContent = ({
                 >
                   <CardContent className="p-4">
                     <h4 className="font-semibold mb-2">{box.title}</h4>
-                    <p className="text-sm text-gray-600">{box.content}</p>
+                    <p className="text-sm text-gray-600 line-clamp-3">{box.content}</p>
                   </CardContent>
                 </Card>
               ))}

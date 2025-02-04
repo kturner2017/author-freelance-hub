@@ -5,10 +5,7 @@ import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { useToast } from './ui/use-toast';
-import { Save, Wand2 } from 'lucide-react';
-import ReadabilityChart from './ReadabilityChart';
-import TextAnalysis from './TextAnalysis';
-import calculateScores from '@/utils/readabilityScores';
+import { Save } from 'lucide-react';
 
 interface BoxEditorProps {
   title: string;
@@ -25,8 +22,6 @@ const BoxEditor = ({
 }: BoxEditorProps) => {
   const [localTitle, setLocalTitle] = useState(title);
   const [localContent, setLocalContent] = useState(content);
-  const [readabilityScores, setReadabilityScores] = useState(calculateScores(''));
-  const [showAnalysis, setShowAnalysis] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -43,7 +38,6 @@ const BoxEditor = ({
     const newContent = e.target.value;
     setLocalContent(newContent);
     onContentChange(newContent);
-    setReadabilityScores(calculateScores(newContent));
   };
 
   const handleSave = () => {
@@ -52,22 +46,6 @@ const BoxEditor = ({
     toast({
       title: "Changes saved",
       description: "Your box has been updated successfully."
-    });
-  };
-
-  const handleAnalyze = () => {
-    if (localContent.trim().length < 50) {
-      toast({
-        title: "Not enough content",
-        description: "Please write at least 50 characters for a meaningful analysis.",
-        variant: "destructive"
-      });
-      return;
-    }
-    setShowAnalysis(true);
-    toast({
-      title: "Analyzing content",
-      description: "Please wait while we analyze your writing..."
     });
   };
 
@@ -85,8 +63,6 @@ const BoxEditor = ({
             />
           </div>
 
-          <ReadabilityChart scores={readabilityScores} />
-
           <div>
             <Label htmlFor="content">Content</Label>
             <Textarea
@@ -94,19 +70,11 @@ const BoxEditor = ({
               value={localContent}
               onChange={handleContentChange}
               className="mt-1 min-h-[200px]"
+              placeholder="Enter character attributes, notes, or any other content..."
             />
           </div>
 
-          <div className="flex justify-between items-center">
-            <Button 
-              onClick={handleAnalyze}
-              variant="secondary"
-              className="flex items-center gap-2"
-            >
-              <Wand2 className="w-4 h-4" />
-              Analyze Writing
-            </Button>
-            
+          <div className="flex justify-end">
             <Button onClick={handleSave}>
               <Save className="w-4 h-4 mr-2" />
               Save Changes
@@ -114,13 +82,6 @@ const BoxEditor = ({
           </div>
         </div>
       </Card>
-
-      {showAnalysis && (
-        <TextAnalysis 
-          scores={readabilityScores}
-          content={localContent}
-        />
-      )}
     </div>
   );
 };
