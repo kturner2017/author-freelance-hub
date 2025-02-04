@@ -140,6 +140,39 @@ export type Database = {
         }
         Relationships: []
       }
+      projects: {
+        Row: {
+          author: string
+          book_title: string
+          created_at: string | null
+          genre: string
+          id: string
+          project_name: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          author: string
+          book_title: string
+          created_at?: string | null
+          genre: string
+          id?: string
+          project_name: string
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          author?: string
+          book_title?: string
+          created_at?: string | null
+          genre?: string
+          id?: string
+          project_name?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

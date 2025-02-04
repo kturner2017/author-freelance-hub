@@ -7,6 +7,7 @@ import ManuscriptEditor from './components/ManuscriptEditor';
 import PublishingSupport from './pages/PublishingSupport';
 import ProfessionalNetwork from './pages/ProfessionalNetwork';
 import PostProject from './pages/PostProject';
+import FindProfessional from './pages/FindProfessional';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/publishing-support" element={<PublishingSupport />} />
         <Route path="/professional-network" element={<ProfessionalNetwork />} />
         <Route path="/professional-network/post-project" element={<PostProject />} />
+        <Route path="/professional-network/find" element={<FindProfessional />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
