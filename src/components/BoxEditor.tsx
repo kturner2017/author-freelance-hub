@@ -5,6 +5,8 @@ import { Card } from './ui/card';
 import { ImagePlus, Plus, X } from 'lucide-react';
 import { useToast } from './ui/use-toast';
 import { Textarea } from './ui/textarea';
+import TextAnalysis from './TextAnalysis';
+import calculateScores from '@/utils/readabilityScores';
 import {
   Select,
   SelectContent,
@@ -55,6 +57,7 @@ const BoxEditor = ({ title, content, onTitleChange, onContentChange }: BoxEditor
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedAttributes, setSelectedAttributes] = useState<AttributeWithExplanation[]>([]);
   const { toast } = useToast();
+  const [readabilityScores, setReadabilityScores] = useState(calculateScores(''));
   
   const handleImageUpload = () => {
     const input = document.createElement('input');
@@ -115,8 +118,10 @@ const BoxEditor = ({ title, content, onTitleChange, onContentChange }: BoxEditor
   };
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    console.log('Content changed:', e.target.value);
-    onContentChange(e.target.value);
+    const newContent = e.target.value;
+    onContentChange(newContent);
+    setReadabilityScores(calculateScores(newContent));
+    console.log('Content changed, new readability scores calculated');
   };
 
   return (
@@ -147,6 +152,11 @@ const BoxEditor = ({ title, content, onTitleChange, onContentChange }: BoxEditor
               Story
             </div>
           </div>
+
+          <TextAnalysis 
+            scores={readabilityScores}
+            content={content}
+          />
 
           <div className="flex gap-2 mt-4">
             <Select onValueChange={handleAttributeSelect}>
