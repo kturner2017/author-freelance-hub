@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -10,6 +11,7 @@ type SortField = 'project_name' | 'author' | 'book_title' | 'genre' | 'type' | '
 type SortOrder = 'asc' | 'desc';
 
 const FindProfessional = () => {
+  const navigate = useNavigate();
   const [sortField, setSortField] = useState<SortField>('created_at');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
@@ -77,7 +79,11 @@ const FindProfessional = () => {
               </TableHeader>
               <TableBody>
                 {projects?.map((project) => (
-                  <TableRow key={project.id}>
+                  <TableRow 
+                    key={project.id}
+                    className="cursor-pointer hover:bg-gray-50"
+                    onClick={() => navigate(`/professional-network/find/${project.id}`)}
+                  >
                     <TableCell>{project.project_name}</TableCell>
                     <TableCell>{project.author}</TableCell>
                     <TableCell>{project.book_title}</TableCell>
