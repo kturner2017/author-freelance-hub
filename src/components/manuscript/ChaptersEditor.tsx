@@ -4,12 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 import calculateScores from '@/utils/readabilityScores';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
-import { ChevronLeft, Plus, Home } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '../ui/card';
 import { Database } from '@/integrations/supabase/types';
 import RichTextEditor from '../RichTextEditor';
 import TextAnalysis from '../TextAnalysis';
+import DashboardLayout from '../layout/DashboardLayout';
 import type { ReadabilityScores } from '@/types/readability';
 
 type ManuscriptChapter = Database['public']['Tables']['manuscript_chapters']['Row'];
@@ -36,7 +37,7 @@ const ChaptersEditor = () => {
   const [chapters, setChapters] = useState<{ [key: string]: Chapter }>(INITIAL_CHAPTERS);
   const { toast } = useToast();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [aiAnalysis, setAiAnalysis] = useState<any>({}); // Initialize as empty object instead of null
+  const [aiAnalysis, setAiAnalysis] = useState<any>({}); // Initialize as empty object
 
   useEffect(() => {
     const loadChapters = async () => {
@@ -219,58 +220,40 @@ const ChaptersEditor = () => {
     setSelectedChapter(chapter);
   };
 
+  const headerActions = (
+    <>
+      <Button 
+        size="sm"
+        onClick={handleSave}
+        className="bg-white text-[#0F172A] hover:bg-gray-100 transition-colors"
+      >
+        Save
+      </Button>
+      <Button 
+        size="sm"
+        onClick={handleAddChapter}
+        className="bg-white text-[#0F172A] hover:bg-gray-100 transition-colors"
+      >
+        <Plus className="h-4 w-4 mr-2" />
+        Add Chapter
+      </Button>
+      <Button 
+        variant="outline" 
+        size="sm"
+        onClick={() => navigate('/editor/manuscript/boxes')}
+        className="border-white text-white hover:bg-white/10 transition-colors"
+      >
+        Switch to Boxes View
+      </Button>
+    </>
+  );
+
   return (
-    <div className="h-screen flex flex-col">
-      <div className="h-20 border-b flex items-center px-6 justify-between bg-[#0F172A] text-white">
-        <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => navigate('/editor')}
-            className="hover:bg-white/10 text-white"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => navigate('/')}
-            className="hover:bg-white/10 text-white"
-          >
-            <Home className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-serif font-semibold leading-tight">Chapters Editor</h1>
-            <p className="text-sm text-gray-300 leading-tight">Manuscript</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button 
-            size="sm"
-            onClick={handleSave}
-            className="bg-white text-[#0F172A] hover:bg-gray-100 transition-colors"
-          >
-            Save
-          </Button>
-          <Button 
-            size="sm"
-            onClick={handleAddChapter}
-            className="bg-white text-[#0F172A] hover:bg-gray-100 transition-colors"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Chapter
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => navigate('/editor/manuscript/boxes')}
-            className="border-white text-white hover:bg-white/10 transition-colors"
-          >
-            Switch to Boxes View
-          </Button>
-        </div>
-      </div>
-      
+    <DashboardLayout 
+      title="Chapters Editor"
+      subtitle="Manuscript"
+      actions={headerActions}
+    >
       <div className="flex-1 flex">
         <div className="w-64 border-r bg-gray-50">
           <ScrollArea className="h-full">
@@ -292,7 +275,6 @@ const ChaptersEditor = () => {
           </ScrollArea>
         </div>
 
-        {/* Chapter Content */}
         <div className="flex-1">
           <ScrollArea className="h-full">
             {selectedChapter ? (
@@ -317,7 +299,7 @@ const ChaptersEditor = () => {
           </ScrollArea>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 
