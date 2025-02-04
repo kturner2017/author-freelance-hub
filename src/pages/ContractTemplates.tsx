@@ -60,7 +60,7 @@ const ContractTemplates = () => {
     <div className="min-h-screen bg-white">
       <Navigation />
       
-      <div className="max-w-7xl mx-auto px-4 py-12">
+      <div className="max-w-7xl mx-auto px-4 pt-24 pb-12">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-4xl font-serif font-bold text-primary mb-2">Contract Templates</h1>
