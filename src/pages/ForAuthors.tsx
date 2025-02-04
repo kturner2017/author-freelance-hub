@@ -72,7 +72,10 @@ const ForAuthors = () => {
                 Connect with editors, designers, and marketers to perfect your book.
               </p>
             </div>
-            <div className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+            <div 
+              className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+              onClick={() => navigate('/launch-strategies')}
+            >
               <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mb-4">
                 <Rocket className="w-6 h-6 text-primary" />
               </div>
