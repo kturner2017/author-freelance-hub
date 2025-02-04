@@ -1,10 +1,11 @@
+import React from 'react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Menu, X } from 'lucide-react';
 import useMobile from '@/hooks/use-mobile';
 
-const Navigation = () => {
+const Navigation: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = useMobile();
 
