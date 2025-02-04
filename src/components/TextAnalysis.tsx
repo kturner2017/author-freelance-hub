@@ -1,7 +1,8 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Progress } from './ui/progress';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import type { ReadabilityScores } from '@/types/readability';
 
 export interface TextAnalysisProps {
@@ -65,7 +66,7 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing }: TextAnalysis
         <CardHeader>
           <CardTitle>Writing Analysis</CardTitle>
           <CardDescription>
-            Real-time AI-powered suggestions to improve your writing
+            AI-powered suggestions to improve your writing
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -77,6 +78,16 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing }: TextAnalysis
                   Analyzing your text...
                 </span>
               </div>
+            )}
+
+            {!isAnalyzing && !aiAnalysis && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Analysis Unavailable</AlertTitle>
+                <AlertDescription>
+                  The AI analysis service is temporarily unavailable. Your text has still been saved, and readability metrics are available below.
+                </AlertDescription>
+              </Alert>
             )}
 
             {aiAnalysis && !isAnalyzing && (
