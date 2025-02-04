@@ -36,7 +36,7 @@ const ChaptersEditor = () => {
   const [chapters, setChapters] = useState<{ [key: string]: Chapter }>(INITIAL_CHAPTERS);
   const { toast } = useToast();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [aiAnalysis, setAiAnalysis] = useState(null);
+  const [aiAnalysis, setAiAnalysis] = useState<any>({}); // Initialize as empty object instead of null
 
   useEffect(() => {
     const loadChapters = async () => {
@@ -79,6 +79,42 @@ const ChaptersEditor = () => {
 
     loadChapters();
   }, [toast]);
+
+  const handleContentChange = async (content: string) => {
+    if (!selectedChapter) return;
+    
+    const updatedChapter = {
+      ...selectedChapter,
+      content: content
+    };
+    
+    setSelectedChapter(updatedChapter);
+    setChapters(prev => ({
+      ...prev,
+      [updatedChapter.chapter_id]: updatedChapter
+    }));
+
+    // Trigger AI analysis whenever content changes
+    setIsAnalyzing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-text', {
+        body: { text: content }
+      });
+
+      if (error) throw error;
+      console.log('AI Analysis results:', data);
+      setAiAnalysis(data);
+    } catch (error) {
+      console.error('Error during AI analysis:', error);
+      toast({
+        title: "Analysis Error",
+        description: "There was an error analyzing your text. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -183,21 +219,6 @@ const ChaptersEditor = () => {
     setSelectedChapter(chapter);
   };
 
-  const handleContentChange = async (content: string) => {
-    if (!selectedChapter) return;
-    
-    const updatedChapter = {
-      ...selectedChapter,
-      content: content
-    };
-    
-    setSelectedChapter(updatedChapter);
-    setChapters(prev => ({
-      ...prev,
-      [updatedChapter.chapter_id]: updatedChapter
-    }));
-  };
-
   return (
     <div className="h-screen flex flex-col">
       <div className="h-20 border-b flex items-center px-6 justify-between bg-[#0F172A] text-white">
@@ -249,9 +270,8 @@ const ChaptersEditor = () => {
           </Button>
         </div>
       </div>
-
+      
       <div className="flex-1 flex">
-        {/* Chapters List */}
         <div className="w-64 border-r bg-gray-50">
           <ScrollArea className="h-full">
             <div className="p-4 space-y-2">
