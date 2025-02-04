@@ -3,7 +3,8 @@ import Index from './pages/Index';
 import ForAuthors from './pages/ForAuthors';
 import NotFound from './pages/NotFound';
 import BooksDashboard from './components/BooksDashboard';
-import ManuscriptEditor from './components/ManuscriptEditor';
+import ChaptersEditor from './components/manuscript/ChaptersEditor';
+import BoxesEditor from './components/manuscript/BoxesEditor';
 import PublishingSupport from './pages/PublishingSupport';
 import ProfessionalNetwork from './pages/ProfessionalNetwork';
 import PostProject from './pages/PostProject';
@@ -24,7 +25,8 @@ function App() {
         <Route path="/" element={<Index />} />
         <Route path="/for-authors" element={<ForAuthors />} />
         <Route path="/editor" element={<BooksDashboard />} />
-        <Route path="/editor/manuscript" element={<ManuscriptEditor />} />
+        <Route path="/editor/manuscript" element={<ChaptersEditor />} />
+        <Route path="/editor/manuscript/boxes" element={<BoxesEditor />} />
         <Route path="/publishing-support" element={<PublishingSupport />} />
         <Route path="/professional-network" element={<ProfessionalNetwork />} />
         <Route path="/professional-network/post-project" element={<PostProject />} />
