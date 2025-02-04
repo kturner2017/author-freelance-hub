@@ -13,6 +13,9 @@ import ProjectDetail from './pages/ProjectDetail';
 import LaunchStrategies from './pages/LaunchStrategies';
 import LaunchStrategyDetail from './pages/LaunchStrategyDetail';
 import FreelancerApplication from './pages/FreelancerApplication';
+import ContractTemplates from './pages/ContractTemplates';
+import ActiveContracts from './pages/ActiveContracts';
+import ContractReview from './pages/ContractReview';
 
 function App() {
   return (
@@ -29,6 +32,9 @@ function App() {
         <Route path="/professional-network/find/freelancer/:id" element={<FreelancerDetail />} />
         <Route path="/professional-network/find/:id" element={<ProjectDetail />} />
         <Route path="/professional-network/apply" element={<FreelancerApplication />} />
+        <Route path="/professional-network/contracts/templates" element={<ContractTemplates />} />
+        <Route path="/professional-network/contracts/active" element={<ActiveContracts />} />
+        <Route path="/professional-network/contracts/review" element={<ContractReview />} />
         <Route path="/launch-strategies" element={<LaunchStrategies />} />
         <Route path="/launch-strategies/:id" element={<LaunchStrategyDetail />} />
         <Route path="*" element={<NotFound />} />

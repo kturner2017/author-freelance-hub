@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
-import { Briefcase, Users, Handshake, DollarSign } from "lucide-react";
+import { Briefcase, Users, Handshake, DollarSign, FileText, ClipboardList } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const ProfessionalNetwork = () => {
@@ -17,7 +17,7 @@ const ProfessionalNetwork = () => {
           <p className="text-lg md:text-xl text-gray-700 mb-8 max-w-2xl mx-auto">
             Find the right professionals to help bring your book to life. Connect with editors, designers, marketers, and other industry experts.
           </p>
-          <div className="flex gap-4 justify-center">
+          <div className="flex gap-4 justify-center flex-wrap">
             <Button asChild>
               <Link to="/professional-network/find">Find Professionals</Link>
             </Button>
@@ -31,7 +31,7 @@ const ProfessionalNetwork = () => {
       {/* Services Grid */}
       <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="p-8 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow">
               <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mb-4">
                 <Users className="w-6 h-6 text-primary" />
@@ -47,13 +47,28 @@ const ProfessionalNetwork = () => {
 
             <div className="p-8 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow">
               <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mb-4">
-                <Handshake className="w-6 h-6 text-primary" />
+                <FileText className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="text-2xl font-serif font-bold text-primary mb-4">Manage Contracts</h3>
+              <h3 className="text-2xl font-serif font-bold text-primary mb-4">Contract Templates</h3>
               <p className="text-gray-600 mb-6">
-                Create, review, and manage professional contracts. Our templates ensure clear terms and protect both parties.
+                Access professional contract templates for different types of publishing services. Customize them to fit your specific needs.
               </p>
-              <Button variant="outline" className="w-full">View Contracts</Button>
+              <Button variant="outline" asChild className="w-full">
+                <Link to="/professional-network/contracts/templates">View Templates</Link>
+              </Button>
+            </div>
+
+            <div className="p-8 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mb-4">
+                <ClipboardList className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="text-2xl font-serif font-bold text-primary mb-4">Active Contracts</h3>
+              <p className="text-gray-600 mb-6">
+                Manage your ongoing contracts, track milestones, and handle revisions. Keep all your agreements organized in one place.
+              </p>
+              <Button variant="outline" asChild className="w-full">
+                <Link to="/professional-network/contracts/active">View Contracts</Link>
+              </Button>
             </div>
 
             <div className="p-8 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow">
@@ -66,6 +81,19 @@ const ProfessionalNetwork = () => {
               </p>
               <Button variant="outline" asChild className="w-full">
                 <Link to="/professional-network/post-project">Create Project</Link>
+              </Button>
+            </div>
+
+            <div className="p-8 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mb-4">
+                <Handshake className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="text-2xl font-serif font-bold text-primary mb-4">Contract Review</h3>
+              <p className="text-gray-600 mb-6">
+                Get your contracts reviewed by legal professionals. Ensure clear terms and protect both parties involved in the agreement.
+              </p>
+              <Button variant="outline" asChild className="w-full">
+                <Link to="/professional-network/contracts/review">Request Review</Link>
               </Button>
             </div>
 
