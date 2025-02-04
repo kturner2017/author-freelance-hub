@@ -45,7 +45,7 @@ const ManuscriptToolbar = ({
   const navigate = useNavigate();
 
   return (
-    <div className="h-14 border-b flex items-center px-4 justify-between bg-white">
+    <div className="h-16 border-b flex items-center px-4 justify-between bg-white">
       <div className="flex items-center gap-2">
         <Button 
           variant="ghost" 
@@ -65,10 +65,11 @@ const ManuscriptToolbar = ({
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h2 className="text-xl font-semibold">{selectedChapter}</h2>
-          <p className="text-sm text-gray-500">{bookData.title}</p>
+          <h2 className="text-lg font-semibold leading-tight">{selectedChapter}</h2>
+          <p className="text-sm text-gray-500 leading-tight">{bookData.title}</p>
         </div>
       </div>
+      
       <div className="flex items-center gap-2">
         <Button
           variant="default"

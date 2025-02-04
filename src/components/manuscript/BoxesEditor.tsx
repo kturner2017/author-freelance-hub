@@ -182,7 +182,7 @@ const BoxesEditor = () => {
 
   return (
     <div className="h-screen flex flex-col">
-      <div className="h-14 border-b flex items-center px-4 justify-between bg-white">
+      <div className="h-16 border-b flex items-center px-4 justify-between bg-white">
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
@@ -259,8 +259,11 @@ const BoxesEditor = () => {
                 
                 <div className="mb-6">
                   <FileUploader 
-                    act={selectedAct} 
-                    chapterId="1"
+                    boxId={selectedBox?.id || ''} 
+                    onUploadComplete={() => {
+                      // Refresh the box data if needed
+                      console.log('File upload completed');
+                    }}
                   />
                 </div>
 

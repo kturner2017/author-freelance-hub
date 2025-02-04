@@ -12,26 +12,26 @@ const Navigation: React.FC = () => {
   const toggleMenu = () => setIsOpen(!isOpen);
 
   return (
-    <nav className="fixed w-full bg-white/80 backdrop-blur-md z-50 border-b">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex justify-between w-full">
+    <nav className="fixed w-full bg-white/80 backdrop-blur-md z-50 border-b h-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+        <div className="flex items-center justify-between h-full">
+          <div className="flex justify-between w-full items-center">
             <div className="flex-shrink-0 flex items-center">
               <Link to="/" className="text-2xl font-serif font-bold text-primary">
                 Authify
               </Link>
             </div>
             
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+            <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-8">
               <Link
                 to="/for-authors"
-                className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700"
+                className="inline-flex items-center px-1 text-sm font-medium text-gray-500 hover:text-gray-700"
               >
                 For Authors
               </Link>
               <Link
                 to="/editor"
-                className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700"
+                className="inline-flex items-center px-1 text-sm font-medium text-gray-500 hover:text-gray-700"
               >
                 Editor
               </Link>
