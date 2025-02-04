@@ -34,7 +34,10 @@ async function analyzeText(text: string, hf: HfInference) {
         showVsTell: showTellAnalysis.ratio,
       },
       details: {
-        showVsTell: showTellAnalysis,
+        showVsTell: {
+          ...showTellAnalysis,
+          tellingSentences: showTellAnalysis.tellingSentences.map(s => s.trim())
+        },
       },
       suggestions: [
         ...(grammarResponse[0].score < 0.7 ? ['Consider reviewing the text for grammatical accuracy'] : []),
@@ -48,6 +51,51 @@ async function analyzeText(text: string, hf: HfInference) {
     console.error('Error during text analysis:', error);
     throw error;
   }
+}
+
+function analyzeShowVsTell(text: string) {
+  const sentences = text.split(/[.!?]+/).filter(Boolean);
+  const showingWords = [
+    'sparkled', 'gleamed', 'thundered', 'rustled', 'trembled',
+    'bitter', 'sweet', 'rough', 'smooth', 'sharp',
+    'grabbed', 'clutched', 'sprinted', 'slammed'
+  ];
+  
+  const tellingWords = [
+    'felt', 'feel', 'was angry', 'was sad', 'wondered',
+    'watched', 'looked', 'seemed', 'appeared',
+    'very', 'really', 'quite', 'rather'
+  ];
+
+  const analysis = {
+    showingSentences: [] as string[],
+    tellingSentences: [] as string[],
+    ratio: 0
+  };
+
+  let showingCount = 0;
+  let tellingCount = 0;
+
+  sentences.forEach(sentence => {
+    const words = sentence.toLowerCase().split(/\s+/);
+    let isShowing = false;
+    let isTelling = false;
+    
+    if (words.some(word => showingWords.some(show => word.includes(show)))) {
+      showingCount++;
+      isShowing = true;
+      analysis.showingSentences.push(sentence.trim());
+    }
+    
+    if (words.some(word => tellingWords.some(tell => word.includes(tell)))) {
+      tellingCount++;
+      isTelling = true;
+      analysis.tellingSentences.push(sentence.trim());
+    }
+  });
+
+  analysis.ratio = showingCount / (showingCount + tellingCount) || 0;
+  return analysis;
 }
 
 serve(async (req) => {
@@ -102,49 +150,3 @@ serve(async (req) => {
     );
   }
 });
-
-// Keep the existing analyzeShowVsTell function
-function analyzeShowVsTell(text: string) {
-  const sentences = text.split(/[.!?]+/).filter(Boolean);
-  const showingWords = [
-    'sparkled', 'gleamed', 'thundered', 'rustled', 'trembled',
-    'bitter', 'sweet', 'rough', 'smooth', 'sharp',
-    'grabbed', 'clutched', 'sprinted', 'slammed'
-  ];
-  
-  const tellingWords = [
-    'felt', 'feel', 'was angry', 'was sad', 'wondered',
-    'watched', 'looked', 'seemed', 'appeared',
-    'very', 'really', 'quite', 'rather'
-  ];
-
-  const analysis = {
-    showingSentences: [] as string[],
-    tellingSentences: [] as string[],
-    ratio: 0
-  };
-
-  let showingCount = 0;
-  let tellingCount = 0;
-
-  sentences.forEach(sentence => {
-    const words = sentence.toLowerCase().split(/\s+/);
-    let isShowing = false;
-    let isTelling = false;
-    
-    if (words.some(word => showingWords.some(show => word.includes(show)))) {
-      showingCount++;
-      isShowing = true;
-      analysis.showingSentences.push(sentence.trim());
-    }
-    
-    if (words.some(word => tellingWords.some(tell => word.includes(tell)))) {
-      tellingCount++;
-      isTelling = true;
-      analysis.tellingSentences.push(sentence.trim());
-    }
-  });
-
-  analysis.ratio = showingCount / (showingCount + tellingCount) || 0;
-  return analysis;
-}

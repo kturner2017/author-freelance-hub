@@ -31,19 +31,24 @@ import {
   IndentDecrease
 } from 'lucide-react';
 
+interface RichTextEditorProps {
+  content: string;
+  onChange: (content: string) => void;
+}
+
 const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
   const [readabilityScores, setReadabilityScores] = useState(calculateScores(''));
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  // Improved debounced analysis function
   const performAnalysis = useCallback(
     debounce(async (text: string) => {
-      // Don't analyze if text is too short
       if (text.length < 50) return;
       
-      // Clean up the text - remove HTML tags
-      const cleanText = text.replace(/<[^>]*>/g, '').trim();
+      // Clean up the text more thoroughly - remove all HTML tags and decode entities
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = text;
+      const cleanText = tempDiv.textContent || tempDiv.innerText || '';
       
       setIsAnalyzing(true);
       try {
@@ -59,7 +64,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       } finally {
         setIsAnalyzing(false);
       }
-    }, 2000), // Increased debounce time to 2 seconds
+    }, 2000),
     []
   );
 
@@ -105,7 +110,6 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       const scores = calculateScores(plainText);
       setReadabilityScores(scores);
       
-      // Only trigger analysis if content is long enough
       if (plainText.length >= 50) {
         performAnalysis(plainText);
       }
