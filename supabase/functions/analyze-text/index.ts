@@ -6,47 +6,61 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-async function analyzeReadability(text: string, hf: HfInference) {
-  console.log('Analyzing readability with text-classification model...');
-  const response = await hf.textClassification({
-    model: 'cointegrated/rubert-tiny2-readability',
-    inputs: text,
-  });
+async function analyzeText(text: string, hf: HfInference) {
+  console.log('Starting text analysis...');
   
-  // Model returns scores from 1-5, we'll normalize to our existing scale
-  const readabilityScore = (response[0].score * 20); // Convert to 0-100 scale
-  console.log('Readability analysis result:', response);
-  
-  return {
-    fleschKincaid: readabilityScore / 10, // Convert to 0-10 scale
-    fleschReading: readabilityScore,
-    gunningFog: readabilityScore / 10,
-    colemanLiau: readabilityScore / 10
-  };
-}
+  try {
+    // Grammar analysis using GPT-2 detector
+    const grammarResponse = await hf.textClassification({
+      model: 'textattack/roberta-base-CoLA',
+      inputs: text.slice(0, 500), // Limit text length for API
+    });
+    console.log('Grammar analysis result:', grammarResponse);
 
-async function getWritingSuggestions(text: string, hf: HfInference) {
-  console.log('Getting writing suggestions...');
-  
-  // Use text2text-generation model for writing suggestions
-  const response = await hf.textGeneration({
-    model: 'facebook/bart-large-cnn',
-    inputs: `Analyze this text and provide writing improvement suggestions: ${text}`,
-    parameters: {
-      max_length: 100,
-      temperature: 0.7,
-    }
-  });
-  
-  console.log('Writing suggestions result:', response);
-  
-  // Parse the generated suggestions into an array
-  const suggestions = response.generated_text
-    .split('.')
-    .filter(Boolean)
-    .map(s => s.trim());
+    // Style analysis using sentiment model (as a proxy for writing quality)
+    const styleResponse = await hf.textClassification({
+      model: 'nlptown/bert-base-multilingual-uncased-sentiment',
+      inputs: text.slice(0, 500),
+    });
+    console.log('Style analysis result:', styleResponse);
 
-  return suggestions;
+    // Generate writing suggestions
+    const suggestionsResponse = await hf.textGeneration({
+      model: 'gpt2',
+      inputs: `Analyze this text and provide writing improvement suggestions: ${text.slice(0, 200)}`,
+      parameters: {
+        max_length: 100,
+        temperature: 0.7,
+        top_p: 0.9,
+      },
+    });
+    console.log('Suggestions generation result:', suggestionsResponse);
+
+    // Calculate show vs tell ratio
+    const showTellAnalysis = analyzeShowVsTell(text);
+    
+    return {
+      scores: {
+        grammar: grammarResponse[0].score,
+        style: (parseInt(styleResponse[0].label.split(' ')[0]) / 5), // Convert 1-5 scale to 0-1
+        showVsTell: showTellAnalysis.ratio,
+      },
+      details: {
+        showVsTell: showTellAnalysis,
+      },
+      suggestions: [
+        suggestionsResponse.generated_text,
+        ...(grammarResponse[0].score < 0.7 ? ['Consider reviewing the text for grammatical accuracy'] : []),
+        ...(showTellAnalysis.ratio < 0.4 ? [
+          'Try to show more through descriptive language rather than telling',
+          'Add more sensory details to make your writing more vivid'
+        ] : [])
+      ]
+    };
+  } catch (error) {
+    console.error('Error during text analysis:', error);
+    throw error;
+  }
 }
 
 serve(async (req) => {
@@ -69,48 +83,7 @@ serve(async (req) => {
     }
 
     const hf = new HfInference(token);
-
-    // Run all analyses in parallel
-    const [
-      grammarAnalysis,
-      styleAnalysis,
-      readabilityScores,
-      suggestions
-    ] = await Promise.all([
-      hf.textClassification({
-        model: 'textattack/roberta-base-CoLA',
-        inputs: text
-      }),
-      hf.textClassification({
-        model: 'cross-encoder/ms-marco-MiniLM-L-4-v2',
-        inputs: text
-      }),
-      analyzeReadability(text, hf),
-      getWritingSuggestions(text, hf)
-    ]);
-
-    const showTellAnalysis = analyzeShowVsTell(text);
-
-    const result = {
-      scores: {
-        grammar: grammarAnalysis[0].score,
-        style: styleAnalysis[0].score,
-        showVsTell: showTellAnalysis.ratio,
-        ...readabilityScores
-      },
-      details: {
-        showVsTell: showTellAnalysis
-      },
-      suggestions: [
-        ...suggestions,
-        ...(grammarAnalysis[0].score < 0.7 ? ['Consider reviewing the text for grammatical accuracy'] : []),
-        ...(styleAnalysis[0].score < 0.6 ? ['Try varying sentence structure for better readability'] : []),
-        ...(showTellAnalysis.ratio < 0.4 ? [
-          'Consider using more descriptive language to show rather than tell',
-          'Replace abstract descriptions with concrete sensory details'
-        ] : [])
-      ]
-    };
+    const result = await analyzeText(text, hf);
 
     return new Response(
       JSON.stringify(result),
@@ -122,19 +95,22 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        suggestions: ['Analysis service is temporarily unavailable'],
         scores: {
           grammar: 0.8,
-          style: 0.5,
-          showVsTell: 0.5,
-          fleschKincaid: 8,
-          fleschReading: 70,
-          gunningFog: 10,
-          colemanLiau: 9
+          style: 0.7,
+          showVsTell: 0.6,
+        },
+        suggestions: ['Analysis service encountered an error. Please try again later.'],
+        details: {
+          showVsTell: {
+            showingSentences: [],
+            tellingSentences: [],
+            ratio: 0.6
+          }
         }
       }), 
       {
-        status: 200,
+        status: 200, // Return 200 even on error to handle it gracefully in the UI
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
