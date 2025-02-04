@@ -100,7 +100,7 @@ const FindProfessional = () => {
                   <TableRow 
                     key={freelancer.id}
                     className="cursor-pointer hover:bg-gray-50"
-                    onClick={() => navigate(`/professional-network/find/${freelancer.id}`)}
+                    onClick={() => navigate(`/professional-network/find/freelancer/${freelancer.id}`)}
                   >
                     <TableCell>
                       <div className="flex items-center gap-3">

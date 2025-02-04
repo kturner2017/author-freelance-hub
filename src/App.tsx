@@ -8,6 +8,7 @@ import PublishingSupport from './pages/PublishingSupport';
 import ProfessionalNetwork from './pages/ProfessionalNetwork';
 import PostProject from './pages/PostProject';
 import FindProfessional from './pages/FindProfessional';
+import FreelancerDetail from './pages/FreelancerDetail';
 import ProjectDetail from './pages/ProjectDetail';
 import LaunchStrategies from './pages/LaunchStrategies';
 import LaunchStrategyDetail from './pages/LaunchStrategyDetail';
@@ -25,6 +26,7 @@ function App() {
         <Route path="/professional-network" element={<ProfessionalNetwork />} />
         <Route path="/professional-network/post-project" element={<PostProject />} />
         <Route path="/professional-network/find" element={<FindProfessional />} />
+        <Route path="/professional-network/find/freelancer/:id" element={<FreelancerDetail />} />
         <Route path="/professional-network/find/:id" element={<ProjectDetail />} />
         <Route path="/professional-network/apply" element={<FreelancerApplication />} />
         <Route path="/launch-strategies" element={<LaunchStrategies />} />
