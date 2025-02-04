@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card } from './ui/card';
-import { Plus, Upload, Image as ImageIcon } from 'lucide-react';
+import { Plus, Upload, Image as ImageIcon, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from './ui/use-toast';
 import {
@@ -106,10 +106,19 @@ const BooksDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-primary-900 text-white py-12 px-6">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-serif mb-2">Welcome back</h1>
-          <p className="text-gray-300">This is your bookshelf, where you can write, plan, edit and typeset your books</p>
+      <header className="bg-[#0F172A] text-white h-16 px-6 flex items-center">
+        <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate('/')}
+              className="hover:bg-white/10 text-white"
+            >
+              <Home className="h-5 w-5" />
+            </Button>
+            <h1 className="text-lg font-medium">Your Bookshelf</h1>
+          </div>
         </div>
       </header>
 
