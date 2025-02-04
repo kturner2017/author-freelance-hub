@@ -2,9 +2,29 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
+import Highlight from '@tiptap/extension-highlight';
+import CodeBlock from '@tiptap/extension-code-block';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
-import { Bold, Italic, Underline as UnderlineIcon, AlignLeft, List, ListOrdered, Undo, Redo } from 'lucide-react';
+import { 
+  Bold, 
+  Italic, 
+  Underline as UnderlineIcon, 
+  AlignLeft, 
+  AlignCenter,
+  AlignRight,
+  List, 
+  ListOrdered, 
+  Undo, 
+  Redo,
+  Heading1,
+  Heading2,
+  Quote,
+  Code,
+  Highlighter,
+  IndentIncrease,
+  IndentDecrease
+} from 'lucide-react';
 
 interface RichTextEditorProps {
   content: string;
@@ -17,8 +37,11 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       StarterKit,
       Underline,
       TextAlign.configure({
-        types: ['paragraph', 'heading']
-      })
+        types: ['paragraph', 'heading'],
+        alignments: ['left', 'center', 'right'],
+      }),
+      Highlight,
+      CodeBlock,
     ],
     content: content,
     editorProps: {
@@ -36,10 +59,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
   }
 
   const handleIndentParagraph = () => {
-    // Get the current selection
     const { from } = editor.state.selection;
-    
-    // Find the paragraph node at the current position
     const node = editor.state.doc.nodeAt(from);
     
     if (node) {
@@ -56,6 +76,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
   return (
     <div className="border rounded-lg">
       <div className="bg-gray-100 p-2 rounded-t-lg border-b flex flex-wrap items-center gap-2">
+        {/* Text Style Controls */}
         <Button
           variant="ghost"
           size="sm"
@@ -83,15 +104,55 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
         
         <Separator orientation="vertical" className="h-6" />
         
+        {/* Heading Controls */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+          className={`h-8 w-8 p-0 ${editor.isActive('heading', { level: 1 }) ? 'bg-gray-200' : ''}`}
+        >
+          <Heading1 className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          className={`h-8 w-8 p-0 ${editor.isActive('heading', { level: 2 }) ? 'bg-gray-200' : ''}`}
+        >
+          <Heading2 className="h-4 w-4" />
+        </Button>
+
+        <Separator orientation="vertical" className="h-6" />
+
+        {/* Alignment Controls */}
         <Button
           variant="ghost"
           size="sm"
           onClick={() => editor.chain().focus().setTextAlign('left').run()}
-          className="h-8 w-8 p-0"
+          className={`h-8 w-8 p-0 ${editor.isActive({ textAlign: 'left' }) ? 'bg-gray-200' : ''}`}
         >
           <AlignLeft className="h-4 w-4" />
         </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => editor.chain().focus().setTextAlign('center').run()}
+          className={`h-8 w-8 p-0 ${editor.isActive({ textAlign: 'center' }) ? 'bg-gray-200' : ''}`}
+        >
+          <AlignCenter className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => editor.chain().focus().setTextAlign('right').run()}
+          className={`h-8 w-8 p-0 ${editor.isActive({ textAlign: 'right' }) ? 'bg-gray-200' : ''}`}
+        >
+          <AlignRight className="h-4 w-4" />
+        </Button>
+
+        <Separator orientation="vertical" className="h-6" />
         
+        {/* List Controls */}
         <Button
           variant="ghost"
           size="sm"
@@ -100,7 +161,6 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
         >
           <List className="h-4 w-4" />
         </Button>
-        
         <Button
           variant="ghost"
           size="sm"
@@ -112,17 +172,55 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
 
         <Separator orientation="vertical" className="h-6" />
 
+        {/* Indentation Controls */}
         <Button
           variant="ghost"
           size="sm"
           onClick={handleIndentParagraph}
-          className="h-8 px-2 text-sm"
+          className="h-8 w-8 p-0"
         >
-          Indent
+          <IndentIncrease className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => editor.chain().focus().liftListItem('listItem').run()}
+          className="h-8 w-8 p-0"
+        >
+          <IndentDecrease className="h-4 w-4" />
         </Button>
 
         <Separator orientation="vertical" className="h-6" />
 
+        {/* Special Formatting */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+          className={`h-8 w-8 p-0 ${editor.isActive('blockquote') ? 'bg-gray-200' : ''}`}
+        >
+          <Quote className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+          className={`h-8 w-8 p-0 ${editor.isActive('codeBlock') ? 'bg-gray-200' : ''}`}
+        >
+          <Code className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => editor.chain().focus().toggleHighlight().run()}
+          className={`h-8 w-8 p-0 ${editor.isActive('highlight') ? 'bg-gray-200' : ''}`}
+        >
+          <Highlighter className="h-4 w-4" />
+        </Button>
+
+        <Separator orientation="vertical" className="h-6" />
+
+        {/* History Controls */}
         <Button
           variant="ghost"
           size="sm"
