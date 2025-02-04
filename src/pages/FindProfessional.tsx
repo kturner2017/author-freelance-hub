@@ -17,7 +17,7 @@ const FindProfessional = () => {
   const [sortField, setSortField] = useState<SortField>('created_at');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
-  const { data: freelancers, isLoading } = useQuery({
+  const { data: freelancers, isLoading, error } = useQuery({
     queryKey: ['freelancers', sortField, sortOrder],
     queryFn: async () => {
       console.log('Fetching freelancers with sort:', { sortField, sortOrder });
@@ -31,9 +31,14 @@ const FindProfessional = () => {
         throw error;
       }
 
+      console.log('Fetched freelancers:', data);
       return data;
     },
   });
+
+  if (error) {
+    console.error('Query error:', error);
+  }
 
   const toggleSort = (field: SortField) => {
     if (field === sortField) {
@@ -55,8 +60,8 @@ const FindProfessional = () => {
     </Button>
   );
 
-  const formatExpertise = (areas: string[]) => {
-    return areas.join(', ');
+  const formatExpertise = (areas: Database["public"]["Enums"]["expertise_area"][]) => {
+    return areas.map(area => area.replace('_', ' ')).join(', ');
   };
 
   return (
@@ -75,6 +80,10 @@ const FindProfessional = () => {
 
         {isLoading ? (
           <div className="text-center py-8">Loading professionals...</div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-500">Error loading professionals. Please try again.</div>
+        ) : !freelancers?.length ? (
+          <div className="text-center py-8">No professionals found.</div>
         ) : (
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">
             <Table>
