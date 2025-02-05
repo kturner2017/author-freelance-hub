@@ -90,7 +90,7 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing }: TextAnalysis
 
                 {suggestions.length > 0 && (
                   <div>
-                    <h">Writing Suggestions</h4>
+                    <h4 className="font-medium mb-2">Writing Suggestions</h4>
                     <ul className="list-disc pl-5 space-y-1">
                       {suggestions.map((suggestion: string, index: number) => (
                         <li key={index} className="text-sm text-gray-600">{suggestion}</li>
