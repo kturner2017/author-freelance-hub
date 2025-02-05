@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
+import { Menu, Briefcase } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useMobile } from "@/hooks/useMobile";
+import useIsMobile from "@/hooks/use-mobile";
 
 const Navigation = () => {
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   
   return (
     <nav className="border-b">
