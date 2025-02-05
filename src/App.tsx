@@ -16,6 +16,7 @@ import LaunchStrategyDetail from '@/pages/LaunchStrategyDetail';
 import PublishingSupport from '@/pages/PublishingSupport';
 import ForAuthors from '@/pages/ForAuthors';
 import ChaptersEditor from '@/components/manuscript/ChaptersEditor';
+import BooksDashboard from '@/components/BooksDashboard';
 
 function App() {
   return (
@@ -23,7 +24,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/editor" element={<Editor />} />
-        <Route path="/editor/manuscript/chapters" element={<ChaptersEditor />} />
+        <Route path="/editor/books" element={<BooksDashboard />} />
+        <Route path="/editor/manuscript/:bookId/chapters" element={<ChaptersEditor />} />
         <Route path="/professional-network" element={<ProfessionalNetwork />} />
         <Route path="/professional-network/find" element={<FindProfessional />} />
         <Route path="/professional-network/find/freelancer/:id" element={<FreelancerDetail />} />

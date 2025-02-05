@@ -46,7 +46,9 @@ const BooksDashboard = () => {
     setIsDialogOpen(false);
     setNewBook({ title: '', subtitle: '', author: '' });
     setCoverImage(null);
-    navigate('/editor/manuscript');
+    // Generate a temporary ID for the new book
+    const tempId = Date.now().toString();
+    navigate(`/editor/manuscript/${tempId}/chapters`);
   };
 
   const handleCoverImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,9 +100,9 @@ const BooksDashboard = () => {
     event.target.value = '';
   };
 
-  const handleBookClick = () => {
-    console.log('Navigating to manuscript editor');
-    navigate('/editor/manuscript');
+  const handleBookClick = (bookId: string) => {
+    console.log('Navigating to manuscript editor for book:', bookId);
+    navigate(`/editor/manuscript/${bookId}/chapters`);
   };
 
   return (
@@ -112,7 +114,7 @@ const BooksDashboard = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/editor')}
               className="hover:bg-white/10 text-white"
             >
               <Home className="h-5 w-5" />
@@ -263,7 +265,7 @@ const BooksDashboard = () => {
           {/* Example Book Card */}
           <Card 
             className="overflow-hidden cursor-pointer min-h-[280px] flex flex-col hover:shadow-lg transition-shadow"
-            onClick={handleBookClick}
+            onClick={() => handleBookClick('gomer-1')}
           >
             <div className="bg-white p-6 flex-1">
               <h3 className="text-xl font-medium mb-2">Gomer</h3>

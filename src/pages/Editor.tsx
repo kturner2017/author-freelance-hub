@@ -18,13 +18,13 @@ const Editor = () => {
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             <div className="p-6 border rounded-lg shadow-sm">
               <h2 className="text-2xl font-bold text-primary mb-4 font-serif">
-                Chapters
+                Your Books
               </h2>
               <p className="text-gray-600 mb-6">
-                Write and organize your manuscript chapters
+                Write and organize your manuscripts
               </p>
               <Button asChild>
-                <Link to="/editor/manuscript/chapters">Open Chapters Editor</Link>
+                <Link to="/editor/books">Start Writing</Link>
               </Button>
             </div>
             <div className="p-6 border rounded-lg shadow-sm">
