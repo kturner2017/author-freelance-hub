@@ -4,14 +4,15 @@ import { supabase } from '@/integrations/supabase/client';
 import calculateScores from '@/utils/readabilityScores';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
-import { Plus } from 'lucide-react';
+import { Plus, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '../ui/card';
 import { Database } from '@/integrations/supabase/types';
 import RichTextEditor from '../RichTextEditor';
 import TextAnalysis from '../TextAnalysis';
 import DashboardLayout from '../layout/DashboardLayout';
-import type { ReadabilityScores } from '@/types/readability';
+import { getWordCount, getTotalWordCount } from '@/utils/wordCount';
+import { Badge } from '../ui/badge';
 
 type ManuscriptChapter = Database['public']['Tables']['manuscript_chapters']['Row'];
 
@@ -37,7 +38,7 @@ const ChaptersEditor = () => {
   const [chapters, setChapters] = useState<{ [key: string]: Chapter }>(INITIAL_CHAPTERS);
   const { toast } = useToast();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [aiAnalysis, setAiAnalysis] = useState<any>({}); // Initialize as empty object
+  const [aiAnalysis, setAiAnalysis] = useState<any>({});
 
   useEffect(() => {
     const loadChapters = async () => {
@@ -66,14 +67,12 @@ const ChaptersEditor = () => {
           };
         });
         setChapters(chaptersMap);
-        // Select the first chapter by default
         const firstChapter = Object.values(chaptersMap)[0];
         if (firstChapter) {
           setSelectedChapter(firstChapter);
         }
       } else {
         setChapters(INITIAL_CHAPTERS);
-        // Select the initial chapter by default
         setSelectedChapter(INITIAL_CHAPTERS['chapter-1']);
       }
     };
@@ -220,31 +219,39 @@ const ChaptersEditor = () => {
     setSelectedChapter(chapter);
   };
 
+  const totalWordCount = getTotalWordCount(Object.values(chapters));
+
   const headerActions = (
     <>
-      <Button 
-        size="sm"
-        onClick={handleSave}
-        className="bg-white text-primary hover:bg-gray-100 transition-colors"
-      >
-        Save
-      </Button>
-      <Button 
-        size="sm"
-        onClick={handleAddChapter}
-        className="bg-white text-primary hover:bg-gray-100 transition-colors"
-      >
-        <Plus className="h-4 w-4 mr-2" />
-        Add Chapter
-      </Button>
-      <Button 
-        variant="outline" 
-        size="sm"
-        onClick={() => navigate('/editor/manuscript/boxes')}
-        className="border-white text-white hover:bg-white/10 transition-colors"
-      >
-        Switch to Boxes View
-      </Button>
+      <div className="flex items-center gap-4">
+        <Badge variant="secondary" className="text-sm">
+          <BookOpen className="h-4 w-4 mr-1" />
+          Total Words: {totalWordCount.toLocaleString()}
+        </Badge>
+        <Button 
+          size="sm"
+          onClick={handleSave}
+          className="bg-white text-primary hover:bg-gray-100 transition-colors"
+        >
+          Save
+        </Button>
+        <Button 
+          size="sm"
+          onClick={handleAddChapter}
+          className="bg-white text-primary hover:bg-gray-100 transition-colors"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add Chapter
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => navigate('/editor/manuscript/boxes')}
+          className="border-white text-white hover:bg-white/10 transition-colors"
+        >
+          Switch to Boxes View
+        </Button>
+      </div>
     </>
   );
 
@@ -268,6 +275,9 @@ const ChaptersEditor = () => {
                 >
                   <CardContent className="p-4">
                     <h4 className="font-semibold">{chapter.title}</h4>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {getWordCount(chapter.content).toLocaleString()} words
+                    </p>
                   </CardContent>
                 </Card>
               ))}
@@ -279,7 +289,12 @@ const ChaptersEditor = () => {
           <ScrollArea className="h-full">
             {selectedChapter ? (
               <div className="p-6 max-w-4xl mx-auto">
-                <h2 className="text-3xl font-serif mb-6">{selectedChapter.title}</h2>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-3xl font-serif">{selectedChapter.title}</h2>
+                  <Badge variant="outline" className="text-sm">
+                    {getWordCount(selectedChapter.content).toLocaleString()} words
+                  </Badge>
+                </div>
                 <RichTextEditor
                   content={selectedChapter.content}
                   onChange={handleContentChange}
