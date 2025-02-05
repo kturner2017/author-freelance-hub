@@ -1,4 +1,3 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "@/pages/Index";
 import Editor from "@/pages/Editor";
@@ -17,13 +16,11 @@ import LaunchStrategies from "@/pages/LaunchStrategies";
 import LaunchStrategyDetail from "@/pages/LaunchStrategyDetail";
 import ProjectDetail from "@/pages/ProjectDetail";
 import NotFound from "@/pages/NotFound";
-import { Toaster } from "react-hot-toast";
-
-const queryClient = new QueryClient();
+import { Toaster } from "@/components/ui/toaster";
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
+    <>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
@@ -46,7 +43,7 @@ function App() {
         </Routes>
       </BrowserRouter>
       <Toaster />
-    </QueryClientProvider>
+    </>
   );
 }
 
