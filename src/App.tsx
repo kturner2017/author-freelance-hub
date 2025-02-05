@@ -1,6 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Index from '@/pages/Index';
-import Editor from '@/pages/Editor';
 import NotFound from '@/pages/NotFound';
 import ProfessionalNetwork from '@/pages/ProfessionalNetwork';
 import FindProfessional from '@/pages/FindProfessional';
@@ -23,7 +22,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Index />} />
-        <Route path="/editor" element={<Editor />} />
+        <Route path="/editor" element={<Navigate to="/editor/books" replace />} />
         <Route path="/editor/books" element={<BooksDashboard />} />
         <Route path="/editor/manuscript/:bookId/chapters" element={<ChaptersEditor />} />
         <Route path="/professional-network" element={<ProfessionalNetwork />} />
