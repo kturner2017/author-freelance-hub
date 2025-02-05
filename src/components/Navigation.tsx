@@ -1,11 +1,48 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, Briefcase } from "lucide-react";
+import { Menu, Briefcase, LogIn, LogOut } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import useIsMobile from "@/hooks/use-mobile";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const Navigation = () => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    // Check initial auth state
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
+    });
+
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate('/');
+      toast({
+        title: "Logged out successfully",
+        description: "You have been logged out of your account.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to log out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
   
   return (
     <nav className="border-b">
@@ -38,6 +75,19 @@ const Navigation = () => {
                 For Freelancers
               </Link>
             </Button>
+            {isAuthenticated ? (
+              <Button onClick={handleLogout} variant="secondary">
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+              </Button>
+            ) : (
+              <Button asChild>
+                <Link to="/auth">
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Login
+                </Link>
+              </Button>
+            )}
           </div>
 
           <Sheet>
@@ -66,6 +116,19 @@ const Navigation = () => {
                     For Freelancers
                   </Link>
                 </Button>
+                {isAuthenticated ? (
+                  <Button onClick={handleLogout} variant="secondary">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </Button>
+                ) : (
+                  <Button asChild>
+                    <Link to="/auth">
+                      <LogIn className="mr-2 h-4 w-4" />
+                      Login
+                    </Link>
+                  </Button>
+                )}
               </div>
             </SheetContent>
           </Sheet>
