@@ -14,6 +14,7 @@ import ContractTemplates from './pages/ContractTemplates';
 import FindProfessional from './pages/FindProfessional';
 import FreelancerApplication from './pages/FreelancerApplication';
 import ProjectListing from './pages/ProjectListing';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -21,19 +22,19 @@ function App() {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
-        <Route path="/editor" element={<Editor />} />
-        <Route path="/editor/books" element={<Editor />} />
-        <Route path="/editor/manuscript/:bookId/boxes" element={<BoxesEditor />} />
-        <Route path="/editor/manuscript/:bookId/chapters" element={<ChaptersEditor />} />
-        <Route path="/for-authors" element={<ForAuthors />} />
-        <Route path="/publishing-support" element={<PublishingSupport />} />
-        <Route path="/professional-network" element={<ProfessionalNetwork />} />
-        <Route path="/professional-network/find" element={<FindProfessional />} />
-        <Route path="/professional-network/apply" element={<FreelancerApplication />} />
-        <Route path="/professional-network/projects" element={<ProjectListing />} />
-        <Route path="/launch-strategies" element={<LaunchStrategies />} />
-        <Route path="/contract-review" element={<ContractReview />} />
-        <Route path="/contract-templates" element={<ContractTemplates />} />
+        <Route path="/editor" element={<ProtectedRoute><Editor /></ProtectedRoute>} />
+        <Route path="/editor/books" element={<ProtectedRoute><Editor /></ProtectedRoute>} />
+        <Route path="/editor/manuscript/:bookId/boxes" element={<ProtectedRoute><BoxesEditor /></ProtectedRoute>} />
+        <Route path="/editor/manuscript/:bookId/chapters" element={<ProtectedRoute><ChaptersEditor /></ProtectedRoute>} />
+        <Route path="/for-authors" element={<ProtectedRoute><ForAuthors /></ProtectedRoute>} />
+        <Route path="/publishing-support" element={<ProtectedRoute><PublishingSupport /></ProtectedRoute>} />
+        <Route path="/professional-network" element={<ProtectedRoute><ProfessionalNetwork /></ProtectedRoute>} />
+        <Route path="/professional-network/find" element={<ProtectedRoute><FindProfessional /></ProtectedRoute>} />
+        <Route path="/professional-network/apply" element={<ProtectedRoute><FreelancerApplication /></ProtectedRoute>} />
+        <Route path="/professional-network/projects" element={<ProtectedRoute><ProjectListing /></ProtectedRoute>} />
+        <Route path="/launch-strategies" element={<ProtectedRoute><LaunchStrategies /></ProtectedRoute>} />
+        <Route path="/contract-review" element={<ProtectedRoute><ContractReview /></ProtectedRoute>} />
+        <Route path="/contract-templates" element={<ProtectedRoute><ContractTemplates /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
