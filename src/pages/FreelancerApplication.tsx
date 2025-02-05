@@ -101,7 +101,7 @@ const FreelancerApplication = () => {
     <div className="min-h-screen bg-white">
       <Navigation />
       
-      <div className="max-w-4xl mx-auto px-4 py-12">
+      <div className="max-w-4xl mx-auto px-4 pt-24 pb-12">
         <h1 className="text-4xl font-serif font-bold text-primary mb-8">
           Freelancer Application
         </h1>
