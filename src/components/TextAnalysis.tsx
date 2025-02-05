@@ -2,13 +2,10 @@ import React from 'react';
 import { Card } from './ui/card';
 import ReadabilityChart from './ReadabilityChart';
 import { Loader2 } from 'lucide-react';
+import type { ReadabilityScores } from '@/utils/readabilityScores';
 
 interface TextAnalysisProps {
-  scores: {
-    fleschKincaid: number;
-    gunningFog: number;
-    colemanLiau: number;
-  };
+  scores: Partial<ReadabilityScores>;
   content: string;
   aiAnalysis: any;
   isAnalyzing: boolean;
@@ -18,6 +15,14 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing }: TextAnalysis
   if (!content) {
     return null;
   }
+
+  // Ensure all required properties are present
+  const safeScores: ReadabilityScores = {
+    fleschKincaid: scores.fleschKincaid || 0,
+    fleschReading: scores.fleschReading || 0,
+    gunningFog: scores.gunningFog || 0,
+    colemanLiau: scores.colemanLiau || 0
+  };
 
   return (
     <div className="mt-8 space-y-6">
@@ -91,7 +96,7 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing }: TextAnalysis
 
             <div className="mt-6">
               <h4 className="font-medium mb-4">Readability Analysis</h4>
-              <ReadabilityChart scores={scores} />
+              <ReadabilityChart scores={safeScores} />
             </div>
           </>
         )}
