@@ -17,6 +17,7 @@ import LaunchStrategyDetail from "@/pages/LaunchStrategyDetail";
 import ProjectDetail from "@/pages/ProjectDetail";
 import NotFound from "@/pages/NotFound";
 import { Toaster } from "@/components/ui/toaster";
+import BooksDashboard from "@/components/BooksDashboard";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/editor" element={<Editor />} />
+          <Route path="/editor/books" element={<BooksDashboard />} />
           <Route path="/for-authors" element={<ForAuthors />} />
           <Route path="/publishing-support" element={<PublishingSupport />} />
           <Route path="/professional-network" element={<ProfessionalNetwork />} />
