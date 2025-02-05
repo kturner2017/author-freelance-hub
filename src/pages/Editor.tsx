@@ -15,7 +15,7 @@ const Editor = () => {
           <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
             Choose what you want to work on today
           </p>
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="max-w-lg mx-auto">
             <div className="p-6 border rounded-lg shadow-sm">
               <h2 className="text-2xl font-bold text-primary mb-4 font-serif">
                 Your Books
@@ -25,17 +25,6 @@ const Editor = () => {
               </p>
               <Button asChild>
                 <Link to="/editor/books">Start Writing</Link>
-              </Button>
-            </div>
-            <div className="p-6 border rounded-lg shadow-sm">
-              <h2 className="text-2xl font-bold text-primary mb-4 font-serif">
-                Story Boxes
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Manage character profiles, plot points, and world-building details
-              </p>
-              <Button asChild>
-                <Link to="/editor/manuscript/boxes">Open Story Boxes</Link>
               </Button>
             </div>
           </div>
