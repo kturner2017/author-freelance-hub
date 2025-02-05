@@ -114,7 +114,7 @@ const BooksDashboard = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate('/')}
               className="hover:bg-white/10 text-white"
             >
               <ChevronLeft className="h-5 w-5" />
