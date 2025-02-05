@@ -203,6 +203,10 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
     }
   };
 
+  const handleIndentParagraph = () => {
+    editor?.chain().focus().sinkListItem('listItem').run();
+  };
+
   if (!editor) {
     return null;
   }
