@@ -2,7 +2,7 @@ import React from 'react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from './ui/button';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Briefcase } from 'lucide-react';
 import useMobile from '@/hooks/use-mobile';
 
 const Navigation: React.FC = () => {
@@ -26,6 +26,13 @@ const Navigation: React.FC = () => {
             </div>
             
             <div className="hidden sm:flex sm:items-center sm:space-x-6">
+              <Link
+                to="/professional-network/find"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-md transition-colors"
+              >
+                <Briefcase className="h-4 w-4" />
+                For Freelancers
+              </Link>
               <Link
                 to="/for-authors"
                 className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-primary transition-colors"
@@ -65,6 +72,14 @@ const Navigation: React.FC = () => {
       {isOpen && isMobile && (
         <div className="sm:hidden absolute w-full bg-white/95 backdrop-blur-lg border-b shadow-sm">
           <div className="px-4 pt-2 pb-3 space-y-2">
+            <Link
+              to="/professional-network/find"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-md transition-colors"
+              onClick={toggleMenu}
+            >
+              <Briefcase className="h-4 w-4" />
+              For Freelancers
+            </Link>
             <Link
               to="/for-authors"
               className="block px-3 py-2 text-sm font-medium text-gray-600 hover:text-primary hover:bg-gray-50 rounded-md transition-colors"
