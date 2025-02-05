@@ -6,13 +6,13 @@ const features = [
     name: "Professional Writing Tools",
     description: "Write and format your book with our intuitive editor designed specifically for authors.",
     icon: BookOpen,
-    link: "/editor",
+    link: "/editor/books",
   },
   {
     name: "Expert Freelancers",
     description: "Connect with vetted editors, designers, and marketers to polish your book.",
     icon: Users,
-    link: "/professional-network",
+    link: "/professional-network/find",
   },
   {
     name: "Quality Guaranteed",
