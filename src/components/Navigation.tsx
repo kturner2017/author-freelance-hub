@@ -27,7 +27,7 @@ const Navigation: React.FC = () => {
             
             <div className="hidden sm:flex sm:items-center sm:space-x-6">
               <Link
-                to="/professional-network/find"
+                to="/professional-network/post-project"
                 className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-md transition-colors"
               >
                 <Briefcase className="h-4 w-4" />
@@ -73,7 +73,7 @@ const Navigation: React.FC = () => {
         <div className="sm:hidden absolute w-full bg-white/95 backdrop-blur-lg border-b shadow-sm">
           <div className="px-4 pt-2 pb-3 space-y-2">
             <Link
-              to="/professional-network/find"
+              to="/professional-network/post-project"
               className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-md transition-colors"
               onClick={toggleMenu}
             >
