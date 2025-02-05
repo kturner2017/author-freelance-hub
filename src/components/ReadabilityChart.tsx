@@ -8,28 +8,36 @@ interface ReadabilityChartProps {
 }
 
 const ReadabilityChart = ({ scores }: ReadabilityChartProps) => {
+  // Ensure all required properties are present with default values if needed
+  const safeScores: ReadabilityScores = {
+    fleschKincaid: scores.fleschKincaid || 0,
+    fleschReading: scores.fleschReading || 0,
+    gunningFog: scores.gunningFog || 0,
+    colemanLiau: scores.colemanLiau || 0
+  };
+
   const data = [
     {
       name: 'Flesch-Kincaid',
-      score: scores.fleschKincaid,
+      score: safeScores.fleschKincaid,
       description: 'Grade level (lower is easier)',
       fill: '#4d82c6'
     },
     {
       name: 'Flesch Reading',
-      score: scores.fleschReading / 10, // Normalize to 0-10 scale
+      score: safeScores.fleschReading / 10, // Normalize to 0-10 scale
       description: 'Ease of reading (higher is easier)',
       fill: '#80a6d6'
     },
     {
       name: 'Gunning Fog',
-      score: scores.gunningFog,
+      score: safeScores.gunningFog,
       description: 'Years of education needed',
       fill: '#b3c9e6'
     },
     {
       name: 'Coleman-Liau',
-      score: scores.colemanLiau,
+      score: safeScores.colemanLiau,
       description: 'US grade level',
       fill: '#e6edf5'
     }
