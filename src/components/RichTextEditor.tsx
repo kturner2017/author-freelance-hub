@@ -6,9 +6,10 @@ import Highlight from '@tiptap/extension-highlight';
 import CodeBlock from '@tiptap/extension-code-block';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
+import { useToast } from './ui/use-toast';
 import ReadabilityChart from './ReadabilityChart';
 import calculateScores from '@/utils/readabilityScores';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { debounce } from 'lodash';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -28,7 +29,9 @@ import {
   Code,
   Highlighter,
   IndentIncrease,
-  IndentDecrease
+  IndentDecrease,
+  Mic,
+  MicOff
 } from 'lucide-react';
 
 interface RichTextEditorProps {
@@ -40,12 +43,15 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
   const [readabilityScores, setReadabilityScores] = useState(calculateScores(''));
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const { toast } = useToast();
 
   const performAnalysis = useCallback(
     debounce(async (text: string) => {
       if (text.length < 50) return;
       
-      // Clean up the text more thoroughly - remove all HTML tags and decode entities
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = text;
       const cleanText = tempDiv.textContent || tempDiv.innerText || '';
@@ -91,14 +97,12 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       const newContent = editor.getHTML();
       onChange(newContent);
       
-      // Strip HTML tags for readability calculation
       const plainText = editor.getText();
       console.log('Calculating readability for text:', plainText);
       const scores = calculateScores(plainText);
       console.log('Calculated scores:', scores);
       setReadabilityScores(scores);
       
-      // Trigger AI analysis
       performAnalysis(plainText);
     },
   });
@@ -116,31 +120,98 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
     }
   }, [content, editor, performAnalysis]);
 
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      chunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        const reader = new FileReader();
+        
+        reader.onload = async () => {
+          const base64Audio = (reader.result as string).split(',')[1];
+          
+          try {
+            const { data, error } = await supabase.functions.invoke('voice-to-text', {
+              body: { audio: base64Audio }
+            });
+
+            if (error) throw error;
+
+            if (data.text && editor) {
+              editor.commands.insertContent(data.text);
+              toast({
+                title: "Transcription complete",
+                description: "Your dictated text has been added to the editor"
+              });
+            }
+          } catch (error) {
+            console.error('Transcription error:', error);
+            toast({
+              title: "Transcription failed",
+              description: "There was an error processing your speech",
+              variant: "destructive"
+            });
+          }
+        };
+
+        reader.readAsDataURL(audioBlob);
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      toast({
+        title: "Recording started",
+        description: "Speak clearly into your microphone"
+      });
+    } catch (error) {
+      console.error('Error accessing microphone:', error);
+      toast({
+        title: "Microphone access denied",
+        description: "Please allow microphone access to use dictation",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+      setIsRecording(false);
+      toast({
+        title: "Recording stopped",
+        description: "Processing your speech..."
+      });
+    }
+  };
+
+  const toggleRecording = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
+
   if (!editor) {
     return null;
   }
-
-  const handleIndentParagraph = () => {
-    const { from } = editor.state.selection;
-    const node = editor.state.doc.nodeAt(from);
-    
-    if (node) {
-      editor.chain()
-        .focus()
-        .updateAttributes('paragraph', {
-          style: 'text-indent: 40px;'
-        })
-        .run();
-      console.log('Applied paragraph indentation');
-    }
-  };
 
   return (
     <div className="space-y-4">
       <div className="border rounded-lg">
         <ReadabilityChart scores={readabilityScores} />
         <div className="bg-gray-100 p-2 rounded-t-lg border-b flex flex-wrap items-center gap-2">
-          {/* Text Style Controls */}
           <Button
             variant="ghost"
             size="sm"
@@ -168,7 +239,6 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
           
           <Separator orientation="vertical" className="h-6" />
           
-          {/* Heading Controls */}
           <Button
             variant="ghost"
             size="sm"
@@ -188,7 +258,6 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
 
           <Separator orientation="vertical" className="h-6" />
 
-          {/* Alignment Controls */}
           <Button
             variant="ghost"
             size="sm"
@@ -216,7 +285,6 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
 
           <Separator orientation="vertical" className="h-6" />
           
-          {/* List Controls */}
           <Button
             variant="ghost"
             size="sm"
@@ -236,7 +304,6 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
 
           <Separator orientation="vertical" className="h-6" />
 
-          {/* Indentation Controls */}
           <Button
             variant="ghost"
             size="sm"
@@ -256,7 +323,6 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
 
           <Separator orientation="vertical" className="h-6" />
 
-          {/* Special Formatting */}
           <Button
             variant="ghost"
             size="sm"
@@ -284,7 +350,6 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
 
           <Separator orientation="vertical" className="h-6" />
 
-          {/* History Controls */}
           <Button
             variant="ghost"
             size="sm"
@@ -300,6 +365,21 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
             className="h-8 w-8 p-0"
           >
             <Redo className="h-4 w-4" />
+          </Button>
+
+          <Separator orientation="vertical" className="h-6" />
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleRecording}
+            className={`h-8 w-8 p-0 ${isRecording ? 'bg-red-200 hover:bg-red-300' : ''}`}
+          >
+            {isRecording ? (
+              <MicOff className="h-4 w-4 text-red-600" />
+            ) : (
+              <Mic className="h-4 w-4" />
+            )}
           </Button>
         </div>
 
