@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
@@ -20,27 +20,60 @@ const Auth = () => {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            emailRedirectTo: window.location.origin,
+          }
         });
+
         if (error) throw error;
-        toast({
-          title: "Success!",
-          description: "Please check your email to verify your account.",
-        });
+
+        if (data.user?.identities?.length === 0) {
+          toast({
+            title: "Account already exists",
+            description: "Please try logging in instead.",
+            variant: "destructive",
+          });
+          setIsSignUp(false);
+        } else {
+          toast({
+            title: "Success!",
+            description: "Please check your email to verify your account.",
+          });
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
-        if (error) throw error;
-        navigate('/editor/books');
+
+        if (error) {
+          if (error.message.includes('Email not confirmed')) {
+            toast({
+              title: "Email not confirmed",
+              description: "Please check your email for the confirmation link.",
+              variant: "destructive",
+            });
+          } else {
+            throw error;
+          }
+        } else {
+          navigate('/editor/books');
+          toast({
+            title: "Welcome back!",
+            description: "You have successfully logged in.",
+          });
+        }
       }
     } catch (error: any) {
+      console.error('Auth error:', error);
       toast({
-        title: "Error",
-        description: error.message,
+        title: "Authentication Error",
+        description: error.message === 'Invalid login credentials' 
+          ? 'Invalid email or password. Please try again.'
+          : error.message,
         variant: "destructive",
       });
     } finally {
@@ -71,6 +104,7 @@ const Auth = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              minLength={6}
             />
           </div>
           <Button
