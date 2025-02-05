@@ -24,6 +24,13 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing }: TextAnalysis
     colemanLiau: scores.colemanLiau || 0
   };
 
+  // Safely access aiAnalysis properties with default values
+  const showVsTellScore = aiAnalysis?.scores?.showVsTell || 0;
+  const grammarScore = aiAnalysis?.scores?.grammar || 0;
+  const styleScore = aiAnalysis?.scores?.style || 0;
+  const tellingSentences = aiAnalysis?.details?.showVsTell?.tellingSentences || [];
+  const suggestions = aiAnalysis?.suggestions || [];
+
   return (
     <div className="mt-8 space-y-6">
       <Card className="p-6">
@@ -45,15 +52,15 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing }: TextAnalysis
                   <div className="mb-4">
                     <h5 className="text-sm font-medium mb-1">Show vs Tell Ratio</h5>
                     <p className="text-2xl font-bold">
-                      {Math.round((aiAnalysis.scores.showVsTell || 0) * 100)}%
+                      {Math.round(showVsTellScore * 100)}%
                     </p>
                   </div>
 
-                  {aiAnalysis.details?.showVsTell?.tellingSentences?.length > 0 && (
+                  {tellingSentences.length > 0 && (
                     <div>
                       <h5 className="text-sm font-medium mb-2">Telling Sentences:</h5>
                       <ul className="list-disc pl-5 space-y-1">
-                        {aiAnalysis.details.showVsTell.tellingSentences.map((sentence: string, index: number) => (
+                        {tellingSentences.map((sentence: string, index: number) => (
                           <li key={index} className="text-sm text-gray-600">{sentence}</li>
                         ))}
                       </ul>
@@ -67,25 +74,25 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing }: TextAnalysis
                     <div>
                       <p className="text-sm text-gray-600">Grammar Quality</p>
                       <p className="text-2xl font-bold">
-                        {Math.round((aiAnalysis.scores.grammar || 0) * 100)}%
+                        {Math.round(grammarScore * 100)}%
                       </p>
                       <p className="text-xs text-gray-500">Measures the grammatical correctness and clarity</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-600">Writing Style</p>
                       <p className="text-2xl font-bold">
-                        {Math.round((aiAnalysis.scores.style || 0) * 100)}%
+                        {Math.round(styleScore * 100)}%
                       </p>
                       <p className="text-xs text-gray-500">Evaluates sentence variety and writing techniques</p>
                     </div>
                   </div>
                 </div>
 
-                {aiAnalysis.suggestions?.length > 0 && (
+                {suggestions.length > 0 && (
                   <div>
-                    <h4 className="font-medium mb-2">Writing Suggestions</h4>
+                    <h">Writing Suggestions</h4>
                     <ul className="list-disc pl-5 space-y-1">
-                      {aiAnalysis.suggestions.map((suggestion: string, index: number) => (
+                      {suggestions.map((suggestion: string, index: number) => (
                         <li key={index} className="text-sm text-gray-600">{suggestion}</li>
                       ))}
                     </ul>
