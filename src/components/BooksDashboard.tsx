@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card } from './ui/card';
-import { Plus, Upload, Image as ImageIcon, Home } from 'lucide-react';
+import { Plus, Upload, Image as ImageIcon, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from './ui/use-toast';
 import {
@@ -114,10 +114,10 @@ const BooksDashboard = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate('/editor')}
+              onClick={() => navigate(-1)}
               className="hover:bg-white/10 text-white"
             >
-              <Home className="h-5 w-5" />
+              <ChevronLeft className="h-5 w-5" />
             </Button>
             <h1 className="text-lg font-medium">Your Bookshelf</h1>
           </div>
