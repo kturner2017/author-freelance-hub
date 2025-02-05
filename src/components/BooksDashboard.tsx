@@ -1,10 +1,11 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card } from './ui/card';
 import { Plus, Upload, Image as ImageIcon, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from './ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Dialog,
   DialogContent,
@@ -21,13 +22,45 @@ const BooksDashboard = () => {
   const { toast } = useToast();
   const [coverImage, setCoverImage] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [books, setBooks] = useState<any[]>([]);
   const [newBook, setNewBook] = useState({
     title: '',
     subtitle: '',
     author: '',
   });
 
-  const handleCreateBook = () => {
+  useEffect(() => {
+    checkAuth();
+    fetchBooks();
+  }, []);
+
+  const checkAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate('/auth');
+    }
+  };
+
+  const fetchBooks = async () => {
+    const { data: books, error } = await supabase
+      .from('books')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching books:', error);
+      toast({
+        title: "Error fetching books",
+        description: error.message,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setBooks(books || []);
+  };
+
+  const handleCreateBook = async () => {
     if (!newBook.title || !newBook.author) {
       toast({
         title: "Required fields missing",
@@ -37,7 +70,34 @@ const BooksDashboard = () => {
       return;
     }
 
-    console.log('Creating new book:', { ...newBook, coverImage });
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate('/auth');
+      return;
+    }
+
+    const { data: book, error } = await supabase
+      .from('books')
+      .insert([
+        {
+          ...newBook,
+          user_id: session.user.id,
+          cover_image_url: coverImage
+        }
+      ])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating book:', error);
+      toast({
+        title: "Error creating book",
+        description: error.message,
+        variant: "destructive"
+      });
+      return;
+    }
+
     toast({
       title: "Book created",
       description: `"${newBook.title}" has been created successfully.`,
@@ -46,9 +106,8 @@ const BooksDashboard = () => {
     setIsDialogOpen(false);
     setNewBook({ title: '', subtitle: '', author: '' });
     setCoverImage(null);
-    // Generate a temporary ID for the new book
-    const tempId = Date.now().toString();
-    navigate(`/editor/manuscript/${tempId}/chapters`);
+    fetchBooks();
+    navigate(`/editor/manuscript/${book.id}/chapters`);
   };
 
   const handleCoverImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -105,9 +164,13 @@ const BooksDashboard = () => {
     navigate(`/editor/manuscript/${bookId}/chapters`);
   };
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate('/auth');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-[#0F172A] text-white h-16 px-6 flex items-center">
         <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
           <div className="flex items-center gap-4">
@@ -121,15 +184,18 @@ const BooksDashboard = () => {
             </Button>
             <h1 className="text-lg font-medium">Your Bookshelf</h1>
           </div>
+          <Button variant="outline" onClick={handleSignOut} className="text-white border-white hover:bg-white/10">
+            Sign Out
+          </Button>
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* Controls */}
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-4">
-            <span className="text-gray-600">Showing 1 book</span>
+            <span className="text-gray-600">
+              Showing {books.length} book{books.length !== 1 ? 's' : ''}
+            </span>
             <Button variant="link" className="text-primary hover:text-primary-600">
               View archive
             </Button>
@@ -158,7 +224,6 @@ const BooksDashboard = () => {
           </div>
         </div>
 
-        {/* Hidden file inputs */}
         <input
           type="file"
           ref={fileInputRef}
@@ -174,9 +239,7 @@ const BooksDashboard = () => {
           onChange={handleCoverImageUpload}
         />
 
-        {/* Books Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {/* Create Book Card */}
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Card className="p-6 flex flex-col items-center justify-center text-center bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer min-h-[280px]">
@@ -252,7 +315,6 @@ const BooksDashboard = () => {
             </DialogContent>
           </Dialog>
 
-          {/* Import Book Card */}
           <Card 
             className="p-6 flex flex-col items-center justify-center text-center bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer min-h-[280px]"
             onClick={handleImportClick}
@@ -262,16 +324,18 @@ const BooksDashboard = () => {
             <p className="text-sm text-gray-500">Upload DOCX, PDF, or TXT</p>
           </Card>
 
-          {/* Example Book Card */}
-          <Card 
-            className="overflow-hidden cursor-pointer min-h-[280px] flex flex-col hover:shadow-lg transition-shadow"
-            onClick={() => handleBookClick('gomer-1')}
-          >
-            <div className="bg-white p-6 flex-1">
-              <h3 className="text-xl font-medium mb-2">Gomer</h3>
-              <p className="text-gray-500">K. TURNER</p>
-            </div>
-          </Card>
+          {books.map((book) => (
+            <Card 
+              key={book.id}
+              className="overflow-hidden cursor-pointer min-h-[280px] flex flex-col hover:shadow-lg transition-shadow"
+              onClick={() => handleBookClick(book.id)}
+            >
+              <div className="bg-white p-6 flex-1">
+                <h3 className="text-xl font-medium mb-2">{book.title}</h3>
+                <p className="text-gray-500">{book.author}</p>
+              </div>
+            </Card>
+          ))}
         </div>
       </main>
     </div>
