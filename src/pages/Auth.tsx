@@ -52,7 +52,7 @@ const Auth = () => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-8">
         <h1 className="text-2xl font-bold mb-6 text-center">
-          {isSignUp ? 'Create an Account' : 'Welcome Back'}
+          Welcome to Authorify
         </h1>
         <form onSubmit={handleAuth} className="space-y-4">
           <div>
