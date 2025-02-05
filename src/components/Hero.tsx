@@ -15,7 +15,7 @@ export const Hero = () => {
           <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8 animate-fade-in animate-fade-in-delay-2">
             <div className="rounded-md shadow">
               <Button asChild className="w-full px-8 py-3 text-lg">
-                <Link to="/editor">Start Writing</Link>
+                <Link to="/editor/books">Start Writing</Link>
               </Button>
             </div>
             <div className="mt-3 sm:mt-0 sm:ml-3">
