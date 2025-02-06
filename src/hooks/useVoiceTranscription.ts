@@ -123,7 +123,9 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
         "Xenova/whisper-tiny.en",
         {
           revision: 'main',
-          quantized: false
+          progress_callback: (progress) => {
+            console.log('Model loading progress:', progress);
+          }
         }
       );
 
@@ -289,3 +291,4 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
     initializeWhisper
   };
 };
+
