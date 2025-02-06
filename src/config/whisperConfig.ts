@@ -12,10 +12,7 @@ export const initializeWhisperModel = async (
       "automatic-speech-recognition",
       "Xenova/whisper-tiny.en",
       {
-        progress_callback: onProgress,
-        revision: "main",
-        chunk_length_s: 30,
-        stride_length_s: 5
+        progress_callback: onProgress
       }
     );
     console.log('Whisper model initialized successfully');

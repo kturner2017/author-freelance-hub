@@ -25,9 +25,8 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
   const performAnalysis = useCallback(
     debounce(async (text: string) => {
       const cleanText = text.trim();
-      // Only perform analysis if text is at least 10 characters
-      if (cleanText.length < 10) {
-        setAiAnalysis(null);
+      // Only perform analysis if text is at least 50 characters to avoid unnecessary API calls
+      if (cleanText.length < 50) {
         return;
       }
       
@@ -39,8 +38,8 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
 
         if (error) {
           console.error('Analysis error:', error);
-          // Only show error toast if it's not the minimum length error
-          if (!error.message?.includes('10 characters')) {
+          // Only show error toast for unexpected errors
+          if (!error.message?.includes('characters long')) {
             toast({
               title: 'Analysis failed',
               description: 'There was an error analyzing your text',
@@ -50,19 +49,13 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
           return;
         }
 
-        console.log('Text analysis result:', data);
         setAiAnalysis(data);
       } catch (error) {
         console.error('Error analyzing text:', error);
-        toast({
-          title: 'Analysis failed',
-          description: 'There was an error analyzing your text',
-          variant: 'destructive',
-        });
       } finally {
         setIsAnalyzing(false);
       }
-    }, 1000),
+    }, 2000), // Increased debounce to 2 seconds
     [toast]
   );
 
@@ -93,7 +86,10 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
       const scores = calculateScores(plainText);
       setReadabilityScores(scores);
       
-      performAnalysis(plainText);
+      // Only trigger analysis for longer text
+      if (plainText.trim().length >= 50) {
+        performAnalysis(plainText);
+      }
     },
   });
 
@@ -104,7 +100,8 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
       const scores = calculateScores(plainText);
       setReadabilityScores(scores);
       
-      if (plainText.length >= 10) {
+      // Only perform initial analysis if text is long enough
+      if (plainText.trim().length >= 50) {
         performAnalysis(plainText);
       }
     }
