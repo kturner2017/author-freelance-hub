@@ -19,7 +19,6 @@ type ManuscriptChapter = Database['public']['Tables']['manuscript_chapters']['Ro
 interface Chapter {
   id: string;
   chapter_id: string;
-  title: string;
   content: string;
 }
 
@@ -65,12 +64,10 @@ const ChaptersEditor = () => {
       if (existingChapters && existingChapters.length > 0) {
         const chaptersMap: { [key: string]: Chapter } = {};
         existingChapters.forEach((chapter: ManuscriptChapter) => {
-          // Only add the chapter if it doesn't already exist in the map
           if (!chaptersMap[chapter.chapter_id]) {
             chaptersMap[chapter.chapter_id] = {
               id: chapter.id,
               chapter_id: chapter.chapter_id,
-              title: chapter.title,
               content: chapter.content || '',
             };
           }
@@ -78,17 +75,14 @@ const ChaptersEditor = () => {
         
         setChapters(chaptersMap);
         
-        // Select the first chapter by default
         const firstChapter = Object.values(chaptersMap)[0];
         if (firstChapter) {
           console.log('Setting initial chapter:', firstChapter);
           setSelectedChapter(firstChapter);
         }
       } else {
-        // Create initial chapter if none exist
         const initialChapter = {
-          chapter_id: 'chapter-1',
-          title: 'Chapter 1',
+          chapter_id: 'Chapter 1',
           content: '',
           book_id: bookId
         };
@@ -114,7 +108,6 @@ const ChaptersEditor = () => {
           const chapterData = {
             id: newChapter.id,
             chapter_id: newChapter.chapter_id,
-            title: newChapter.title,
             content: newChapter.content || '',
           };
 
@@ -148,7 +141,6 @@ const ChaptersEditor = () => {
       [updatedChapter.chapter_id]: updatedChapter
     }));
 
-    // Trigger AI analysis whenever content changes
     setIsAnalyzing(true);
     try {
       const { data, error } = await supabase.functions.invoke('analyze-text', {
@@ -214,7 +206,6 @@ const ChaptersEditor = () => {
         const { error: updateError } = await supabase
           .from('manuscript_chapters')
           .update({
-            title: chapter.title,
             content: chapter.content,
             updated_at: new Date().toISOString()
           })
@@ -231,7 +222,6 @@ const ChaptersEditor = () => {
         const newChapters = chaptersToInsert.map(chapterId => ({
           book_id: bookId,
           chapter_id: chapterId,
-          title: chapters[chapterId].title,
           content: chapters[chapterId].content,
         }));
 
@@ -267,10 +257,9 @@ const ChaptersEditor = () => {
   const handleAddChapter = async () => {
     if (!bookId) return;
 
-    const newChapterId = `chapter-${Object.keys(chapters).length + 1}`;
+    const newChapterNumber = Object.keys(chapters).length + 1;
     const newChapter = {
-      chapter_id: newChapterId,
-      title: `Chapter ${Object.keys(chapters).length + 1}`,
+      chapter_id: `Chapter ${newChapterNumber}`,
       content: '',
       book_id: bookId
     };
@@ -296,7 +285,6 @@ const ChaptersEditor = () => {
       const chapterData = {
         id: data.id,
         chapter_id: data.chapter_id,
-        title: data.title,
         content: data.content || '',
       };
 
@@ -382,7 +370,7 @@ const ChaptersEditor = () => {
                   onClick={() => handleChapterSelect(chapter)}
                 >
                   <CardContent className="p-4">
-                    <h4 className="text-lg font-serif font-semibold text-primary-800">{chapter.title}</h4>
+                    <h4 className="text-lg font-serif font-semibold text-primary-800">{chapter.chapter_id}</h4>
                     <p className="text-sm text-gray-500 mt-1">
                       {getWordCount(chapter.content).toLocaleString()} words
                     </p>
@@ -398,7 +386,7 @@ const ChaptersEditor = () => {
             {selectedChapter ? (
               <div className="p-8 max-w-4xl mx-auto">
                 <div className="flex justify-between items-center mb-8">
-                  <h2 className="text-3xl font-serif font-semibold text-primary-800">{selectedChapter.title}</h2>
+                  <h2 className="text-3xl font-serif font-semibold text-primary-800">{selectedChapter.chapter_id}</h2>
                   <Badge variant="secondary" className="text-sm bg-primary-50 text-primary-700 border-primary-200">
                     {getWordCount(selectedChapter.content).toLocaleString()} words
                   </Badge>
