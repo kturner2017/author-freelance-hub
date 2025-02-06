@@ -53,13 +53,15 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
           className="min-h-[600px] bg-white rounded-b-lg"
         />
       </div>
-      <TextAnalysis 
-        scores={readabilityScores}
-        content={editor.getText()}
-        aiAnalysis={aiAnalysis}
-        isAnalyzing={isAnalyzing}
-        onAnalyze={handleAnalyze}
-      />
+      {editor && (
+        <TextAnalysis 
+          scores={readabilityScores}
+          content={editor.getText()}
+          aiAnalysis={aiAnalysis}
+          isAnalyzing={isAnalyzing}
+          onAnalyze={handleAnalyze}
+        />
+      )}
     </div>
   );
 };

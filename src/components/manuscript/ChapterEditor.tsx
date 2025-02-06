@@ -68,13 +68,6 @@ const ChapterEditor = ({
           content={chapter.content || ''}
           onChange={onContentChange}
         />
-        <TextAnalysis 
-          scores={calculateScores(chapter.content)}
-          content={chapter.content}
-          aiAnalysis={aiAnalysis}
-          isAnalyzing={isAnalyzing}
-          onAnalyze={handleAnalyze}
-        />
       </div>
     </ScrollArea>
   );
