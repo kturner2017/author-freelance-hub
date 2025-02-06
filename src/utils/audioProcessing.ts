@@ -43,11 +43,23 @@ export const convertBlobToAudioData = async (blob: Blob): Promise<Float32Array |
     const renderedBuffer = await offlineContext.startRendering();
     const channelData = renderedBuffer.getChannelData(0);
     
-    // Normalize audio data
-    const maxAmplitude = Math.max(...Array.from(channelData).map(Math.abs));
-    const normalizedData = new Float32Array(channelData.length);
+    // Convert to mono if needed
+    const monoData = new Float32Array(channelData.length);
     for (let i = 0; i < channelData.length; i++) {
-      normalizedData[i] = maxAmplitude > 0 ? channelData[i] / maxAmplitude : channelData[i];
+      monoData[i] = channelData[i];
+    }
+    
+    // Ensure minimum length
+    if (monoData.length < 16000) { // At least 1 second of audio
+      console.error('Audio data too short');
+      return null;
+    }
+    
+    // Normalize audio data
+    const maxAmplitude = Math.max(...Array.from(monoData).map(Math.abs));
+    const normalizedData = new Float32Array(monoData.length);
+    for (let i = 0; i < monoData.length; i++) {
+      normalizedData[i] = maxAmplitude > 0 ? monoData[i] / maxAmplitude : monoData[i];
     }
 
     return normalizedData;

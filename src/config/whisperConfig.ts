@@ -7,16 +7,21 @@ export const initializeWhisperModel = async (
   onError: (error: Error) => void
 ) => {
   try {
+    console.log('Initializing Whisper model...');
     const whisperPipeline = await pipeline(
       "automatic-speech-recognition",
       "Xenova/whisper-tiny.en",
       {
-        revision: 'main',
         progress_callback: onProgress,
+        quantized: false, // Try without quantization
+        chunk_length: 30, // Process in 30-second chunks
+        stride_length: 5   // 5-second overlap between chunks
       }
     );
+    console.log('Whisper model initialized successfully');
     onSuccess(whisperPipeline);
   } catch (error) {
+    console.error('Error initializing Whisper model:', error);
     onError(error as Error);
   }
 };
