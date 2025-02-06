@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { HfInference } from 'https://esm.sh/@huggingface/inference@2.3.2'
 
@@ -13,7 +14,8 @@ serve(async (req) => {
 
   try {
     const { text } = await req.json();
-    const cleanText = text?.trim();
+    // Clean HTML tags from text
+    const cleanText = text?.replace(/<[^>]*>/g, '')?.trim();
     console.log('Analyzing text:', cleanText?.substring(0, 100) + '...');
 
     if (!cleanText || cleanText.length < 10) {
@@ -45,7 +47,7 @@ serve(async (req) => {
       inputs: cleanText.slice(0, 500),
     });
 
-    // Show vs Tell analysis
+    // Enhanced Show vs Tell analysis
     const showTellAnalysis = analyzeShowVsTell(cleanText);
     
     const result = {
@@ -55,18 +57,9 @@ serve(async (req) => {
         showVsTell: showTellAnalysis.ratio,
       },
       details: {
-        showVsTell: {
-          ...showTellAnalysis,
-          tellingSentences: showTellAnalysis.tellingSentences.map(s => s.trim())
-        },
+        showVsTell: showTellAnalysis,
       },
-      suggestions: [
-        ...(grammarResponse[0].score < 0.7 ? ['Consider reviewing the text for grammatical accuracy'] : []),
-        ...(showTellAnalysis.ratio < 0.4 ? [
-          'Try to show more through descriptive language rather than telling',
-          'Add more sensory details to make your writing more vivid'
-        ] : [])
-      ]
+      suggestions: generateSuggestions(showTellAnalysis, grammarResponse[0].score)
     };
 
     return new Response(
@@ -87,46 +80,95 @@ serve(async (req) => {
 });
 
 function analyzeShowVsTell(text: string) {
-  const sentences = text.split(/[.!?]+/).filter(Boolean);
+  // Split into sentences, handling multiple punctuation marks
+  const sentences = text.split(/[.!?]+/).filter(sentence => sentence.trim().length > 0);
+  
   const showingWords = [
-    'sparkled', 'gleamed', 'thundered', 'rustled', 'trembled',
-    'bitter', 'sweet', 'rough', 'smooth', 'sharp',
-    'grabbed', 'clutched', 'sprinted', 'slammed'
+    // Sensory details
+    'sparkled', 'gleamed', 'thundered', 'rustled', 'trembled', 'shimmered', 'flickered',
+    'rumbled', 'echoed', 'whispered', 'roared', 'growled', 'howled',
+    // Descriptive adjectives
+    'bitter', 'sweet', 'rough', 'smooth', 'sharp', 'crisp', 'freezing', 'scorching',
+    'massive', 'tiny', 'ancient', 'fresh', 'vibrant', 'dull', 'brilliant',
+    // Action verbs
+    'grabbed', 'clutched', 'sprinted', 'slammed', 'dashed', 'lunged', 'crawled',
+    'leaped', 'darted', 'stomped', 'shuffled', 'stumbled', 'crept'
   ];
   
   const tellingWords = [
-    'felt', 'feel', 'was angry', 'was sad', 'wondered',
-    'watched', 'looked', 'seemed', 'appeared',
-    'very', 'really', 'quite', 'rather'
+    // State of being
+    'felt', 'feel', 'was', 'were', 'had', 'seemed', 'appeared',
+    // Emotions told directly
+    'was angry', 'was sad', 'was happy', 'was scared', 'was excited',
+    // Passive observations
+    'watched', 'looked', 'saw', 'heard', 'noticed', 'realized',
+    // Qualifiers
+    'very', 'really', 'quite', 'rather', 'somewhat', 'extremely'
   ];
 
   const analysis = {
     showingSentences: [] as string[],
     tellingSentences: [] as string[],
-    ratio: 0
+    ratio: 0,
+    totalSentences: sentences.length,
+    showingCount: 0,
+    tellingCount: 0
   };
 
-  let showingCount = 0;
-  let tellingCount = 0;
-
   sentences.forEach(sentence => {
-    const words = sentence.toLowerCase().split(/\s+/);
+    const cleanSentence = sentence.trim().toLowerCase();
     let isShowing = false;
     let isTelling = false;
     
-    if (words.some(word => showingWords.some(show => word.includes(show)))) {
-      showingCount++;
+    // Check for showing words
+    if (showingWords.some(word => cleanSentence.includes(word))) {
+      analysis.showingCount++;
       isShowing = true;
-      analysis.showingSentences.push(sentence.trim());
+      if (!analysis.showingSentences.includes(sentence.trim())) {
+        analysis.showingSentences.push(sentence.trim());
+      }
     }
     
-    if (words.some(word => tellingWords.some(tell => word.includes(tell)))) {
-      tellingCount++;
+    // Check for telling words
+    if (tellingWords.some(word => cleanSentence.includes(word))) {
+      analysis.tellingCount++;
       isTelling = true;
-      analysis.tellingSentences.push(sentence.trim());
+      if (!analysis.tellingSentences.includes(sentence.trim())) {
+        analysis.tellingSentences.push(sentence.trim());
+      }
     }
   });
 
-  analysis.ratio = showingCount / (showingCount + tellingCount) || 0;
+  // Calculate ratio (showing / total analyzed sentences)
+  const totalAnalyzed = analysis.showingCount + analysis.tellingCount;
+  analysis.ratio = totalAnalyzed > 0 ? analysis.showingCount / totalAnalyzed : 0;
+
   return analysis;
+}
+
+function generateSuggestions(analysis: any, grammarScore: number): string[] {
+  const suggestions: string[] = [];
+
+  // Show vs Tell suggestions
+  if (analysis.ratio < 0.4) {
+    suggestions.push('Consider using more descriptive language to show rather than tell');
+    suggestions.push('Try incorporating more sensory details in your descriptions');
+    
+    if (analysis.tellingSentences.length > 0) {
+      suggestions.push('Look for opportunities to replace passive observations with active descriptions');
+    }
+  }
+
+  // Grammar-based suggestions
+  if (grammarScore < 0.7) {
+    suggestions.push('Review the text for grammatical accuracy');
+    suggestions.push('Consider simplifying complex sentences for clarity');
+  }
+
+  // Balance-based suggestions
+  if (analysis.showingCount === 0) {
+    suggestions.push('Add some descriptive passages to make your writing more vivid');
+  }
+
+  return suggestions;
 }
