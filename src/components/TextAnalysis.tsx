@@ -27,6 +27,16 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing, onAnalyze }: T
     colemanLiau: scores.colemanLiau || 0
   };
 
+  // Examples of how to rewrite telling sentences
+  const tellingToShowingExamples = {
+    "was angry": "His fists clenched and his face reddened",
+    "felt sad": "Tears welled up in her eyes as her shoulders slumped",
+    "was scared": "Her heart pounded against her ribs and her hands trembled",
+    "was happy": "A broad smile lit up her face as she bounced on her toes",
+    "looked tired": "Dark circles shadowed his eyes, and he dragged his feet with each step",
+    "seemed nervous": "She fidgeted with her sleeve, her eyes darting around the room"
+  };
+
   // Safely access aiAnalysis properties with default values
   const showVsTellScore = aiAnalysis?.scores?.showVsTell || 0;
   const grammarScore = aiAnalysis?.scores?.grammar || 0;
@@ -78,12 +88,29 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing, onAnalyze }: T
 
                   {tellingSentences.length > 0 && (
                     <div>
-                      <h5 className="text-sm font-medium mb-2">Telling Sentences:</h5>
-                      <ul className="list-disc pl-5 space-y-1">
-                        {tellingSentences.map((sentence: string, index: number) => (
-                          <li key={index} className="text-sm text-gray-600">{sentence}</li>
-                        ))}
-                      </ul>
+                      <h5 className="text-sm font-medium mb-2">Telling Sentences with Examples:</h5>
+                      <div className="space-y-4">
+                        {tellingSentences.map((sentence: string, index: number) => {
+                          // Find matching example if available
+                          const matchingTellingPhrase = Object.keys(tellingToShowingExamples).find(
+                            phrase => sentence.toLowerCase().includes(phrase.toLowerCase())
+                          );
+                          const showingExample = matchingTellingPhrase 
+                            ? tellingToShowingExamples[matchingTellingPhrase as keyof typeof tellingToShowingExamples]
+                            : null;
+
+                          return (
+                            <div key={index} className="border-l-4 border-gray-200 pl-4">
+                              <p className="text-sm text-red-600 mb-1">"{sentence}"</p>
+                              {showingExample && (
+                                <p className="text-sm text-green-600">
+                                  Try instead: "{showingExample}"
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -133,3 +160,4 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing, onAnalyze }: T
 };
 
 export default TextAnalysis;
+
