@@ -23,6 +23,7 @@ const BooksDashboard = () => {
   const [coverImage, setCoverImage] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [books, setBooks] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [newBook, setNewBook] = useState({
     title: '',
     subtitle: '',
@@ -31,45 +32,70 @@ const BooksDashboard = () => {
 
   useEffect(() => {
     checkAuth();
-    fetchBooks();
   }, []);
 
   const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    console.log('Auth session:', session); // Added logging
-    if (!session) {
-      console.log('No session found, redirecting to auth'); // Added logging
+    try {
+      setIsLoading(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Auth session:', session);
+      
+      if (!session) {
+        console.log('No session found, redirecting to auth');
+        navigate('/auth');
+        return;
+      }
+      
+      console.log('User authenticated:', session.user.email);
+      await fetchBooks();
+    } catch (error) {
+      console.error('Error checking auth:', error);
+      toast({
+        title: "Authentication Error",
+        description: "Please try logging in again",
+        variant: "destructive"
+      });
       navigate('/auth');
-      return;
+    } finally {
+      setIsLoading(false);
     }
-    console.log('User authenticated:', session.user.email); // Added logging
   };
 
   const fetchBooks = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      console.log('No session during fetchBooks, skipping'); // Added logging
-      return;
-    }
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.log('No session during fetchBooks, skipping');
+        return;
+      }
 
-    console.log('Fetching books for user:', session.user.id); // Added logging
-    const { data: books, error } = await supabase
-      .from('books')
-      .select('*')
-      .order('created_at', { ascending: false });
+      console.log('Fetching books for user:', session.user.id);
+      const { data: books, error } = await supabase
+        .from('books')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching books:', error); // Enhanced error logging
+      if (error) {
+        console.error('Error fetching books:', error);
+        toast({
+          title: "Error fetching books",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log('Books fetched:', books);
+      setBooks(books || []);
+    } catch (error) {
+      console.error('Error in fetchBooks:', error);
       toast({
-        title: "Error fetching books",
-        description: error.message,
+        title: "Error",
+        description: "Could not fetch your books",
         variant: "destructive"
       });
-      return;
     }
-
-    console.log('Books fetched:', books); // Added logging
-    setBooks(books || []);
   };
 
   const handleCreateBook = async () => {
@@ -176,10 +202,13 @@ const BooksDashboard = () => {
     navigate(`/editor/manuscript/${bookId}/chapters`);
   };
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate('/auth');
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -196,7 +225,14 @@ const BooksDashboard = () => {
             </Button>
             <h1 className="text-lg font-medium">Your Bookshelf</h1>
           </div>
-          <Button variant="outline" onClick={handleSignOut} className="text-white border-white hover:bg-white/10">
+          <Button 
+            variant="outline" 
+            onClick={async () => {
+              await supabase.auth.signOut();
+              navigate('/auth');
+            }} 
+            className="text-white border-white hover:bg-white/10"
+          >
             Sign Out
           </Button>
         </div>
