@@ -1,20 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from '../ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import calculateScores from '@/utils/readabilityScores';
-import { Button } from '../ui/button';
-import { ScrollArea } from '../ui/scroll-area';
-import { Plus, BookOpen } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Card, CardContent } from '../ui/card';
-import { Database } from '@/integrations/supabase/types';
-import RichTextEditor from '../RichTextEditor';
-import TextAnalysis from '../TextAnalysis';
 import DashboardLayout from '../layout/DashboardLayout';
-import { getWordCount, getTotalWordCount } from '@/utils/wordCount';
-import { Badge } from '../ui/badge';
-
-type ManuscriptChapter = Database['public']['Tables']['manuscript_chapters']['Row'];
+import { getTotalWordCount } from '@/utils/wordCount';
+import ChapterList from './ChapterList';
+import ChapterEditor from './ChapterEditor';
+import ChapterToolbar from './ChapterToolbar';
 
 interface Chapter {
   id: string;
@@ -38,7 +30,6 @@ const ChaptersEditor = () => {
 
   const loadChapters = async () => {
     if (!bookId) return;
-
     setIsLoading(true);
     console.log('Loading chapters for book:', bookId);
     
@@ -63,7 +54,7 @@ const ChaptersEditor = () => {
       
       if (existingChapters && existingChapters.length > 0) {
         const chaptersMap: { [key: string]: Chapter } = {};
-        existingChapters.forEach((chapter: ManuscriptChapter) => {
+        existingChapters.forEach((chapter: any) => {
           if (!chaptersMap[chapter.chapter_id]) {
             chaptersMap[chapter.chapter_id] = {
               id: chapter.id,
@@ -74,46 +65,13 @@ const ChaptersEditor = () => {
         });
         
         setChapters(chaptersMap);
-        
         const firstChapter = Object.values(chaptersMap)[0];
         if (firstChapter) {
           console.log('Setting initial chapter:', firstChapter);
           setSelectedChapter(firstChapter);
         }
       } else {
-        const initialChapter = {
-          chapter_id: 'Chapter 1',
-          content: '',
-          book_id: bookId
-        };
-        
-        console.log('Creating initial chapter:', initialChapter);
-        const { data: newChapter, error: insertError } = await supabase
-          .from('manuscript_chapters')
-          .insert([initialChapter])
-          .select()
-          .single();
-
-        if (insertError) {
-          console.error('Error creating initial chapter:', insertError);
-          toast({
-            title: "Error creating chapter",
-            description: insertError.message,
-            variant: "destructive"
-          });
-          return;
-        }
-
-        if (newChapter) {
-          const chapterData = {
-            id: newChapter.id,
-            chapter_id: newChapter.chapter_id,
-            content: newChapter.content || '',
-          };
-
-          setChapters({ [newChapter.chapter_id]: chapterData });
-          setSelectedChapter(chapterData);
-        }
+        await createInitialChapter();
       }
     } catch (error) {
       console.error('Error in loadChapters:', error);
@@ -124,6 +82,42 @@ const ChaptersEditor = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const createInitialChapter = async () => {
+    const initialChapter = {
+      chapter_id: 'Chapter 1',
+      content: '',
+      book_id: bookId
+    };
+    
+    console.log('Creating initial chapter:', initialChapter);
+    const { data: newChapter, error: insertError } = await supabase
+      .from('manuscript_chapters')
+      .insert([initialChapter])
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error('Error creating initial chapter:', insertError);
+      toast({
+        title: "Error creating chapter",
+        description: insertError.message,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (newChapter) {
+      const chapterData = {
+        id: newChapter.id,
+        chapter_id: newChapter.chapter_id,
+        content: newChapter.content || '',
+      };
+
+      setChapters({ [newChapter.chapter_id]: chapterData });
+      setSelectedChapter(chapterData);
     }
   };
 
@@ -166,74 +160,16 @@ const ChaptersEditor = () => {
     if (!bookId) return;
 
     try {
-      console.log('Saving chapters for book:', bookId);
-      const { data: existingChapters, error: fetchError } = await supabase
+      const { error: updateError } = await supabase
         .from('manuscript_chapters')
-        .select('*')
-        .eq('book_id', bookId);
+        .update({
+          content: selectedChapter?.content,
+          updated_at: new Date().toISOString()
+        })
+        .eq('book_id', bookId)
+        .eq('chapter_id', selectedChapter?.chapter_id);
 
-      if (fetchError) {
-        console.error('Error fetching existing chapters:', fetchError);
-        throw fetchError;
-      }
-
-      const existingChapterIds = existingChapters?.map(chapter => chapter.chapter_id) || [];
-      const currentChapterIds = Object.keys(chapters);
-
-      const chaptersToDelete = existingChapterIds.filter(id => !currentChapterIds.includes(id));
-      const chaptersToUpdate = currentChapterIds.filter(id => existingChapterIds.includes(id));
-      const chaptersToInsert = currentChapterIds.filter(id => !existingChapterIds.includes(id));
-
-      console.log('Chapters to update:', chaptersToUpdate);
-      console.log('Chapters to insert:', chaptersToInsert);
-      console.log('Chapters to delete:', chaptersToDelete);
-
-      if (chaptersToDelete.length > 0) {
-        const { error: deleteError } = await supabase
-          .from('manuscript_chapters')
-          .delete()
-          .eq('book_id', bookId)
-          .in('chapter_id', chaptersToDelete);
-
-        if (deleteError) {
-          console.error('Error deleting chapters:', deleteError);
-          throw deleteError;
-        }
-      }
-
-      for (const chapterId of chaptersToUpdate) {
-        const chapter = chapters[chapterId];
-        const { error: updateError } = await supabase
-          .from('manuscript_chapters')
-          .update({
-            content: chapter.content,
-            updated_at: new Date().toISOString()
-          })
-          .eq('book_id', bookId)
-          .eq('chapter_id', chapterId);
-
-        if (updateError) {
-          console.error(`Error updating chapter ${chapterId}:`, updateError);
-          throw updateError;
-        }
-      }
-
-      if (chaptersToInsert.length > 0) {
-        const newChapters = chaptersToInsert.map(chapterId => ({
-          book_id: bookId,
-          chapter_id: chapterId,
-          content: chapters[chapterId].content,
-        }));
-
-        const { error: insertError } = await supabase
-          .from('manuscript_chapters')
-          .insert(newChapters);
-
-        if (insertError) {
-          console.error('Error inserting new chapters:', insertError);
-          throw insertError;
-        }
-      }
+      if (updateError) throw updateError;
 
       toast({
         title: "Changes saved",
@@ -247,11 +183,6 @@ const ChaptersEditor = () => {
         variant: "destructive"
       });
     }
-  };
-
-  const handleChapterSelect = (chapter: Chapter) => {
-    console.log('Selecting chapter:', chapter);
-    setSelectedChapter(chapter);
   };
 
   const handleAddChapter = async () => {
@@ -315,99 +246,38 @@ const ChaptersEditor = () => {
 
   const totalWordCount = getTotalWordCount(Object.values(chapters));
 
-  const headerActions = (
-    <>
-      <div className="flex items-center gap-4">
-        <Badge variant="secondary" className="text-sm bg-white/10 text-white border-0">
-          <BookOpen className="h-4 w-4 mr-1" />
-          Total Words: {totalWordCount.toLocaleString()}
-        </Badge>
-        <Button 
-          size="sm"
-          onClick={handleSave}
-          variant="secondary"
-          className="font-medium"
-        >
-          Save Changes
-        </Button>
-        <Button 
-          size="sm"
-          onClick={handleAddChapter}
-          variant="secondary"
-          className="font-medium"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Chapter
-        </Button>
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={() => navigate('/editor/manuscript/boxes')}
-          className="border-white text-white hover:bg-white/10 font-medium"
-        >
-          Switch to Boxes View
-        </Button>
-      </div>
-    </>
-  );
-
   return (
     <DashboardLayout 
       title="Chapters Editor"
       subtitle="Manuscript"
-      actions={headerActions}
+      actions={
+        <ChapterToolbar 
+          totalWordCount={totalWordCount}
+          onSave={handleSave}
+          onAddChapter={handleAddChapter}
+          onSwitchView={() => navigate('/editor/manuscript/boxes')}
+        />
+      }
     >
       <div className="flex-1 flex">
-        <div className="w-72 border-r bg-white shadow-sm">
-          <ScrollArea className="h-full">
-            <div className="p-4 space-y-3">
-              {Object.values(chapters).map((chapter) => (
-                <Card 
-                  key={chapter.id}
-                  className={`hover:shadow-lg transition-all cursor-pointer ${
-                    selectedChapter?.id === chapter.id ? 'border-primary shadow-md ring-1 ring-primary/20' : ''
-                  }`}
-                  onClick={() => handleChapterSelect(chapter)}
-                >
-                  <CardContent className="p-4">
-                    <h4 className="text-lg font-serif font-semibold text-primary-800">{chapter.chapter_id}</h4>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {getWordCount(chapter.content).toLocaleString()} words
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </ScrollArea>
-        </div>
-
+        <ChapterList
+          chapters={chapters}
+          selectedChapter={selectedChapter}
+          onChapterSelect={setSelectedChapter}
+        />
         <div className="flex-1 bg-white">
-          <ScrollArea className="h-full">
-            {selectedChapter ? (
-              <div className="p-8 max-w-4xl mx-auto">
-                <div className="flex justify-between items-center mb-8">
-                  <h2 className="text-3xl font-serif font-semibold text-primary-800">{selectedChapter.chapter_id}</h2>
-                  <Badge variant="secondary" className="text-sm bg-primary-50 text-primary-700 border-primary-200">
-                    {getWordCount(selectedChapter.content).toLocaleString()} words
-                  </Badge>
-                </div>
-                <RichTextEditor
-                  content={selectedChapter.content}
-                  onChange={handleContentChange}
-                />
-                <TextAnalysis 
-                  scores={calculateScores(selectedChapter.content)}
-                  content={selectedChapter.content}
-                  aiAnalysis={aiAnalysis}
-                  isAnalyzing={isAnalyzing}
-                />
-              </div>
-            ) : (
-              <div className="p-8 text-center text-gray-500">
-                Select a chapter to start editing
-              </div>
-            )}
-          </ScrollArea>
+          {selectedChapter ? (
+            <ChapterEditor
+              chapter={selectedChapter}
+              onContentChange={handleContentChange}
+              aiAnalysis={aiAnalysis}
+              isAnalyzing={isAnalyzing}
+            />
+          ) : (
+            <div className="p-8 text-center text-gray-500">
+              Select a chapter to start editing
+            </div>
+          )}
         </div>
       </div>
     </DashboardLayout>
