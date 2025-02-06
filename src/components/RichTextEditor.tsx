@@ -4,12 +4,13 @@ import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
 import Highlight from '@tiptap/extension-highlight';
 import CodeBlock from '@tiptap/extension-code-block';
-import { useToast } from './ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import calculateScores from '@/utils/readabilityScores';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { debounce } from 'lodash';
 import { pipeline } from '@huggingface/transformers';
 import EditorToolbar from './editor/EditorToolbar';
+import { supabase } from '@/integrations/supabase/client';
 
 interface RichTextEditorProps {
   content: string;
@@ -40,19 +41,26 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
         const whisperPipeline = await pipeline(
           "automatic-speech-recognition",
           "onnx-community/whisper-tiny.en",
-          { device: "webgpu" }
+          { 
+            device: "webgpu",
+            quantized: false // Disable quantization to avoid null length error
+          }
         );
         
-        setTranscriber(whisperPipeline);
-        toast({
-          title: "Speech recognition ready",
-          description: "You can now use voice dictation",
-        });
+        if (whisperPipeline) {
+          setTranscriber(whisperPipeline);
+          toast({
+            title: "Speech recognition ready",
+            description: "You can now use voice dictation",
+          });
+        } else {
+          throw new Error('Failed to initialize Whisper model');
+        }
       } catch (error) {
         console.error('Error loading Whisper model:', error);
         toast({
           title: "Failed to load speech recognition",
-          description: "Please try again later",
+          description: "Please try again later or check if your browser supports WebGPU",
           variant: "destructive"
         });
       } finally {
@@ -144,6 +152,15 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       return;
     }
 
+    if (!transcriber) {
+      toast({
+        title: "Speech recognition not available",
+        description: "Please try reloading the page",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
@@ -167,12 +184,14 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
 
           const output = await transcriber(audioBlob);
           
-          if (output.text && editor) {
+          if (output && output.text && editor) {
             editor.commands.insertContent(output.text);
             toast({
               title: "Transcription complete",
               description: "Your dictated text has been added"
             });
+          } else {
+            throw new Error('No transcription output');
           }
         } catch (error) {
           console.error('Transcription error:', error);
