@@ -6,6 +6,7 @@ import { Plus, Upload, Image as ImageIcon, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from './ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { getWordCount } from '@/utils/wordCount';
 import {
   Dialog,
   DialogContent,
@@ -23,6 +24,7 @@ const BooksDashboard = () => {
   const [coverImage, setCoverImage] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [books, setBooks] = useState<any[]>([]);
+  const [bookWordCounts, setBookWordCounts] = useState<{[key: string]: number}>({});
   const [isLoading, setIsLoading] = useState(true);
   const [newBook, setNewBook] = useState({
     title: '',
@@ -88,6 +90,28 @@ const BooksDashboard = () => {
 
       console.log('Books fetched:', books);
       setBooks(books || []);
+      
+      // Fetch word counts for each book
+      for (const book of books || []) {
+        const { data: chapters, error: chaptersError } = await supabase
+          .from('manuscript_chapters')
+          .select('content')
+          .eq('chapter_id', book.id);
+          
+        if (chaptersError) {
+          console.error('Error fetching chapters:', chaptersError);
+          continue;
+        }
+        
+        const totalWords = chapters?.reduce((sum, chapter) => {
+          return sum + getWordCount(chapter.content || '');
+        }, 0) || 0;
+        
+        setBookWordCounts(prev => ({
+          ...prev,
+          [book.id]: totalWords
+        }));
+      }
     } catch (error) {
       console.error('Error in fetchBooks:', error);
       toast({
@@ -380,7 +404,10 @@ const BooksDashboard = () => {
             >
               <div className="bg-white p-6 flex-1">
                 <h3 className="text-xl font-medium mb-2">{book.title}</h3>
-                <p className="text-gray-500">{book.author}</p>
+                <p className="text-gray-500 mb-2">{book.author}</p>
+                <p className="text-sm text-gray-400">
+                  {bookWordCounts[book.id]?.toLocaleString() || 0} words
+                </p>
               </div>
             </Card>
           ))}
