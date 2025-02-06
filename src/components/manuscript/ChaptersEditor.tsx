@@ -65,7 +65,6 @@ const ChaptersEditor = () => {
         });
         
         setChapters(chaptersMap);
-        // Only set initial chapter if none is selected
         if (!selectedChapter) {
           const firstChapter = existingChapters[0];
           console.log('Setting initial chapter:', firstChapter);
@@ -87,6 +86,138 @@ const ChaptersEditor = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleChapterRename = async (chapterId: string, newName: string) => {
+    try {
+      const { error } = await supabase
+        .from('manuscript_chapters')
+        .update({ chapter_id: newName })
+        .eq('id', chapterId);
+
+      if (error) throw error;
+
+      setChapters(prev => ({
+        ...prev,
+        [chapterId]: {
+          ...prev[chapterId],
+          chapter_id: newName
+        }
+      }));
+
+      if (selectedChapter?.id === chapterId) {
+        setSelectedChapter(prev => prev ? {
+          ...prev,
+          chapter_id: newName
+        } : null);
+      }
+
+      toast({
+        title: "Chapter renamed",
+        description: "Chapter name has been updated successfully."
+      });
+    } catch (error) {
+      console.error('Error renaming chapter:', error);
+      toast({
+        title: "Error",
+        description: "Failed to rename chapter. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleChapterDelete = async (chapterId: string) => {
+    try {
+      const { error } = await supabase
+        .from('manuscript_chapters')
+        .delete()
+        .eq('id', chapterId);
+
+      if (error) throw error;
+
+      const newChapters = { ...chapters };
+      delete newChapters[chapterId];
+      setChapters(newChapters);
+
+      if (selectedChapter?.id === chapterId) {
+        const remainingChapters = Object.values(newChapters);
+        setSelectedChapter(remainingChapters.length > 0 ? remainingChapters[0] : null);
+      }
+
+      toast({
+        title: "Chapter deleted",
+        description: "Chapter has been removed successfully."
+      });
+    } catch (error) {
+      console.error('Error deleting chapter:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete chapter. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleChapterMove = async (chapterId: string, direction: 'up' | 'down') => {
+    const chaptersList = Object.values(chapters).sort((a, b) => {
+      const aNum = parseInt(a.chapter_id.split(' ')[1]);
+      const bNum = parseInt(b.chapter_id.split(' ')[1]);
+      return aNum - bNum;
+    });
+
+    const currentIndex = chaptersList.findIndex(ch => ch.id === chapterId);
+    if (currentIndex === -1) return;
+
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (newIndex < 0 || newIndex >= chaptersList.length) return;
+
+    // Swap chapter numbers
+    const currentChapter = chaptersList[currentIndex];
+    const targetChapter = chaptersList[newIndex];
+    const currentNum = parseInt(currentChapter.chapter_id.split(' ')[1]);
+    const targetNum = parseInt(targetChapter.chapter_id.split(' ')[1]);
+
+    try {
+      // Update both chapters in the database
+      const updates = [
+        supabase
+          .from('manuscript_chapters')
+          .update({ chapter_id: `Chapter ${targetNum}` })
+          .eq('id', currentChapter.id),
+        supabase
+          .from('manuscript_chapters')
+          .update({ chapter_id: `Chapter ${currentNum}` })
+          .eq('id', targetChapter.id)
+      ];
+
+      await Promise.all(updates);
+
+      // Update local state
+      setChapters(prev => ({
+        ...prev,
+        [currentChapter.id]: { ...currentChapter, chapter_id: `Chapter ${targetNum}` },
+        [targetChapter.id]: { ...targetChapter, chapter_id: `Chapter ${currentNum}` }
+      }));
+
+      if (selectedChapter?.id === currentChapter.id) {
+        setSelectedChapter(prev => prev ? {
+          ...prev,
+          chapter_id: `Chapter ${targetNum}`
+        } : null);
+      }
+
+      toast({
+        title: "Chapter moved",
+        description: "Chapter order has been updated successfully."
+      });
+    } catch (error) {
+      console.error('Error moving chapter:', error);
+      toast({
+        title: "Error",
+        description: "Failed to move chapter. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -279,6 +410,9 @@ const ChaptersEditor = () => {
             console.log('Selecting chapter:', chapter);
             setSelectedChapter(chapter);
           }}
+          onChapterRename={handleChapterRename}
+          onChapterDelete={handleChapterDelete}
+          onChapterMove={handleChapterMove}
         />
         <div className="flex-1 bg-white">
           {selectedChapter ? (
