@@ -8,7 +8,7 @@ import { useToast } from './ui/use-toast';
 import calculateScores from '@/utils/readabilityScores';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { debounce } from 'lodash';
-import { supabase } from '@/integrations/supabase/client';
+import { pipeline } from '@huggingface/transformers';
 import EditorToolbar from './editor/EditorToolbar';
 
 interface RichTextEditorProps {
@@ -21,9 +21,47 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [isModelLoading, setIsModelLoading] = useState(false);
+  const [transcriber, setTranscriber] = useState(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const { toast } = useToast();
+
+  // Initialize the Whisper model
+  useEffect(() => {
+    const initializeWhisper = async () => {
+      try {
+        setIsModelLoading(true);
+        toast({
+          title: "Loading speech recognition model",
+          description: "This may take a moment on first use",
+        });
+
+        const whisperPipeline = await pipeline(
+          "automatic-speech-recognition",
+          "onnx-community/whisper-tiny.en",
+          { device: "webgpu" }
+        );
+        
+        setTranscriber(whisperPipeline);
+        toast({
+          title: "Speech recognition ready",
+          description: "You can now use voice dictation",
+        });
+      } catch (error) {
+        console.error('Error loading Whisper model:', error);
+        toast({
+          title: "Failed to load speech recognition",
+          description: "Please try again later",
+          variant: "destructive"
+        });
+      } finally {
+        setIsModelLoading(false);
+      }
+    };
+
+    initializeWhisper();
+  }, []);
 
   const performAnalysis = useCallback(
     debounce(async (text: string) => {
@@ -98,6 +136,14 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
   }, [content, editor, performAnalysis]);
 
   const startRecording = async () => {
+    if (isModelLoading) {
+      toast({
+        title: "Please wait",
+        description: "Speech recognition model is still loading",
+      });
+      return;
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
@@ -112,36 +158,30 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
 
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
-        const reader = new FileReader();
         
-        reader.onload = async () => {
-          const base64Audio = (reader.result as string).split(',')[1];
+        try {
+          toast({
+            title: "Processing speech",
+            description: "Converting your speech to text...",
+          });
+
+          const output = await transcriber(audioBlob);
           
-          try {
-            const { data, error } = await supabase.functions.invoke('voice-to-text', {
-              body: { audio: base64Audio }
-            });
-
-            if (error) throw error;
-
-            if (data.text && editor) {
-              editor.commands.insertContent(data.text);
-              toast({
-                title: "Transcription complete",
-                description: "Your dictated text has been added to the editor"
-              });
-            }
-          } catch (error) {
-            console.error('Transcription error:', error);
+          if (output.text && editor) {
+            editor.commands.insertContent(output.text);
             toast({
-              title: "Transcription failed",
-              description: "There was an error processing your speech",
-              variant: "destructive"
+              title: "Transcription complete",
+              description: "Your dictated text has been added"
             });
           }
-        };
-
-        reader.readAsDataURL(audioBlob);
+        } catch (error) {
+          console.error('Transcription error:', error);
+          toast({
+            title: "Transcription failed",
+            description: "There was an error processing your speech",
+            variant: "destructive"
+          });
+        }
       };
 
       mediaRecorder.start();
@@ -191,6 +231,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
           editor={editor}
           isRecording={isRecording}
           onToggleRecording={toggleRecording}
+          isModelLoading={isModelLoading}
         />
         <EditorContent 
           editor={editor} 

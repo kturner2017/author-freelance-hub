@@ -21,16 +21,23 @@ import {
   IndentIncrease,
   IndentDecrease,
   Mic,
-  MicOff
+  MicOff,
+  Loader2
 } from 'lucide-react';
 
 interface EditorToolbarProps {
   editor: Editor;
   isRecording: boolean;
+  isModelLoading: boolean;
   onToggleRecording: () => void;
 }
 
-const EditorToolbar = ({ editor, isRecording, onToggleRecording }: EditorToolbarProps) => {
+const EditorToolbar = ({ 
+  editor, 
+  isRecording, 
+  isModelLoading,
+  onToggleRecording 
+}: EditorToolbarProps) => {
   const handleIndentParagraph = () => {
     editor?.chain().focus().sinkListItem('listItem').run();
   };
@@ -194,13 +201,18 @@ const EditorToolbar = ({ editor, isRecording, onToggleRecording }: EditorToolbar
 
       <Separator orientation="vertical" className="h-6" />
 
+      <Separator orientation="vertical" className="h-6" />
+
       <Button
         variant="ghost"
         size="sm"
         onClick={onToggleRecording}
+        disabled={isModelLoading}
         className={`h-8 w-8 p-0 ${isRecording ? 'bg-red-200 hover:bg-red-300' : ''}`}
       >
-        {isRecording ? (
+        {isModelLoading ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : isRecording ? (
           <MicOff className="h-4 w-4 text-red-600" />
         ) : (
           <Mic className="h-4 w-4" />
