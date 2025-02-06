@@ -8,7 +8,6 @@ import Highlight from '@tiptap/extension-highlight';
 import CodeBlock from '@tiptap/extension-code-block';
 import { useToast } from '@/hooks/use-toast';
 import calculateScores from '@/utils/readabilityScores';
-import { debounce } from 'lodash';
 import { supabase } from '@/integrations/supabase/client';
 
 interface UseRichTextEditorProps {
@@ -22,42 +21,46 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const { toast } = useToast();
 
-  const performAnalysis = useCallback(
-    debounce(async (text: string) => {
-      const cleanText = text.trim();
-      // Only perform analysis if text is at least 50 characters to avoid unnecessary API calls
-      if (cleanText.length < 50) {
+  const performAnalysis = useCallback(async (text: string) => {
+    const cleanText = text.trim();
+    if (cleanText.length < 50) {
+      toast({
+        title: 'Text too short',
+        description: 'Please write at least 50 characters before analyzing',
+        variant: 'default',
+      });
+      return;
+    }
+    
+    try {
+      setIsAnalyzing(true);
+      const { data, error } = await supabase.functions.invoke('analyze-text', {
+        body: { text: cleanText },
+      });
+
+      if (error) {
+        console.error('Analysis error:', error);
+        if (!error.message?.includes('characters long')) {
+          toast({
+            title: 'Analysis failed',
+            description: 'There was an error analyzing your text',
+            variant: 'destructive',
+          });
+        }
         return;
       }
-      
-      try {
-        setIsAnalyzing(true);
-        const { data, error } = await supabase.functions.invoke('analyze-text', {
-          body: { text: cleanText },
-        });
 
-        if (error) {
-          console.error('Analysis error:', error);
-          // Only show error toast for unexpected errors
-          if (!error.message?.includes('characters long')) {
-            toast({
-              title: 'Analysis failed',
-              description: 'There was an error analyzing your text',
-              variant: 'destructive',
-            });
-          }
-          return;
-        }
-
-        setAiAnalysis(data);
-      } catch (error) {
-        console.error('Error analyzing text:', error);
-      } finally {
-        setIsAnalyzing(false);
-      }
-    }, 2000), // Increased debounce to 2 seconds
-    [toast]
-  );
+      setAiAnalysis(data);
+      toast({
+        title: 'Analysis complete',
+        description: 'Your text has been analyzed successfully',
+      });
+    } catch (error) {
+      console.error('Error analyzing text:', error);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }, [toast]);
 
   const editor = useEditor({
     extensions: [
@@ -85,11 +88,6 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
       const plainText = editor.getText();
       const scores = calculateScores(plainText);
       setReadabilityScores(scores);
-      
-      // Only trigger analysis for longer text
-      if (plainText.trim().length >= 50) {
-        performAnalysis(plainText);
-      }
     },
   });
 
@@ -99,18 +97,14 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
       const plainText = editor.getText();
       const scores = calculateScores(plainText);
       setReadabilityScores(scores);
-      
-      // Only perform initial analysis if text is long enough
-      if (plainText.trim().length >= 50) {
-        performAnalysis(plainText);
-      }
     }
-  }, [content, editor, performAnalysis]);
+  }, [content, editor]);
 
   return {
     editor,
     readabilityScores,
     aiAnalysis,
-    isAnalyzing
+    isAnalyzing,
+    performAnalysis
   };
 };

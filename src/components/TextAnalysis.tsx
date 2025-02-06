@@ -1,7 +1,9 @@
+
 import React from 'react';
 import { Card } from './ui/card';
+import { Button } from './ui/button';
 import ReadabilityChart from './ReadabilityChart';
-import { Loader2 } from 'lucide-react';
+import { Loader2, RefreshCw } from 'lucide-react';
 import type { ReadabilityScores } from '@/utils/readabilityScores';
 
 interface TextAnalysisProps {
@@ -9,9 +11,10 @@ interface TextAnalysisProps {
   content: string;
   aiAnalysis: any;
   isAnalyzing: boolean;
+  onAnalyze: () => void;
 }
 
-const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing }: TextAnalysisProps) => {
+const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing, onAnalyze }: TextAnalysisProps) => {
   if (!content) {
     return null;
   }
@@ -34,8 +37,25 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing }: TextAnalysis
   return (
     <div className="mt-8 space-y-6">
       <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Writing Analysis</h3>
-        <p className="text-sm text-gray-600 mb-6">AI-powered suggestions to improve your writing</p>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-semibold">Writing Analysis</h3>
+            <p className="text-sm text-gray-600">AI-powered suggestions to improve your writing</p>
+          </div>
+          <Button 
+            onClick={onAnalyze}
+            disabled={isAnalyzing}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            {isAnalyzing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+            {isAnalyzing ? 'Analyzing...' : 'Analyze Text'}
+          </Button>
+        </div>
 
         {isAnalyzing ? (
           <div className="flex items-center justify-center py-8">

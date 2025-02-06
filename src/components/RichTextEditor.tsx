@@ -11,7 +11,7 @@ interface RichTextEditorProps {
 }
 
 const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
-  const { editor, readabilityScores, aiAnalysis, isAnalyzing } = useRichTextEditor({
+  const { editor, readabilityScores, aiAnalysis, isAnalyzing, performAnalysis } = useRichTextEditor({
     content,
     onChange
   });
@@ -32,6 +32,12 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
     return null;
   }
 
+  const handleAnalyze = () => {
+    if (editor) {
+      performAnalysis(editor.getText());
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="border rounded-lg">
@@ -46,6 +52,13 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
           className="min-h-[600px] bg-white rounded-b-lg"
         />
       </div>
+      <TextAnalysis 
+        scores={readabilityScores}
+        content={editor.getText()}
+        aiAnalysis={aiAnalysis}
+        isAnalyzing={isAnalyzing}
+        onAnalyze={handleAnalyze}
+      />
     </div>
   );
 };
