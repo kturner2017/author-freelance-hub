@@ -55,18 +55,17 @@ const ChaptersEditor = () => {
       if (existingChapters && existingChapters.length > 0) {
         const chaptersMap: { [key: string]: Chapter } = {};
         existingChapters.forEach((chapter: any) => {
-          if (!chaptersMap[chapter.chapter_id]) {
-            chaptersMap[chapter.chapter_id] = {
-              id: chapter.id,
-              chapter_id: chapter.chapter_id,
-              content: chapter.content || '',
-            };
-          }
+          chaptersMap[chapter.id] = {
+            id: chapter.id,
+            chapter_id: chapter.chapter_id,
+            content: chapter.content || '',
+          };
         });
         
         setChapters(chaptersMap);
-        const firstChapter = Object.values(chaptersMap)[0];
-        if (firstChapter) {
+        // Set the first chapter as selected if none is selected
+        if (!selectedChapter) {
+          const firstChapter = Object.values(chaptersMap)[0];
           console.log('Setting initial chapter:', firstChapter);
           setSelectedChapter(firstChapter);
         }
@@ -116,13 +115,15 @@ const ChaptersEditor = () => {
         content: newChapter.content || '',
       };
 
-      setChapters({ [newChapter.chapter_id]: chapterData });
+      setChapters({ [newChapter.id]: chapterData });
       setSelectedChapter(chapterData);
     }
   };
 
   const handleContentChange = async (content: string) => {
     if (!selectedChapter) return;
+    
+    console.log('Updating content for chapter:', selectedChapter.id);
     
     const updatedChapter = {
       ...selectedChapter,
@@ -132,7 +133,7 @@ const ChaptersEditor = () => {
     setSelectedChapter(updatedChapter);
     setChapters(prev => ({
       ...prev,
-      [updatedChapter.chapter_id]: updatedChapter
+      [updatedChapter.id]: updatedChapter
     }));
 
     setIsAnalyzing(true);
@@ -157,17 +158,18 @@ const ChaptersEditor = () => {
   };
 
   const handleSave = async () => {
-    if (!bookId) return;
+    if (!bookId || !selectedChapter) return;
+
+    console.log('Saving chapter:', selectedChapter);
 
     try {
       const { error: updateError } = await supabase
         .from('manuscript_chapters')
         .update({
-          content: selectedChapter?.content,
+          content: selectedChapter.content,
           updated_at: new Date().toISOString()
         })
-        .eq('book_id', bookId)
-        .eq('chapter_id', selectedChapter?.chapter_id);
+        .eq('id', selectedChapter.id);
 
       if (updateError) throw updateError;
 
@@ -221,8 +223,10 @@ const ChaptersEditor = () => {
 
       setChapters(prevChapters => ({
         ...prevChapters,
-        [data.chapter_id]: chapterData
+        [data.id]: chapterData
       }));
+
+      setSelectedChapter(chapterData);
 
       toast({
         title: "Chapter added",
@@ -263,7 +267,10 @@ const ChaptersEditor = () => {
         <ChapterList
           chapters={chapters}
           selectedChapter={selectedChapter}
-          onChapterSelect={setSelectedChapter}
+          onChapterSelect={(chapter) => {
+            console.log('Selecting chapter:', chapter);
+            setSelectedChapter(chapter);
+          }}
         />
         <div className="flex-1 bg-white">
           {selectedChapter ? (
