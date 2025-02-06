@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import EditorToolbar from './editor/EditorToolbar';
 import { useVoiceTranscription } from '@/hooks/useVoiceTranscription';
 import { useRichTextEditor } from '@/hooks/useRichTextEditor';
+import TextAnalysis from './TextAnalysis';
 
 interface RichTextEditorProps {
   content: string;

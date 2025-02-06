@@ -49,6 +49,11 @@ const ManuscriptContent = ({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState(null);
 
+  const handleAnalyze = () => {
+    // Implement analysis logic if needed
+    console.log('Analyzing manuscript content');
+  };
+
   const getBoxesForAct = (act: 'act1' | 'act2' | 'act3') => {
     return Object.values(boxes).filter(box => box.act === act);
   };
@@ -86,6 +91,7 @@ const ManuscriptContent = ({
             content={documentContent}
             aiAnalysis={aiAnalysis}
             isAnalyzing={isAnalyzing}
+            onAnalyze={handleAnalyze}
           />
         </div>
       ) : selectedBox ? (

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ScrollArea } from '../ui/scroll-area';
 import { Badge } from '../ui/badge';
@@ -25,7 +26,10 @@ const ChapterEditor = ({
   aiAnalysis,
   isAnalyzing 
 }: ChapterEditorProps) => {
-  console.log('ChapterEditor rendering with chapter:', chapter);
+  const handleAnalyze = () => {
+    // Implement analysis logic if needed
+    console.log('Analyzing chapter content');
+  };
   
   return (
     <ScrollArea className="h-full">
@@ -48,6 +52,7 @@ const ChapterEditor = ({
           content={chapter.content}
           aiAnalysis={aiAnalysis}
           isAnalyzing={isAnalyzing}
+          onAnalyze={handleAnalyze}
         />
       </div>
     </ScrollArea>
