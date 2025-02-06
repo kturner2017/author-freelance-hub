@@ -37,10 +37,11 @@ const ChaptersEditor = () => {
       if (!bookId) return;
 
       console.log('Loading chapters for book:', bookId);
-      const { data, error } = await supabase
+      const { data: existingChapters, error } = await supabase
         .from('manuscript_chapters')
         .select('*')
-        .eq('book_id', bookId);
+        .eq('book_id', bookId)
+        .order('created_at', { ascending: true });
 
       if (error) {
         console.error('Error loading chapters:', error);
@@ -52,10 +53,11 @@ const ChaptersEditor = () => {
         return;
       }
 
-      console.log('Loaded chapters:', data);
-      if (data && data.length > 0) {
+      console.log('Loaded chapters:', existingChapters);
+      
+      if (existingChapters && existingChapters.length > 0) {
         const chaptersMap: { [key: string]: Chapter } = {};
-        data.forEach((chapter: ManuscriptChapter) => {
+        existingChapters.forEach((chapter: ManuscriptChapter) => {
           chaptersMap[chapter.chapter_id] = {
             id: chapter.id,
             chapter_id: chapter.chapter_id,
@@ -64,8 +66,11 @@ const ChaptersEditor = () => {
           };
         });
         setChapters(chaptersMap);
+        
+        // Select the first chapter by default
         const firstChapter = Object.values(chaptersMap)[0];
         if (firstChapter) {
+          console.log('Setting initial chapter:', firstChapter);
           setSelectedChapter(firstChapter);
         }
       } else {
@@ -95,16 +100,20 @@ const ChaptersEditor = () => {
         }
 
         if (newChapter) {
-          const chaptersMap = {
-            [newChapter.chapter_id]: {
-              id: newChapter.id,
-              chapter_id: newChapter.chapter_id,
-              title: newChapter.title,
-              content: newChapter.content || '',
-            }
+          const chapterData = {
+            id: newChapter.id,
+            chapter_id: newChapter.chapter_id,
+            title: newChapter.title,
+            content: newChapter.content || '',
           };
+
+          const chaptersMap = {
+            [newChapter.chapter_id]: chapterData
+          };
+          
+          console.log('Setting initial chapter data:', chapterData);
           setChapters(chaptersMap);
-          setSelectedChapter(chaptersMap[newChapter.chapter_id]);
+          setSelectedChapter(chapterData);
         }
       }
     };
