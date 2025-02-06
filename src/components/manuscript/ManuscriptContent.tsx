@@ -9,6 +9,7 @@ import FileUploader from '../FileUploader';
 import TextAnalysis from '../TextAnalysis';
 import calculateScores from '@/utils/readabilityScores';
 import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 interface Box {
   id: string;
@@ -48,10 +49,32 @@ const ManuscriptContent = ({
 }: ManuscriptContentProps) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState(null);
+  const { toast } = useToast();
 
-  const handleAnalyze = () => {
-    // Implement analysis logic if needed
-    console.log('Analyzing manuscript content');
+  const handleAnalyze = async () => {
+    try {
+      setIsAnalyzing(true);
+      const { data, error } = await supabase.functions.invoke('analyze-text', {
+        body: { text: documentContent }
+      });
+
+      if (error) throw error;
+      setAiAnalysis(data);
+      
+      toast({
+        title: "Analysis complete",
+        description: "Your text has been analyzed successfully"
+      });
+    } catch (error) {
+      console.error('Error analyzing text:', error);
+      toast({
+        title: "Analysis failed",
+        description: "There was an error analyzing your text",
+        variant: "destructive"
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const getBoxesForAct = (act: 'act1' | 'act2' | 'act3') => {

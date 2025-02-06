@@ -6,6 +6,8 @@ import RichTextEditor from '../RichTextEditor';
 import TextAnalysis from '../TextAnalysis';
 import calculateScores from '@/utils/readabilityScores';
 import { getWordCount } from '@/utils/wordCount';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface Chapter {
   id: string;
@@ -26,9 +28,28 @@ const ChapterEditor = ({
   aiAnalysis,
   isAnalyzing 
 }: ChapterEditorProps) => {
-  const handleAnalyze = () => {
-    // Implement analysis logic if needed
-    console.log('Analyzing chapter content');
+  const { toast } = useToast();
+
+  const handleAnalyze = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-text', {
+        body: { text: chapter.content }
+      });
+
+      if (error) throw error;
+      
+      toast({
+        title: "Analysis complete",
+        description: "Your text has been analyzed successfully"
+      });
+    } catch (error) {
+      console.error('Error analyzing text:', error);
+      toast({
+        title: "Analysis failed",
+        description: "There was an error analyzing your text",
+        variant: "destructive"
+      });
+    }
   };
   
   return (
