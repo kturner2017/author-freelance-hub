@@ -147,28 +147,35 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
   }, [content, editor, performAnalysis]);
 
   const convertBlobToAudioData = async (blob: Blob): Promise<Float32Array> => {
-    const audioContext = new AudioContext();
-    const arrayBuffer = await blob.arrayBuffer();
-    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-    
-    // Convert to mono channel if needed
-    const numberOfChannels = audioBuffer.numberOfChannels;
-    const length = audioBuffer.length;
-    const audioData = new Float32Array(length);
-    
-    // If stereo, average the channels
-    if (numberOfChannels === 2) {
-      const channel1 = audioBuffer.getChannelData(0);
-      const channel2 = audioBuffer.getChannelData(1);
-      for (let i = 0; i < length; i++) {
-        audioData[i] = (channel1[i] + channel2[i]) / 2;
+    try {
+      console.log('Starting audio conversion, blob size:', blob.size);
+      const audioContext = new AudioContext();
+      const arrayBuffer = await blob.arrayBuffer();
+      console.log('ArrayBuffer created, size:', arrayBuffer.byteLength);
+      
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+      console.log('Audio decoded, duration:', audioBuffer.duration, 'channels:', audioBuffer.numberOfChannels);
+      
+      const numberOfChannels = audioBuffer.numberOfChannels;
+      const length = audioBuffer.length;
+      const audioData = new Float32Array(length);
+      
+      if (numberOfChannels === 2) {
+        const channel1 = audioBuffer.getChannelData(0);
+        const channel2 = audioBuffer.getChannelData(1);
+        for (let i = 0; i < length; i++) {
+          audioData[i] = (channel1[i] + channel2[i]) / 2;
+        }
+      } else {
+        audioData.set(audioBuffer.getChannelData(0));
       }
-    } else {
-      // If mono, just get the single channel
-      audioData.set(audioBuffer.getChannelData(0));
+      
+      console.log('Audio data prepared, length:', audioData.length);
+      return audioData;
+    } catch (error) {
+      console.error('Error converting audio:', error);
+      throw new Error('Failed to convert audio data');
     }
-    
-    return audioData;
   };
 
   const startRecording = async () => {
@@ -205,20 +212,14 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       };
 
       mediaRecorder.onstop = async () => {
-        if (chunksRef.current.length === 0) {
-          console.error('No audio data recorded');
-          toast({
-            title: "Recording failed",
-            description: "No audio data was captured",
-            variant: "destructive"
-          });
-          return;
-        }
-
-        const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
-        console.log('Audio blob created:', audioBlob.size);
-        
         try {
+          if (chunksRef.current.length === 0) {
+            throw new Error('No audio data recorded');
+          }
+
+          const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
+          console.log('Audio blob created:', audioBlob.size);
+          
           toast({
             title: "Processing speech",
             description: "Converting your speech to text...",
@@ -226,9 +227,17 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
 
           console.log('Converting blob to audio data...');
           const audioData = await convertBlobToAudioData(audioBlob);
-          console.log('Audio data created:', audioData.length);
           
-          const output = await transcriber(audioData);
+          if (!audioData || audioData.length === 0) {
+            throw new Error('Invalid audio data generated');
+          }
+          
+          console.log('Sending audio data to transcriber, length:', audioData.length);
+          const output = await transcriber(audioData, {
+            task: "transcribe",
+            language: "en"
+          });
+          
           console.log('Transcription output:', output);
           
           if (output && output.text && editor) {
@@ -244,7 +253,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
           console.error('Transcription error:', error);
           toast({
             title: "Transcription failed",
-            description: "There was an error processing your speech",
+            description: error.message || "There was an error processing your speech",
             variant: "destructive"
           });
         }
