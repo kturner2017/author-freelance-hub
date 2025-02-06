@@ -71,12 +71,15 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
         console.log('Initializing Whisper model...');
         const whisperPipeline = await pipeline(
           "automatic-speech-recognition",
-          "Xenova/whisper-tiny.en"
+          "Xenova/whisper-tiny.en",
+          {
+            revision: 'main',
+            config: {
+              sampling_rate: 16000,
+              return_timestamps: false
+            }
+          }
         );
-
-        if (!whisperPipeline) {
-          throw new Error('Failed to initialize Whisper model');
-        }
 
         console.log('Whisper model initialized:', whisperPipeline);
         setTranscriber(whisperPipeline);
@@ -97,10 +100,13 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
     };
 
     initializeWhisper();
-  }, []);
+  }, [toast]);
 
   const validateAudioData = (audioData: Float32Array): boolean => {
-    console.log('Validating audio data...');
+    console.log('Validating audio data...', {
+      type: audioData?.constructor?.name,
+      length: audioData?.length
+    });
     
     if (!audioData || !(audioData instanceof Float32Array)) {
       console.error('Invalid audio data type:', audioData);
@@ -146,21 +152,28 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       }
 
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-      console.log('Audio decoded, duration:', audioBuffer.duration, 'channels:', audioBuffer.numberOfChannels);
+      console.log('Audio decoded:', {
+        duration: audioBuffer.duration,
+        channels: audioBuffer.numberOfChannels,
+        sampleRate: audioBuffer.sampleRate
+      });
       
       if (audioBuffer.duration === 0) {
         throw new Error('Invalid audio data: zero duration');
       }
 
       // Create offline context for resampling
-      const offlineContext = new OfflineAudioContext(1, audioBuffer.duration * 16000, 16000);
+      const offlineContext = new OfflineAudioContext(1, Math.ceil(audioBuffer.duration * 16000), 16000);
       const source = offlineContext.createBufferSource();
       source.buffer = audioBuffer;
       source.connect(offlineContext.destination);
       source.start();
 
       const resampled = await offlineContext.startRendering();
-      console.log('Audio resampled to 16kHz');
+      console.log('Audio resampled:', {
+        duration: resampled.duration,
+        sampleRate: resampled.sampleRate
+      });
 
       const monoData = new Float32Array(resampled.length);
       const channelData = resampled.getChannelData(0);
@@ -170,7 +183,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       }
       
       monoData.set(channelData);
-      
+
       console.log('Audio data prepared:', {
         length: monoData.length,
         sampleRate: resampled.sampleRate,
