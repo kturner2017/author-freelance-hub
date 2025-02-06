@@ -59,7 +59,7 @@
     @apply bg-background text-foreground font-sans;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-serif text-primary leading-tight tracking-tight;
+    @apply font-serif text-[#1A1F2C] leading-tight tracking-tight;
   }
   h1 {
     @apply text-4xl font-bold mb-6;
