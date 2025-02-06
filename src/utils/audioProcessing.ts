@@ -10,6 +10,11 @@ export const validateAudioData = (audioData: Float32Array): boolean => {
     return false;
   }
   
+  if (audioData.length < 16000) { // At least 1 second of audio
+    console.error('Audio data too short');
+    return false;
+  }
+  
   const hasValidSamples = audioData.some(sample => Math.abs(sample) > 0.01);
   if (!hasValidSamples) {
     console.error('Audio data contains no significant samples');
@@ -49,9 +54,9 @@ export const convertBlobToAudioData = async (blob: Blob): Promise<Float32Array |
       monoData[i] = channelData[i];
     }
     
-    // Ensure minimum length
-    if (monoData.length < 16000) { // At least 1 second of audio
-      console.error('Audio data too short');
+    // Validate audio data
+    if (!validateAudioData(monoData)) {
+      console.error('Audio validation failed');
       return null;
     }
     
