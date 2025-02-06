@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
@@ -14,6 +15,7 @@ import {
   X,
   Check
 } from 'lucide-react';
+import FrontMatterSection from './FrontMatterSection';
 
 interface Chapter {
   id: string;
@@ -28,6 +30,7 @@ interface ManuscriptSidebarProps {
   chapters: Chapter[];
   selectedChapter: string;
   expandedSections: {
+    frontMatter: boolean;
     act1: boolean;
     act2: boolean;
     act3: boolean;
@@ -42,6 +45,11 @@ interface ManuscriptSidebarProps {
       act: 'act1' | 'act2' | 'act3';
     };
   };
+  frontMatterOptions: {
+    id: string;
+    title: string;
+    enabled: boolean;
+  }[];
   onChapterSelect: (chapterId: string) => void;
   onChapterAdd: () => void;
   onChapterDelete: (chapterId: string) => void;
@@ -50,8 +58,9 @@ interface ManuscriptSidebarProps {
   onChapterEditSave: () => void;
   onChapterEditCancel: () => void;
   onChapterTitleChange: (title: string) => void;
-  onSectionToggle: (section: 'act1' | 'act2' | 'act3') => void;
+  onSectionToggle: (section: 'frontMatter' | 'act1' | 'act2' | 'act3') => void;
   onBoxSelect: (box: any) => void;
+  onFrontMatterOptionToggle: (id: string) => void;
 }
 
 const ManuscriptSidebar = ({
@@ -62,6 +71,7 @@ const ManuscriptSidebar = ({
   editingChapterId,
   editingChapterTitle,
   boxes,
+  frontMatterOptions,
   onChapterSelect,
   onChapterAdd,
   onChapterDelete,
@@ -72,6 +82,7 @@ const ManuscriptSidebar = ({
   onChapterTitleChange,
   onSectionToggle,
   onBoxSelect,
+  onFrontMatterOptionToggle,
 }: ManuscriptSidebarProps) => {
   const getBoxesForAct = (act: 'act1' | 'act2' | 'act3') => {
     return Object.values(boxes).filter(box => box.act === act);
@@ -95,6 +106,13 @@ const ManuscriptSidebar = ({
                 Get Started
               </div>
             </Button>
+
+            <FrontMatterSection
+              expanded={expandedSections.frontMatter}
+              options={frontMatterOptions}
+              onToggleExpand={() => onSectionToggle('frontMatter')}
+              onOptionToggle={onFrontMatterOptionToggle}
+            />
 
             {chapters.map((chapter, index) => (
               <div key={chapter.id} className="flex items-center group">
