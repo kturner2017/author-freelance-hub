@@ -93,20 +93,25 @@ const BooksDashboard = () => {
       
       // Fetch word counts for each book
       for (const book of books || []) {
+        console.log('Fetching chapters for book:', book.id);
         const { data: chapters, error: chaptersError } = await supabase
           .from('manuscript_chapters')
           .select('content')
-          .eq('chapter_id', book.id);
+          .eq('book_id', book.id); // Changed from chapter_id to book_id
           
         if (chaptersError) {
-          console.error('Error fetching chapters:', chaptersError);
+          console.error('Error fetching chapters for book', book.id, ':', chaptersError);
           continue;
         }
         
+        console.log('Chapters fetched for book', book.id, ':', chapters?.length || 0);
         const totalWords = chapters?.reduce((sum, chapter) => {
-          return sum + getWordCount(chapter.content || '');
+          const chapterWords = getWordCount(chapter.content || '');
+          console.log('Chapter words:', chapterWords);
+          return sum + chapterWords;
         }, 0) || 0;
         
+        console.log('Total words for book', book.id, ':', totalWords);
         setBookWordCounts(prev => ({
           ...prev,
           [book.id]: totalWords
