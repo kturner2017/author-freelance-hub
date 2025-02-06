@@ -43,7 +43,10 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
           "onnx-community/whisper-tiny.en",
           { 
             device: "webgpu",
-            quantized: false // Disable quantization to avoid null length error
+            revision: "main",
+            progress_callback: (progress) => {
+              console.log('Model loading progress:', progress);
+            }
           }
         );
         
