@@ -2,8 +2,8 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card } from './ui/card';
-import { Plus, Upload, Image as ImageIcon, ChevronLeft, Home } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Plus, Upload, Image as ImageIcon, ChevronLeft, Home, Briefcase, LogOut } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from './ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { getWordCount } from '@/utils/wordCount';
@@ -250,37 +250,58 @@ const BooksDashboard = () => {
       <header className="bg-[#F1F0FB] text-primary h-16 px-6 flex items-center shadow-sm">
         <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
           <div className="flex items-center gap-3">
+            <Link to="/" className="text-2xl font-serif font-bold text-primary hover:text-primary-600 transition-colors">
+              Authorify
+            </Link>
             <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => navigate('/')}
-              className="hover:bg-white/20 text-primary rounded-full transition-all duration-200 ease-in-out"
-            >
-              <Home className="h-5 w-5" />
-            </Button>
-            <Button
               variant="ghost"
-              size="icon"
-              onClick={() => navigate(-1)}
-              className="hover:bg-white/20 text-primary rounded-full transition-all duration-200 ease-in-out"
+              className="text-base font-medium px-4 py-2 hover:bg-primary-50 hover:text-primary-700 transition-colors"
+              asChild
             >
-              <ChevronLeft className="h-5 w-5" />
+              <Link to="/editor">Editor</Link>
             </Button>
-            <div>
-              <h1 className="text-lg font-medium text-primary">Your Bookshelf</h1>
-              <p className="text-sm text-primary/60">Manage your manuscripts</p>
-            </div>
+            <Button 
+              variant="ghost"
+              className="text-base font-medium px-4 py-2 hover:bg-primary-50 hover:text-primary-700 transition-colors"
+              asChild
+            >
+              <Link to="/for-authors">For Authors</Link>
+            </Button>
+            <Button 
+              variant="ghost"
+              className="text-base font-medium px-4 py-2 hover:bg-primary-50 hover:text-primary-700 transition-colors"
+              asChild
+            >
+              <Link to="/publishing-support">Publishing Support</Link>
+            </Button>
+            <Button 
+              variant="ghost"
+              className="text-base font-medium px-4 py-2 hover:bg-primary-50 hover:text-primary-700 transition-colors"
+              asChild
+            >
+              <Link to="/professional-network">Professional Network</Link>
+            </Button>
           </div>
           <div className="flex items-center gap-2">
             <Button 
-              variant="outline" 
+              asChild
+              className="bg-primary hover:bg-primary-600 text-white font-medium shadow-sm hover:shadow transition-all"
+            >
+              <Link to="/professional-network/projects">
+                <Briefcase className="mr-2 h-4 w-4" />
+                For Freelancers
+              </Link>
+            </Button>
+            <Button 
+              variant="outline"
               onClick={async () => {
                 await supabase.auth.signOut();
                 navigate('/auth');
-              }} 
-              className="text-primary border-primary hover:bg-primary/10"
+              }}
+              className="text-primary border-primary hover:bg-primary/10 flex items-center gap-2"
             >
-              Sign Out
+              <LogOut className="h-4 w-4" />
+              Logout
             </Button>
           </div>
         </div>
