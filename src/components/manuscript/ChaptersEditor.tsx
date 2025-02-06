@@ -65,10 +65,15 @@ const ChaptersEditor = () => {
         });
         
         setChapters(chaptersMap);
+        // Only set initial chapter if none is selected
         if (!selectedChapter) {
-          const firstChapter = Object.values(chaptersMap)[0];
+          const firstChapter = existingChapters[0];
           console.log('Setting initial chapter:', firstChapter);
-          setSelectedChapter(firstChapter);
+          setSelectedChapter({
+            id: firstChapter.id,
+            chapter_id: firstChapter.chapter_id,
+            content: firstChapter.content || '',
+          });
         }
       } else {
         await createInitialChapter();
@@ -278,7 +283,7 @@ const ChaptersEditor = () => {
         <div className="flex-1 bg-white">
           {selectedChapter ? (
             <ChapterEditor
-              key={selectedChapter.id} // Force re-render when chapter changes
+              key={`chapter-${selectedChapter.id}`}
               chapter={selectedChapter}
               onContentChange={handleContentChange}
               aiAnalysis={aiAnalysis}

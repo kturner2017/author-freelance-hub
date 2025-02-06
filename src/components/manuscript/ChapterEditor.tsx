@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ScrollArea } from '../ui/scroll-area';
 import { Badge } from '../ui/badge';
 import RichTextEditor from '../RichTextEditor';
@@ -25,12 +25,8 @@ const ChapterEditor = ({
   aiAnalysis,
   isAnalyzing 
 }: ChapterEditorProps) => {
+  console.log('ChapterEditor rendering with chapter:', chapter);
   
-  // Force editor content update when chapter changes
-  useEffect(() => {
-    console.log('ChapterEditor: Chapter content updated:', chapter.content);
-  }, [chapter.content]);
-
   return (
     <ScrollArea className="h-full">
       <div className="p-8 max-w-4xl mx-auto">
@@ -43,8 +39,8 @@ const ChapterEditor = ({
           </Badge>
         </div>
         <RichTextEditor
-          key={chapter.id} // Force re-render when chapter changes
-          content={chapter.content}
+          key={`editor-${chapter.id}`}
+          content={chapter.content || ''}
           onChange={onContentChange}
         />
         <TextAnalysis 
