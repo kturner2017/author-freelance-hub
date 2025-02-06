@@ -149,32 +149,41 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
   const convertBlobToAudioData = async (blob: Blob): Promise<Float32Array> => {
     try {
       console.log('Starting audio conversion, blob size:', blob.size);
-      const audioContext = new AudioContext();
+      const audioContext = new AudioContext({
+        sampleRate: 16000 // Whisper requires 16kHz
+      });
+      
       const arrayBuffer = await blob.arrayBuffer();
       console.log('ArrayBuffer created, size:', arrayBuffer.byteLength);
       
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
       console.log('Audio decoded, duration:', audioBuffer.duration, 'channels:', audioBuffer.numberOfChannels);
       
-      const numberOfChannels = audioBuffer.numberOfChannels;
-      const length = audioBuffer.length;
-      const audioData = new Float32Array(length);
+      // Ensure we're working with the correct sample rate
+      const offlineContext = new OfflineAudioContext(1, audioBuffer.duration * 16000, 16000);
+      const source = offlineContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(offlineContext.destination);
+      source.start();
       
-      if (numberOfChannels === 2) {
-        const channel1 = audioBuffer.getChannelData(0);
-        const channel2 = audioBuffer.getChannelData(1);
-        for (let i = 0; i < length; i++) {
-          audioData[i] = (channel1[i] + channel2[i]) / 2;
-        }
-      } else {
-        audioData.set(audioBuffer.getChannelData(0));
+      const resampled = await offlineContext.startRendering();
+      console.log('Audio resampled to 16kHz');
+      
+      // Convert to mono and get the data
+      const monoData = new Float32Array(resampled.length);
+      const channelData = resampled.getChannelData(0);
+      monoData.set(channelData);
+      
+      console.log('Audio data prepared, length:', monoData.length);
+      
+      if (monoData.length === 0) {
+        throw new Error('Generated audio data is empty');
       }
       
-      console.log('Audio data prepared, length:', audioData.length);
-      return audioData;
+      return monoData;
     } catch (error) {
       console.error('Error converting audio:', error);
-      throw new Error('Failed to convert audio data');
+      throw new Error('Failed to convert audio data: ' + error.message);
     }
   };
 
