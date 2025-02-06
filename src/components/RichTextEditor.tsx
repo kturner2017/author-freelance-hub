@@ -10,6 +10,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { debounce } from 'lodash';
 import { pipeline } from '@huggingface/transformers';
 import EditorToolbar from './editor/EditorToolbar';
+import { supabase } from '@/integrations/supabase/client';
 
 interface RichTextEditorProps {
   content: string;
@@ -34,22 +35,16 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       
       try {
         setIsAnalyzing(true);
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-text`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({ text }),
+        const { data, error } = await supabase.functions.invoke('analyze-text', {
+          body: { text },
         });
 
-        if (!response.ok) {
-          throw new Error('Failed to analyze text');
+        if (error) {
+          throw error;
         }
 
-        const analysis = await response.json();
-        console.log('Text analysis result:', analysis);
-        setAiAnalysis(analysis);
+        console.log('Text analysis result:', data);
+        setAiAnalysis(data);
       } catch (error) {
         console.error('Error analyzing text:', error);
         toast({
@@ -77,7 +72,6 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
           "automatic-speech-recognition",
           "Xenova/whisper-tiny.en",
           { 
-            quantized: true,
             progress_callback: (progress) => {
               console.log('Model loading progress:', progress);
             }
