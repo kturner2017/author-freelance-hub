@@ -16,11 +16,6 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
   const { toast } = useToast();
 
   const validateAudioData = (audioData: Float32Array): boolean => {
-    console.log('Validating audio data...', {
-      type: audioData?.constructor?.name,
-      length: audioData?.length
-    });
-    
     if (!audioData || !(audioData instanceof Float32Array)) {
       console.error('Invalid audio data type:', audioData);
       return false;
@@ -31,78 +26,47 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
       return false;
     }
     
-    const hasValidSamples = audioData.some(sample => sample !== 0);
+    const hasValidSamples = audioData.some(sample => Math.abs(sample) > 0.01);
     if (!hasValidSamples) {
-      console.error('Audio data contains no valid samples');
+      console.error('Audio data contains no significant samples');
       return false;
     }
-
-    console.log('Audio data validation passed:', {
-      length: audioData.length,
-      hasValidSamples
-    });
     
     return true;
   };
 
   const convertBlobToAudioData = async (blob: Blob): Promise<Float32Array | null> => {
     try {
-      console.log('Starting audio conversion, blob size:', blob.size);
-      
-      if (!blob || blob.size === 0) {
-        throw new Error('Invalid audio data: empty blob');
-      }
-
       const audioContext = new AudioContext({
-        sampleRate: 16000
+        sampleRate: 16000 // Explicitly set sample rate for Whisper
       });
       
       const arrayBuffer = await blob.arrayBuffer();
-      console.log('ArrayBuffer created, size:', arrayBuffer.byteLength);
-      
-      if (arrayBuffer.byteLength === 0) {
-        throw new Error('Invalid audio data: empty array buffer');
-      }
-
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-      console.log('Audio decoded:', {
-        duration: audioBuffer.duration,
-        channels: audioBuffer.numberOfChannels,
-        sampleRate: audioBuffer.sampleRate
-      });
       
-      if (audioBuffer.duration === 0) {
-        throw new Error('Invalid audio data: zero duration');
-      }
+      // Create an offline context for resampling
+      const offlineContext = new OfflineAudioContext({
+        numberOfChannels: 1,
+        length: Math.ceil(audioBuffer.duration * 16000),
+        sampleRate: 16000
+      });
 
-      const offlineContext = new OfflineAudioContext(1, Math.ceil(audioBuffer.duration * 16000), 16000);
       const source = offlineContext.createBufferSource();
       source.buffer = audioBuffer;
       source.connect(offlineContext.destination);
       source.start();
 
-      const resampled = await offlineContext.startRendering();
-      console.log('Audio resampled:', {
-        duration: resampled.duration,
-        sampleRate: resampled.sampleRate
-      });
-
-      const monoData = new Float32Array(resampled.length);
-      const channelData = resampled.getChannelData(0);
+      const renderedBuffer = await offlineContext.startRendering();
+      const channelData = renderedBuffer.getChannelData(0);
       
-      if (!channelData || channelData.length === 0) {
-        throw new Error('Invalid channel data');
+      // Normalize audio data
+      const maxAmplitude = Math.max(...Array.from(channelData).map(Math.abs));
+      const normalizedData = new Float32Array(channelData.length);
+      for (let i = 0; i < channelData.length; i++) {
+        normalizedData[i] = maxAmplitude > 0 ? channelData[i] / maxAmplitude : channelData[i];
       }
-      
-      monoData.set(channelData);
 
-      console.log('Audio data prepared:', {
-        length: monoData.length,
-        sampleRate: resampled.sampleRate,
-        hasData: monoData.some(sample => sample !== 0)
-      });
-
-      return monoData;
+      return normalizedData;
     } catch (error) {
       console.error('Error converting audio:', error);
       return null;
@@ -117,7 +81,6 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
         description: "This may take a moment on first use",
       });
 
-      console.log('Initializing Whisper model...');
       const whisperPipeline = await pipeline(
         "automatic-speech-recognition",
         "Xenova/whisper-tiny.en",
@@ -125,11 +88,14 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
           revision: 'main',
           progress_callback: (progress) => {
             console.log('Model loading progress:', progress);
+          },
+          config: {
+            sampling_rate: 16000,
+            return_timestamps: false
           }
         }
       );
 
-      console.log('Whisper model initialized:', whisperPipeline);
       setTranscriber(whisperPipeline);
       toast({
         title: "Speech recognition ready",
@@ -148,18 +114,10 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
   }, [toast]);
 
   const startRecording = async () => {
-    if (isModelLoading) {
-      toast({
-        title: "Please wait",
-        description: "Speech recognition model is still loading",
-      });
-      return;
-    }
-
     if (!transcriber) {
       toast({
-        title: "Speech recognition not available",
-        description: "Please try reloading the page",
+        title: "Speech recognition not ready",
+        description: "Please wait for the model to load",
         variant: "destructive"
       });
       return;
@@ -191,58 +149,38 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
 
       mediaRecorder.onstop = async () => {
         try {
-          if (chunksRef.current.length === 0) {
-            throw new Error('No audio data recorded');
-          }
-
           const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
-          console.log('Audio blob created:', audioBlob.size);
+          console.log('Processing audio, size:', audioBlob.size);
           
           if (audioBlob.size === 0) {
-            throw new Error('Audio recording is empty');
+            throw new Error('No audio recorded');
           }
-
-          toast({
-            title: "Processing speech",
-            description: "Converting your speech to text...",
-          });
 
           const audioData = await convertBlobToAudioData(audioBlob);
-          
-          if (!audioData) {
-            throw new Error('Failed to process audio data');
+          if (!audioData || !validateAudioData(audioData)) {
+            throw new Error('Invalid audio data');
           }
 
-          if (!validateAudioData(audioData)) {
-            throw new Error('Invalid audio data after validation');
-          }
-
-          console.log('Sending audio data to transcriber, length:', audioData.length);
-          
-          if (!transcriber) {
-            throw new Error('Transcriber not initialized');
-          }
-
+          console.log('Audio processed, calling transcriber...');
           const output = await transcriber(audioData, {
             task: 'transcribe',
             language: 'en'
           });
-          
+
           if (!output?.text) {
-            throw new Error('No transcription output');
+            throw new Error('Transcription failed');
           }
 
-          console.log('Transcription result:', output);
           onTranscriptionComplete(output.text);
           toast({
             title: "Transcription complete",
-            description: "Your dictated text has been added"
+            description: output.text
           });
         } catch (error) {
           console.error('Transcription error:', error);
           toast({
             title: "Transcription failed",
-            description: error.message || "There was an error processing your speech",
+            description: error.message,
             variant: "destructive"
           });
         }
@@ -255,10 +193,10 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
         description: "Speak clearly into your microphone"
       });
     } catch (error) {
-      console.error('Error accessing microphone:', error);
+      console.error('Error starting recording:', error);
       toast({
-        title: "Microphone access denied",
-        description: "Please allow microphone access to use dictation",
+        title: "Recording failed",
+        description: "Please check your microphone access",
         variant: "destructive"
       });
     }
@@ -291,4 +229,3 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
     initializeWhisper
   };
 };
-
