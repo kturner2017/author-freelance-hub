@@ -2,20 +2,10 @@
 import React from 'react';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
-import { 
-  ChevronRight, 
-  ChevronDown, 
-  Plus, 
-  File, 
-  Folder,
-  Pencil,
-  ArrowUp,
-  ArrowDown,
-  Trash2,
-  X,
-  Check
-} from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import FrontMatterSection from './FrontMatterSection';
+import ChapterListSection from './ChapterListSection';
+import ActSection from './ActSection';
 
 interface Chapter {
   id: string;
@@ -114,133 +104,30 @@ const ManuscriptSidebar = ({
               onOptionToggle={onFrontMatterOptionToggle}
             />
 
-            {chapters.map((chapter, index) => (
-              <div key={chapter.id} className="flex items-center group">
-                {editingChapterId === chapter.id ? (
-                  <div className="flex items-center w-full gap-1 pr-2">
-                    <input
-                      type="text"
-                      value={editingChapterTitle}
-                      onChange={(e) => onChapterTitleChange(e.target.value)}
-                      className="flex-1 bg-gray-700 text-white px-2 py-1 rounded"
-                      autoFocus
-                    />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={onChapterEditSave}
-                    >
-                      <Check className="h-4 w-4 text-green-500" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={onChapterEditCancel}
-                    >
-                      <X className="h-4 w-4 text-red-500" />
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    <Button 
-                      variant="ghost" 
-                      className={`flex-1 justify-start text-gray-300 hover:bg-gray-700 active:bg-gray-600 transition-colors duration-200 py-1 h-auto ${
-                        selectedChapter === chapter.id ? 'bg-gray-700' : ''
-                      }`}
-                      onClick={() => onChapterSelect(chapter.id)}
-                    >
-                      <div className="flex items-center">
-                        <File className="h-4 w-4 mr-2" />
-                        {chapter.title}
-                      </div>
-                    </Button>
-                    <div className="hidden group-hover:flex items-center gap-1 pr-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={() => onChapterEditStart(chapter)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={() => onChapterMove(chapter.id, 'up')}
-                        disabled={index === 0}
-                      >
-                        <ArrowUp className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={() => onChapterMove(chapter.id, 'down')}
-                        disabled={index === chapters.length - 1}
-                      >
-                        <ArrowDown className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={() => onChapterDelete(chapter.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </Button>
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
-
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start text-gray-300 hover:bg-gray-700 active:bg-gray-600 transition-colors duration-200 py-1 h-auto"
-              onClick={onChapterAdd}
-            >
-              <div className="flex items-center">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Chapter
-              </div>
-            </Button>
+            <ChapterListSection
+              chapters={chapters}
+              selectedChapter={selectedChapter}
+              editingChapterId={editingChapterId}
+              editingChapterTitle={editingChapterTitle}
+              onChapterSelect={onChapterSelect}
+              onChapterAdd={onChapterAdd}
+              onChapterDelete={onChapterDelete}
+              onChapterMove={onChapterMove}
+              onChapterEditStart={onChapterEditStart}
+              onChapterEditSave={onChapterEditSave}
+              onChapterEditCancel={onChapterEditCancel}
+              onChapterTitleChange={onChapterTitleChange}
+            />
 
             {['act1', 'act2'].map((act) => (
-              <div key={act}>
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-start text-gray-300 hover:bg-gray-700 active:bg-gray-600 transition-colors duration-200 py-1 h-auto"
-                  onClick={() => onSectionToggle(act as 'act1' | 'act2')}
-                >
-                  <div className="flex items-center">
-                    {expandedSections[act as keyof typeof expandedSections] ? (
-                      <ChevronDown className="h-4 w-4 mr-2" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4 mr-2" />
-                    )}
-                    <Folder className="h-4 w-4 mr-2" />
-                    Act {act === 'act1' ? 'I' : 'II'}
-                  </div>
-                </Button>
-                {expandedSections[act as keyof typeof expandedSections] && (
-                  <div className="ml-4 space-y-1">
-                    {getBoxesForAct(act as 'act1' | 'act2').map(box => (
-                      <Button 
-                        key={box.id}
-                        variant="ghost" 
-                        className="w-full justify-start text-sm text-gray-400 hover:bg-gray-700 py-1 h-auto"
-                        onClick={() => onBoxSelect(box)}
-                      >
-                        <File className="h-4 w-4 mr-2" />
-                        {box.title}
-                      </Button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <ActSection
+                key={act}
+                act={act as 'act1' | 'act2'}
+                expanded={expandedSections[act as keyof typeof expandedSections]}
+                boxes={getBoxesForAct(act as 'act1' | 'act2')}
+                onSectionToggle={() => onSectionToggle(act as 'act1' | 'act2')}
+                onBoxSelect={onBoxSelect}
+              />
             ))}
           </div>
         </div>
