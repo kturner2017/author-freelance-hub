@@ -13,9 +13,8 @@ export const initializeWhisperModel = async (
       "Xenova/whisper-tiny.en",
       {
         progress_callback: onProgress,
-        quantized: false, // Try without quantization
         chunk_length: 30, // Process in 30-second chunks
-        stride_length: 5   // 5-second overlap between chunks
+        stride_length: 5  // 5-second overlap between chunks
       }
     );
     console.log('Whisper model initialized successfully');
