@@ -10,7 +10,7 @@ export const validateAudioData = (audioData: Float32Array): boolean => {
     return false;
   }
   
-  if (audioData.length < 16000) { // At least 1 second of audio
+  if (audioData.length < 16000) { // At least 1 second of audio at 16kHz
     console.error('Audio data too short');
     return false;
   }
@@ -27,13 +27,13 @@ export const validateAudioData = (audioData: Float32Array): boolean => {
 export const convertBlobToAudioData = async (blob: Blob): Promise<Float32Array | null> => {
   try {
     const audioContext = new AudioContext({
-      sampleRate: 16000 // Explicitly set sample rate for Whisper
+      sampleRate: 16000 // Required sample rate for Whisper
     });
     
     const arrayBuffer = await blob.arrayBuffer();
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
     
-    // Create an offline context for resampling
+    // Create an offline context for resampling if needed
     const offlineContext = new OfflineAudioContext({
       numberOfChannels: 1,
       length: Math.ceil(audioBuffer.duration * 16000),
@@ -46,26 +46,39 @@ export const convertBlobToAudioData = async (blob: Blob): Promise<Float32Array |
     source.start();
 
     const renderedBuffer = await offlineContext.startRendering();
-    const channelData = renderedBuffer.getChannelData(0);
     
-    // Convert to mono if needed
+    // Get the mono channel data
+    const channelData = renderedBuffer.getChannelData(0);
     const monoData = new Float32Array(channelData.length);
+    
+    // Copy and validate the audio data
     for (let i = 0; i < channelData.length; i++) {
       monoData[i] = channelData[i];
     }
     
-    // Validate audio data
+    // Validate before proceeding
     if (!validateAudioData(monoData)) {
       console.error('Audio validation failed');
       return null;
     }
     
-    // Normalize audio data
+    // Normalize the audio data
     const maxAmplitude = Math.max(...Array.from(monoData).map(Math.abs));
+    if (maxAmplitude === 0) {
+      console.error('Audio data has zero amplitude');
+      return null;
+    }
+    
     const normalizedData = new Float32Array(monoData.length);
     for (let i = 0; i < monoData.length; i++) {
-      normalizedData[i] = maxAmplitude > 0 ? monoData[i] / maxAmplitude : monoData[i];
+      normalizedData[i] = monoData[i] / maxAmplitude;
     }
+
+    console.log('Audio processing complete:', {
+      sampleRate: 16000,
+      duration: normalizedData.length / 16000,
+      samples: normalizedData.length
+    });
 
     return normalizedData;
   } catch (error) {

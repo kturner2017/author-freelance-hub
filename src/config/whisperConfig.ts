@@ -13,8 +13,9 @@ export const initializeWhisperModel = async (
       "Xenova/whisper-tiny.en",
       {
         progress_callback: onProgress,
-        chunk_length: 30, // Process in 30-second chunks 
-        stride_length: 5  // 5-second overlap between chunks
+        // Audio chunk configuration goes in the model options
+        chunk_length_s: 30,
+        stride_length_s: 5
       }
     );
     console.log('Whisper model initialized successfully');
