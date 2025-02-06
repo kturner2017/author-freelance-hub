@@ -167,7 +167,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus'
+        mimeType: 'audio/webm'
       });
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
@@ -190,7 +190,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
           return;
         }
 
-        const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm;codecs=opus' });
+        const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
         console.log('Audio blob created:', audioBlob.size);
         
         try {
@@ -199,7 +199,12 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
             description: "Converting your speech to text...",
           });
 
-          const output = await transcriber(audioBlob);
+          // Convert blob to ArrayBuffer for processing
+          const arrayBuffer = await audioBlob.arrayBuffer();
+          const audioData = new Float32Array(arrayBuffer);
+          
+          console.log('Processing audio data:', audioData.length);
+          const output = await transcriber(audioData);
           console.log('Transcription output:', output);
           
           if (output && output.text && editor) {
