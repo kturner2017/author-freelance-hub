@@ -5,7 +5,6 @@ import TextAlign from '@tiptap/extension-text-align';
 import Highlight from '@tiptap/extension-highlight';
 import CodeBlock from '@tiptap/extension-code-block';
 import { useToast } from './ui/use-toast';
-import ReadabilityChart from './ReadabilityChart';
 import calculateScores from '@/utils/readabilityScores';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { debounce } from 'lodash';
@@ -188,7 +187,6 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
   return (
     <div className="space-y-4">
       <div className="border rounded-lg">
-        <ReadabilityChart scores={readabilityScores} />
         <EditorToolbar 
           editor={editor}
           isRecording={isRecording}
