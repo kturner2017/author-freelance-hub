@@ -13,10 +13,17 @@ serve(async (req) => {
 
   try {
     const { text } = await req.json();
-    console.log('Analyzing text:', text.substring(0, 100) + '...');
+    const cleanText = text?.trim();
+    console.log('Analyzing text:', cleanText?.substring(0, 100) + '...');
 
-    if (!text || text.length < 10) {
-      throw new Error('Text must be at least 10 characters long');
+    if (!cleanText || cleanText.length < 10) {
+      return new Response(
+        JSON.stringify({ error: 'Text must be at least 10 characters long' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     const token = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN');
@@ -29,17 +36,17 @@ serve(async (req) => {
     // Grammar analysis using GPT-2 detector
     const grammarResponse = await hf.textClassification({
       model: 'textattack/roberta-base-CoLA',
-      inputs: text.slice(0, 500),
+      inputs: cleanText.slice(0, 500),
     });
 
     // Style analysis using sentiment model
     const styleResponse = await hf.textClassification({
       model: 'nlptown/bert-base-multilingual-uncased-sentiment',
-      inputs: text.slice(0, 500),
+      inputs: cleanText.slice(0, 500),
     });
 
     // Show vs Tell analysis
-    const showTellAnalysis = analyzeShowVsTell(text);
+    const showTellAnalysis = analyzeShowVsTell(cleanText);
     
     const result = {
       scores: {
@@ -72,7 +79,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ error: error.message }),
       {
-        status: 400,
+        status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );

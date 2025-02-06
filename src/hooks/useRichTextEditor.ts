@@ -24,16 +24,30 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
 
   const performAnalysis = useCallback(
     debounce(async (text: string) => {
-      if (text.length < 50) return;
+      // Only perform analysis if text is at least 10 characters
+      const cleanText = text.trim();
+      if (cleanText.length < 10) {
+        setAiAnalysis(null);
+        return;
+      }
       
       try {
         setIsAnalyzing(true);
         const { data, error } = await supabase.functions.invoke('analyze-text', {
-          body: { text },
+          body: { text: cleanText },
         });
 
         if (error) {
-          throw error;
+          console.error('Analysis error:', error);
+          // Only show error toast if it's not the minimum length error
+          if (!error.message?.includes('10 characters')) {
+            toast({
+              title: 'Analysis failed',
+              description: 'There was an error analyzing your text',
+              variant: 'destructive',
+            });
+          }
+          return;
         }
 
         console.log('Text analysis result:', data);
@@ -90,7 +104,7 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
       const scores = calculateScores(plainText);
       setReadabilityScores(scores);
       
-      if (plainText.length >= 50) {
+      if (plainText.length >= 10) {
         performAnalysis(plainText);
       }
     }
