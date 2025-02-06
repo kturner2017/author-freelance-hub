@@ -24,8 +24,8 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
 
   const performAnalysis = useCallback(
     debounce(async (text: string) => {
-      // Only perform analysis if text is at least 10 characters
       const cleanText = text.trim();
+      // Only perform analysis if text is at least 10 characters
       if (cleanText.length < 10) {
         setAiAnalysis(null);
         return;
