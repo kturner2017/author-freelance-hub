@@ -28,7 +28,6 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
   const chunksRef = useRef<Blob[]>([]);
   const { toast } = useToast();
 
-  // Define performAnalysis using useCallback
   const performAnalysis = useCallback(
     debounce(async (text: string) => {
       if (text.length < 50) return;
@@ -68,6 +67,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
           description: "This may take a moment on first use",
         });
 
+        console.log('Initializing Whisper model...');
         const whisperPipeline = await pipeline(
           "automatic-speech-recognition",
           "Xenova/whisper-tiny.en",
@@ -223,6 +223,11 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
           }
 
           console.log('Sending audio data to transcriber, length:', audioData.length);
+          
+          if (!transcriber) {
+            throw new Error('Transcriber not initialized');
+          }
+
           const output = await transcriber(audioData);
           
           if (!output?.text) {
@@ -306,9 +311,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       onChange(newContent);
       
       const plainText = editor.getText();
-      console.log('Calculating readability for text:', plainText);
       const scores = calculateScores(plainText);
-      console.log('Calculated scores:', scores);
       setReadabilityScores(scores);
       
       performAnalysis(plainText);
