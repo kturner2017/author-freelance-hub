@@ -36,19 +36,30 @@ const BooksDashboard = () => {
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
+    console.log('Auth session:', session); // Added logging
     if (!session) {
+      console.log('No session found, redirecting to auth'); // Added logging
       navigate('/auth');
+      return;
     }
+    console.log('User authenticated:', session.user.email); // Added logging
   };
 
   const fetchBooks = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      console.log('No session during fetchBooks, skipping'); // Added logging
+      return;
+    }
+
+    console.log('Fetching books for user:', session.user.id); // Added logging
     const { data: books, error } = await supabase
       .from('books')
       .select('*')
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching books:', error);
+      console.error('Error fetching books:', error); // Enhanced error logging
       toast({
         title: "Error fetching books",
         description: error.message,
@@ -57,6 +68,7 @@ const BooksDashboard = () => {
       return;
     }
 
+    console.log('Books fetched:', books); // Added logging
     setBooks(books || []);
   };
 
