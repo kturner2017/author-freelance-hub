@@ -247,18 +247,18 @@ const BooksDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-[#0F172A] text-white h-16 px-6 flex items-center">
+      <header className="bg-[#F1F0FB] text-primary h-16 px-6 flex items-center shadow-sm">
         <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => navigate('/')}
-              className="hover:bg-white/10 text-white"
+              className="hover:bg-white/20 text-primary"
             >
               <ChevronLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-lg font-medium">Your Bookshelf</h1>
+            <h1 className="text-lg font-medium text-primary">Your Bookshelf</h1>
           </div>
           <Button 
             variant="outline" 
@@ -266,7 +266,7 @@ const BooksDashboard = () => {
               await supabase.auth.signOut();
               navigate('/auth');
             }} 
-            className="text-white border-white hover:bg-white/10"
+            className="text-primary border-primary hover:bg-primary/10"
           >
             Sign Out
           </Button>
