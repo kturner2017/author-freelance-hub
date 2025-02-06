@@ -29,12 +29,44 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing, onAnalyze }: T
 
   // Examples of how to rewrite telling sentences
   const tellingToShowingExamples = {
+    // Emotions
     "was angry": "His fists clenched and his face reddened",
     "felt sad": "Tears welled up in her eyes as her shoulders slumped",
     "was scared": "Her heart pounded against her ribs and her hands trembled",
     "was happy": "A broad smile lit up her face as she bounced on her toes",
-    "looked tired": "Dark circles shadowed his eyes, and he dragged his feet with each step",
-    "seemed nervous": "She fidgeted with her sleeve, her eyes darting around the room"
+    "was nervous": "She fidgeted with her sleeve, her eyes darting around the room",
+    "felt excited": "She couldn't stop pacing, her words tumbling out in rapid bursts",
+    
+    // Physical States
+    "was tired": "Dark circles shadowed his eyes, and he dragged his feet with each step",
+    "felt cold": "Her teeth chattered as she wrapped her arms tightly around herself",
+    "was hot": "Sweat beaded on his forehead, his shirt clinging to his back",
+    "looked sick": "Her face had taken on an ashen pallor, and she swayed slightly with each step",
+    
+    // Personality Traits
+    "was intelligent": "She solved the crossword puzzle in record time, barely glancing at the clues",
+    "was rude": "He cut off the speaker mid-sentence and rolled his eyes",
+    "was kind": "She spent her lunch break helping the new intern learn the filing system",
+    
+    // Weather/Environment
+    "it was raining": "Raindrops drummed against the windows, creating rivers down the glass",
+    "it was cold": "Frost crystallized on the windows, and breath came out in visible puffs",
+    "it was noisy": "Car horns blared and construction equipment rumbled, the cacophony echoing off building walls",
+    
+    // Time of Day
+    "it was morning": "Golden sunlight crept across the floor as coffee makers gurgled to life",
+    "it was night": "Street lamps cast pools of yellow light on the empty sidewalks",
+    "it was getting late": "Long shadows stretched across the ground as the sun dipped below the horizon",
+    
+    // Movement
+    "walked slowly": "He shuffled forward, one hesitant step at a time",
+    "ran quickly": "Her feet pounded against the pavement as she sprinted",
+    "moved quietly": "She crept forward on tiptoes, carefully avoiding the creaky floorboards",
+    
+    // Sensory Experiences
+    "the food was delicious": "The chocolate melted on her tongue, releasing waves of rich, sweet flavor",
+    "the music was loud": "The bass vibrated through the floorboards and rattled the windows",
+    "it smelled bad": "A pungent odor assaulted his nostrils, making his eyes water"
   };
 
   // Safely access aiAnalysis properties with default values
