@@ -5,7 +5,7 @@ import calculateScores from '@/utils/readabilityScores';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
 import { Plus, BookOpen } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Card, CardContent } from '../ui/card';
 import { Database } from '@/integrations/supabase/types';
 import RichTextEditor from '../RichTextEditor';
@@ -23,28 +23,23 @@ interface Chapter {
   content: string;
 }
 
-const INITIAL_CHAPTERS: { [key: string]: Chapter } = {
-  'chapter-1': {
-    id: 'chapter-1',
-    chapter_id: 'chapter-1',
-    title: 'New Chapter',
-    content: '',
-  }
-};
-
 const ChaptersEditor = () => {
   const navigate = useNavigate();
+  const { bookId } = useParams();
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
-  const [chapters, setChapters] = useState<{ [key: string]: Chapter }>(INITIAL_CHAPTERS);
+  const [chapters, setChapters] = useState<{ [key: string]: Chapter }>({});
   const { toast } = useToast();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<any>({});
 
   useEffect(() => {
     const loadChapters = async () => {
+      if (!bookId) return;
+
       const { data, error } = await supabase
         .from('manuscript_chapters')
-        .select('*');
+        .select('*')
+        .eq('book_id', bookId);
 
       if (error) {
         console.error('Error loading chapters:', error);
@@ -72,13 +67,46 @@ const ChaptersEditor = () => {
           setSelectedChapter(firstChapter);
         }
       } else {
-        setChapters(INITIAL_CHAPTERS);
-        setSelectedChapter(INITIAL_CHAPTERS['chapter-1']);
+        // Create initial chapter if none exist
+        const initialChapter = {
+          chapter_id: 'chapter-1',
+          title: 'New Chapter',
+          content: '',
+        };
+        
+        const { data: newChapter, error: insertError } = await supabase
+          .from('manuscript_chapters')
+          .insert([{ ...initialChapter, book_id: bookId }])
+          .select()
+          .single();
+
+        if (insertError) {
+          console.error('Error creating initial chapter:', insertError);
+          toast({
+            title: "Error creating chapter",
+            description: insertError.message,
+            variant: "destructive"
+          });
+          return;
+        }
+
+        if (newChapter) {
+          const chaptersMap = {
+            [newChapter.chapter_id]: {
+              id: newChapter.id,
+              chapter_id: newChapter.chapter_id,
+              title: newChapter.title,
+              content: newChapter.content || '',
+            }
+          };
+          setChapters(chaptersMap);
+          setSelectedChapter(chaptersMap[newChapter.chapter_id]);
+        }
       }
     };
 
     loadChapters();
-  }, [toast]);
+  }, [bookId, toast]);
 
   const handleContentChange = async (content: string) => {
     if (!selectedChapter) return;
@@ -194,29 +222,56 @@ const ChaptersEditor = () => {
     }
   };
 
-  const handleAddChapter = () => {
-    const newChapterId = `chapter-${Object.keys(chapters).length + 1}`;
-    const newChapter: Chapter = {
-      id: newChapterId,
-      chapter_id: newChapterId,
-      title: 'New Chapter',
-      content: '',
-    };
-
-    setChapters(prevChapters => ({
-      ...prevChapters,
-      [newChapterId]: newChapter
-    }));
-
-    toast({
-      title: "Chapter added",
-      description: "A new chapter has been added."
-    });
-  };
-
   const handleChapterSelect = (chapter: Chapter) => {
     console.log('Selecting chapter:', chapter);
     setSelectedChapter(chapter);
+  };
+
+  const handleAddChapter = async () => {
+    if (!bookId) return;
+
+    const newChapterId = `chapter-${Object.keys(chapters).length + 1}`;
+    const newChapter = {
+      chapter_id: newChapterId,
+      title: 'New Chapter',
+      content: '',
+      book_id: bookId
+    };
+
+    const { data, error } = await supabase
+      .from('manuscript_chapters')
+      .insert([newChapter])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating chapter:', error);
+      toast({
+        title: "Error creating chapter",
+        description: error.message,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (data) {
+      const chapterData = {
+        id: data.id,
+        chapter_id: data.chapter_id,
+        title: data.title,
+        content: data.content || '',
+      };
+
+      setChapters(prevChapters => ({
+        ...prevChapters,
+        [data.chapter_id]: chapterData
+      }));
+
+      toast({
+        title: "Chapter added",
+        description: "A new chapter has been added."
+      });
+    }
   };
 
   const totalWordCount = getTotalWordCount(Object.values(chapters));
