@@ -19,8 +19,7 @@ export const initializeWhisperModel = async (
       "Xenova/whisper-tiny.en",
       {
         progress_callback: onProgress,
-        revision: "main",
-        quantized: true
+        revision: "main"
       }
     );
 
