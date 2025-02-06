@@ -36,6 +36,7 @@ const ChaptersEditor = () => {
     const loadChapters = async () => {
       if (!bookId) return;
 
+      console.log('Loading chapters for book:', bookId);
       const { data, error } = await supabase
         .from('manuscript_chapters')
         .select('*')
@@ -51,6 +52,7 @@ const ChaptersEditor = () => {
         return;
       }
 
+      console.log('Loaded chapters:', data);
       if (data && data.length > 0) {
         const chaptersMap: { [key: string]: Chapter } = {};
         data.forEach((chapter: ManuscriptChapter) => {
@@ -70,13 +72,15 @@ const ChaptersEditor = () => {
         // Create initial chapter if none exist
         const initialChapter = {
           chapter_id: 'chapter-1',
-          title: 'New Chapter',
+          title: 'Chapter 1',
           content: '',
+          book_id: bookId
         };
         
+        console.log('Creating initial chapter:', initialChapter);
         const { data: newChapter, error: insertError } = await supabase
           .from('manuscript_chapters')
-          .insert([{ ...initialChapter, book_id: bookId }])
+          .insert([initialChapter])
           .select()
           .single();
 
@@ -145,10 +149,14 @@ const ChaptersEditor = () => {
   };
 
   const handleSave = async () => {
+    if (!bookId) return;
+
     try {
+      console.log('Saving chapters for book:', bookId);
       const { data: existingChapters, error: fetchError } = await supabase
         .from('manuscript_chapters')
-        .select('*');
+        .select('*')
+        .eq('book_id', bookId);
 
       if (fetchError) {
         console.error('Error fetching existing chapters:', fetchError);
@@ -162,10 +170,15 @@ const ChaptersEditor = () => {
       const chaptersToUpdate = currentChapterIds.filter(id => existingChapterIds.includes(id));
       const chaptersToInsert = currentChapterIds.filter(id => !existingChapterIds.includes(id));
 
+      console.log('Chapters to update:', chaptersToUpdate);
+      console.log('Chapters to insert:', chaptersToInsert);
+      console.log('Chapters to delete:', chaptersToDelete);
+
       if (chaptersToDelete.length > 0) {
         const { error: deleteError } = await supabase
           .from('manuscript_chapters')
           .delete()
+          .eq('book_id', bookId)
           .in('chapter_id', chaptersToDelete);
 
         if (deleteError) {
@@ -183,6 +196,7 @@ const ChaptersEditor = () => {
             content: chapter.content,
             updated_at: new Date().toISOString()
           })
+          .eq('book_id', bookId)
           .eq('chapter_id', chapterId);
 
         if (updateError) {
@@ -193,6 +207,7 @@ const ChaptersEditor = () => {
 
       if (chaptersToInsert.length > 0) {
         const newChapters = chaptersToInsert.map(chapterId => ({
+          book_id: bookId,
           chapter_id: chapterId,
           title: chapters[chapterId].title,
           content: chapters[chapterId].content,
@@ -233,11 +248,12 @@ const ChaptersEditor = () => {
     const newChapterId = `chapter-${Object.keys(chapters).length + 1}`;
     const newChapter = {
       chapter_id: newChapterId,
-      title: 'New Chapter',
+      title: `Chapter ${Object.keys(chapters).length + 1}`,
       content: '',
       book_id: bookId
     };
 
+    console.log('Creating new chapter:', newChapter);
     const { data, error } = await supabase
       .from('manuscript_chapters')
       .insert([newChapter])
