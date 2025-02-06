@@ -44,7 +44,6 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
           { 
             device: "webgpu",
             revision: "main",
-            quantized: false, // Disable quantization for better compatibility
             progress_callback: (progress) => {
               console.log('Model loading progress:', progress);
             }
