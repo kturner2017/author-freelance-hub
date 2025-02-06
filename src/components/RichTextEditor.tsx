@@ -70,12 +70,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
         console.log('Initializing Whisper model...');
         const whisperPipeline = await pipeline(
           "automatic-speech-recognition",
-          "Xenova/whisper-tiny.en",
-          { 
-            progress_callback: (progress) => {
-              console.log('Model loading progress:', progress);
-            }
-          }
+          "Xenova/whisper-tiny.en"
         );
 
         if (!whisperPipeline) {
@@ -103,7 +98,21 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
     initializeWhisper();
   }, []);
 
-  const convertBlobToAudioData = async (blob: Blob): Promise<Float32Array> => {
+  const validateAudioData = (audioData: Float32Array): boolean => {
+    if (!audioData || !(audioData instanceof Float32Array)) {
+      console.error('Invalid audio data type:', audioData);
+      return false;
+    }
+    
+    if (audioData.length === 0) {
+      console.error('Audio data is empty');
+      return false;
+    }
+    
+    return true;
+  };
+
+  const convertBlobToAudioData = async (blob: Blob): Promise<Float32Array | null> => {
     try {
       console.log('Starting audio conversion, blob size:', blob.size);
       
@@ -125,7 +134,6 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
       console.log('Audio decoded, duration:', audioBuffer.duration, 'channels:', audioBuffer.numberOfChannels);
       
-      // Create an offline context for resampling
       const offlineContext = new OfflineAudioContext(1, audioBuffer.duration * 16000, 16000);
       const source = offlineContext.createBufferSource();
       source.buffer = audioBuffer;
@@ -144,15 +152,15 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       
       monoData.set(channelData);
       
-      if (monoData.length === 0) {
-        throw new Error('Invalid audio data: empty mono data');
+      if (!validateAudioData(monoData)) {
+        throw new Error('Invalid audio data after processing');
       }
 
       console.log('Final audio data prepared, length:', monoData.length);
       return monoData;
     } catch (error) {
       console.error('Error converting audio:', error);
-      throw error;
+      return null;
     }
   };
 
@@ -218,7 +226,11 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
 
           const audioData = await convertBlobToAudioData(audioBlob);
           
-          if (!audioData || audioData.length === 0) {
+          if (!audioData) {
+            throw new Error('Failed to process audio data');
+          }
+
+          if (!validateAudioData(audioData)) {
             throw new Error('Invalid audio data generated');
           }
 
