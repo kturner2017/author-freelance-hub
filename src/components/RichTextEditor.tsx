@@ -1,3 +1,4 @@
+
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -99,6 +100,8 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
   }, []);
 
   const validateAudioData = (audioData: Float32Array): boolean => {
+    console.log('Validating audio data...');
+    
     if (!audioData || !(audioData instanceof Float32Array)) {
       console.error('Invalid audio data type:', audioData);
       return false;
@@ -114,6 +117,11 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       console.error('Audio data contains no valid samples');
       return false;
     }
+
+    console.log('Audio data validation passed:', {
+      length: audioData.length,
+      hasValidSamples
+    });
     
     return true;
   };
@@ -144,6 +152,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
         throw new Error('Invalid audio data: zero duration');
       }
 
+      // Create offline context for resampling
       const offlineContext = new OfflineAudioContext(1, audioBuffer.duration * 16000, 16000);
       const source = offlineContext.createBufferSource();
       source.buffer = audioBuffer;
@@ -162,11 +171,12 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       
       monoData.set(channelData);
       
-      if (!validateAudioData(monoData)) {
-        throw new Error('Invalid audio data after processing');
-      }
+      console.log('Audio data prepared:', {
+        length: monoData.length,
+        sampleRate: resampled.sampleRate,
+        hasData: monoData.some(sample => sample !== 0)
+      });
 
-      console.log('Final audio data prepared, length:', monoData.length);
       return monoData;
     } catch (error) {
       console.error('Error converting audio:', error);
@@ -241,7 +251,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
           }
 
           if (!validateAudioData(audioData)) {
-            throw new Error('Invalid audio data after processing');
+            throw new Error('Invalid audio data after validation');
           }
 
           console.log('Sending audio data to transcriber, length:', audioData.length);
@@ -250,11 +260,16 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
             throw new Error('Transcriber not initialized');
           }
 
-          const output = await transcriber(audioData);
+          const output = await transcriber(audioData, {
+            task: 'transcribe',
+            language: 'en'
+          });
           
           if (!output?.text) {
             throw new Error('No transcription output');
           }
+
+          console.log('Transcription result:', output);
 
           if (editor) {
             editor.commands.insertContent(output.text);
@@ -376,3 +391,4 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
 };
 
 export default RichTextEditor;
+
