@@ -111,10 +111,50 @@
 
 @layer utilities {
   .perspective {
-    perspective: 1000px;
+    perspective: 1500px;
   }
   
   .rotate-y-3 {
     transform: rotateY(3deg);
   }
+
+  .shadow-book {
+    box-shadow: 
+      5px 5px 15px rgba(0, 0, 0, 0.2),
+      2px 2px 5px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.book-card {
+  transform-style: preserve-3d;
+}
+
+.book-spine {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 0;
+  width: 20px;
+  height: 100%;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.05));
+  transform: rotateY(-90deg) translateX(10px);
+  transform-origin: right;
+}
+
+.book-pages {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(to left,
+    rgba(255, 255, 255, 0.5),
+    rgba(200, 200, 200, 0.2)
+  );
+  transform: translateX(1px);
+}
+
+.group:hover .book-spine {
+  transform: rotateY(-90deg) translateX(10px) scale(1.02);
 }

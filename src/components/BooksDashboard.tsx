@@ -458,19 +458,19 @@ const BooksDashboard = () => {
           {books.map((book) => (
             <Card 
               key={book.id}
-              className="group overflow-hidden cursor-pointer aspect-[6/9] relative perspective hover:z-10"
+              className="group overflow-hidden cursor-pointer aspect-[6/9] relative perspective hover:z-10 book-card"
               onClick={() => handleBookClick(book.id)}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-gray-900/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative h-full transform-gpu transition-transform duration-300 group-hover:scale-[1.02] group-hover:rotate-y-3">
+              <div className="relative h-full transform-gpu transition-all duration-300 group-hover:scale-[1.02] group-hover:rotate-y-6 group-hover:translate-x-2 shadow-book">
                 {book.cover_image_url ? (
                   <img 
                     src={book.cover_image_url}
                     alt={book.title}
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-cover rounded-sm"
                   />
                 ) : (
-                  <div className="h-full bg-gradient-to-br from-primary/5 to-primary/10 p-6 flex flex-col">
+                  <div className="h-full bg-gradient-to-br from-primary/5 to-primary/10 p-6 flex flex-col rounded-sm">
                     <h3 className="text-xl font-medium mb-2 text-primary">{book.title}</h3>
                     <p className="text-gray-500 mb-2">{book.author}</p>
                     <p className="text-sm text-gray-400 mt-auto">
@@ -482,8 +482,9 @@ const BooksDashboard = () => {
                   <h3 className="text-lg font-medium mb-1">{book.title}</h3>
                   <p className="text-sm text-gray-200">{book.author}</p>
                 </div>
+                <div className="book-spine"></div>
+                <div className="book-pages"></div>
               </div>
-              <div className="absolute inset-y-0 right-0 w-4 bg-gradient-to-l from-black/10 to-transparent transform skew-y-6" />
             </Card>
           ))}
         </div>
