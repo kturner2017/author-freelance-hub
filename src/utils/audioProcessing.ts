@@ -26,6 +26,11 @@ export const validateAudioData = (audioData: Float32Array): boolean => {
 
 export const convertBlobToAudioData = async (blob: Blob): Promise<Float32Array | null> => {
   try {
+    if (!blob || blob.size === 0) {
+      console.error('Invalid or empty blob');
+      return null;
+    }
+
     const audioContext = new AudioContext();
     const arrayBuffer = await blob.arrayBuffer();
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
@@ -42,6 +47,7 @@ export const convertBlobToAudioData = async (blob: Blob): Promise<Float32Array |
 
     // Validate the audio data
     if (!validateAudioData(audioData)) {
+      console.error('Audio validation failed');
       return null;
     }
 
