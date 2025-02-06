@@ -17,6 +17,7 @@ import FreelancerApplication from './pages/FreelancerApplication';
 import ProjectListing from './pages/ProjectListing';
 import ProtectedRoute from './components/ProtectedRoute';
 import { supabase } from './integrations/supabase/client';
+import BooksDashboard from './components/BooksDashboard';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -25,6 +26,7 @@ function App() {
   useEffect(() => {
     checkUser();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('Auth state changed:', session ? 'authenticated' : 'unauthenticated');
       setIsAuthenticated(!!session);
       setIsLoading(false);
     });
@@ -35,6 +37,7 @@ function App() {
   const checkUser = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
+      console.log('Initial session check:', session ? 'authenticated' : 'unauthenticated');
       setIsAuthenticated(!!session);
     } catch (error) {
       console.error('Error checking auth status:', error);
@@ -59,16 +62,17 @@ function App() {
           isAuthenticated ? <Navigate to="/editor/books" replace /> : <Auth />
         } />
         
+        {/* Books Dashboard */}
+        <Route path="/editor/books" element={
+          <ProtectedRoute>
+            <BooksDashboard />
+          </ProtectedRoute>
+        } />
+        
         {/* Redirect /editor to /editor/books */}
         <Route path="/editor" element={
           <ProtectedRoute>
             <Navigate to="/editor/books" replace />
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/editor/books" element={
-          <ProtectedRoute>
-            <Editor />
           </ProtectedRoute>
         } />
         

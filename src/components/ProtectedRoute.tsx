@@ -13,12 +13,14 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      console.log('ProtectedRoute - Auth check:', session ? 'authenticated' : 'unauthenticated');
       setIsAuthenticated(!!session);
     };
 
     checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('ProtectedRoute - Auth state changed:', event, session ? 'authenticated' : 'unauthenticated');
       setIsAuthenticated(!!session);
     });
 
@@ -26,11 +28,15 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }, []);
 
   if (isAuthenticated === null) {
-    // Show loading state or spinner while checking auth
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   if (!isAuthenticated) {
+    console.log('ProtectedRoute - Not authenticated, redirecting to /auth');
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
