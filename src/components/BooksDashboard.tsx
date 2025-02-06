@@ -26,6 +26,7 @@ const BooksDashboard = () => {
   const [books, setBooks] = useState<any[]>([]);
   const [bookWordCounts, setBookWordCounts] = useState<{[key: string]: number}>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [userName, setUserName] = useState<string>('');
   const [newBook, setNewBook] = useState({
     title: '',
     subtitle: '',
@@ -47,6 +48,11 @@ const BooksDashboard = () => {
         navigate('/auth');
         return;
       }
+      
+      // Get user's email and set the name (using email before @ as name)
+      const userEmail = session.user.email;
+      const name = userEmail ? userEmail.split('@')[0] : 'User';
+      setUserName(name);
       
       console.log('User authenticated:', session.user.email);
       await fetchBooks();
@@ -306,6 +312,14 @@ const BooksDashboard = () => {
           </div>
         </div>
       </header>
+
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <h1 className="text-3xl font-serif font-bold text-primary">
+            {userName}'s Books
+          </h1>
+        </div>
+      </div>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
         <div className="flex justify-between items-center mb-8">
