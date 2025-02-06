@@ -74,78 +74,6 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
     initializeWhisper();
   }, []);
 
-  const performAnalysis = useCallback(
-    debounce(async (text: string) => {
-      if (text.length < 50) return;
-      
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = text;
-      const cleanText = tempDiv.textContent || tempDiv.innerText || '';
-      
-      setIsAnalyzing(true);
-      try {
-        const { data, error } = await supabase.functions.invoke('analyze-text', {
-          body: { text: cleanText }
-        });
-
-        if (error) throw error;
-        console.log('AI Analysis results:', data);
-        setAiAnalysis(data);
-      } catch (error) {
-        console.error('Error during AI analysis:', error);
-      } finally {
-        setIsAnalyzing(false);
-      }
-    }, 2000),
-    []
-  );
-
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        codeBlock: false,
-      }),
-      Underline,
-      TextAlign.configure({
-        types: ['paragraph', 'heading'],
-        alignments: ['left', 'center', 'right'],
-      }),
-      Highlight,
-      CodeBlock,
-    ],
-    content: content,
-    editorProps: {
-      attributes: {
-        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[600px] p-8',
-      },
-    },
-    onUpdate: ({ editor }) => {
-      const newContent = editor.getHTML();
-      onChange(newContent);
-      
-      const plainText = editor.getText();
-      console.log('Calculating readability for text:', plainText);
-      const scores = calculateScores(plainText);
-      console.log('Calculated scores:', scores);
-      setReadabilityScores(scores);
-      
-      performAnalysis(plainText);
-    },
-  });
-
-  useEffect(() => {
-    if (editor && content) {
-      editor.commands.setContent(content);
-      const plainText = editor.getText();
-      const scores = calculateScores(plainText);
-      setReadabilityScores(scores);
-      
-      if (plainText.length >= 50) {
-        performAnalysis(plainText);
-      }
-    }
-  }, [content, editor, performAnalysis]);
-
   const convertBlobToAudioData = async (blob: Blob): Promise<Float32Array> => {
     try {
       console.log('Starting audio conversion, blob size:', blob.size);
@@ -172,22 +100,28 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
         throw new Error('Invalid audio data: zero duration');
       }
 
-      const offlineContext = new OfflineAudioContext({
-        numberOfChannels: 1,
-        length: Math.ceil(audioBuffer.duration * 16000),
-        sampleRate: 16000
-      });
+      // Create an offline context for resampling
+      const offlineContext = new OfflineAudioContext(1, Math.ceil(audioBuffer.duration * 16000), 16000);
 
+      // Create source node
       const source = offlineContext.createBufferSource();
       source.buffer = audioBuffer;
       source.connect(offlineContext.destination);
       source.start();
-      
+
+      // Render the audio
       const resampled = await offlineContext.startRendering();
       console.log('Audio resampled to 16kHz, length:', resampled.length);
-      
+
+      // Convert to mono and validate
       const monoData = new Float32Array(resampled.length);
-      monoData.set(resampled.getChannelData(0));
+      const channelData = resampled.getChannelData(0);
+      
+      if (!channelData || channelData.length === 0) {
+        throw new Error('Invalid channel data');
+      }
+      
+      monoData.set(channelData);
       
       if (monoData.length === 0) {
         throw new Error('Invalid audio data: empty mono data');
@@ -230,7 +164,8 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       });
       
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus'
+        mimeType: 'audio/webm;codecs=opus',
+        audioBitsPerSecond: 16000
       });
       
       mediaRecorderRef.current = mediaRecorder;
@@ -330,6 +265,52 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       startRecording();
     }
   };
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        codeBlock: false,
+      }),
+      Underline,
+      TextAlign.configure({
+        types: ['paragraph', 'heading'],
+        alignments: ['left', 'center', 'right'],
+      }),
+      Highlight,
+      CodeBlock,
+    ],
+    content: content,
+    editorProps: {
+      attributes: {
+        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[600px] p-8',
+      },
+    },
+    onUpdate: ({ editor }) => {
+      const newContent = editor.getHTML();
+      onChange(newContent);
+      
+      const plainText = editor.getText();
+      console.log('Calculating readability for text:', plainText);
+      const scores = calculateScores(plainText);
+      console.log('Calculated scores:', scores);
+      setReadabilityScores(scores);
+      
+      performAnalysis(plainText);
+    },
+  });
+
+  useEffect(() => {
+    if (editor && content) {
+      editor.commands.setContent(content);
+      const plainText = editor.getText();
+      const scores = calculateScores(plainText);
+      setReadabilityScores(scores);
+      
+      if (plainText.length >= 50) {
+        performAnalysis(plainText);
+      }
+    }
+  }, [content, editor, performAnalysis]);
 
   if (!editor) {
     return null;
