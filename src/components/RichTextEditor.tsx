@@ -44,21 +44,23 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
           { 
             device: "webgpu",
             revision: "main",
+            quantized: false, // Disable quantization for better compatibility
             progress_callback: (progress) => {
               console.log('Model loading progress:', progress);
             }
           }
         );
         
-        if (whisperPipeline) {
-          setTranscriber(whisperPipeline);
-          toast({
-            title: "Speech recognition ready",
-            description: "You can now use voice dictation",
-          });
-        } else {
+        if (!whisperPipeline) {
           throw new Error('Failed to initialize Whisper model');
         }
+
+        console.log('Whisper model initialized successfully');
+        setTranscriber(whisperPipeline);
+        toast({
+          title: "Speech recognition ready",
+          description: "You can now use voice dictation",
+        });
       } catch (error) {
         console.error('Error loading Whisper model:', error);
         toast({
@@ -149,6 +151,12 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
   const convertBlobToAudioData = async (blob: Blob): Promise<Float32Array> => {
     try {
       console.log('Starting audio conversion, blob size:', blob.size);
+      
+      if (blob.size === 0) {
+        throw new Error('Audio blob is empty');
+      }
+
+      // Create AudioContext with specific sample rate
       const audioContext = new AudioContext({
         sampleRate: 16000 // Whisper requires 16kHz
       });
@@ -156,30 +164,38 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       const arrayBuffer = await blob.arrayBuffer();
       console.log('ArrayBuffer created, size:', arrayBuffer.byteLength);
       
+      if (arrayBuffer.byteLength === 0) {
+        throw new Error('ArrayBuffer is empty');
+      }
+
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
       console.log('Audio decoded, duration:', audioBuffer.duration, 'channels:', audioBuffer.numberOfChannels);
       
-      // Ensure we're working with the correct sample rate
-      const offlineContext = new OfflineAudioContext(1, audioBuffer.duration * 16000, 16000);
+      // Create offline context for resampling
+      const offlineContext = new OfflineAudioContext({
+        numberOfChannels: 1,
+        length: Math.ceil(audioBuffer.duration * 16000),
+        sampleRate: 16000
+      });
+
       const source = offlineContext.createBufferSource();
       source.buffer = audioBuffer;
       source.connect(offlineContext.destination);
       source.start();
       
       const resampled = await offlineContext.startRendering();
-      console.log('Audio resampled to 16kHz');
+      console.log('Audio resampled to 16kHz, length:', resampled.length);
       
-      // Convert to mono and get the data
+      // Convert to mono Float32Array
       const monoData = new Float32Array(resampled.length);
       const channelData = resampled.getChannelData(0);
       monoData.set(channelData);
       
-      console.log('Audio data prepared, length:', monoData.length);
-      
       if (monoData.length === 0) {
         throw new Error('Generated audio data is empty');
       }
-      
+
+      console.log('Final audio data prepared, length:', monoData.length);
       return monoData;
     } catch (error) {
       console.error('Error converting audio:', error);
@@ -206,10 +222,17 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
     }
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          channelCount: 1,
+          sampleRate: 16000
+        } 
+      });
+      
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'audio/webm'
       });
+      
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
 
@@ -229,6 +252,10 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
           const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
           console.log('Audio blob created:', audioBlob.size);
           
+          if (audioBlob.size === 0) {
+            throw new Error('Audio recording is empty');
+          }
+
           toast({
             title: "Processing speech",
             description: "Converting your speech to text...",
