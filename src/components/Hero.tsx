@@ -5,13 +5,13 @@ import { SparklesCore } from "@/components/ui/sparkles";
 export const Hero = () => {
   return (
     <div className="bg-gradient-to-b from-secondary to-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="text-center">
-          <div className="h-[40rem] w-full bg-black flex flex-col items-center justify-center overflow-hidden rounded-md">
-            <h1 className="md:text-7xl text-3xl lg:text-9xl font-bold text-center text-white relative z-20">
+          <div className="h-[20rem] w-full bg-black flex flex-col items-center justify-center overflow-hidden rounded-md">
+            <h1 className="md:text-5xl text-2xl lg:text-7xl font-bold text-center text-white relative z-20">
               Write and Publish Your Book
             </h1>
-            <div className="w-[40rem] h-40 relative">
+            <div className="w-[40rem] h-20 relative">
               {/* Gradients */}
               <div className="absolute inset-x-20 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-[2px] w-3/4 blur-sm" />
               <div className="absolute inset-x-20 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-px w-3/4" />
