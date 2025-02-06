@@ -126,6 +126,7 @@ const ChaptersEditor = () => {
     
     console.log('Updating content for chapter:', selectedChapter.id);
     
+    // Update local state first
     const updatedChapter = {
       ...selectedChapter,
       content: content
@@ -137,6 +138,7 @@ const ChaptersEditor = () => {
       [updatedChapter.id]: updatedChapter
     }));
 
+    // Trigger AI analysis
     setIsAnalyzing(true);
     try {
       const { data, error } = await supabase.functions.invoke('analyze-text', {
@@ -276,6 +278,7 @@ const ChaptersEditor = () => {
         <div className="flex-1 bg-white">
           {selectedChapter ? (
             <ChapterEditor
+              key={selectedChapter.id} // Force re-render when chapter changes
               chapter={selectedChapter}
               onContentChange={handleContentChange}
               aiAnalysis={aiAnalysis}
