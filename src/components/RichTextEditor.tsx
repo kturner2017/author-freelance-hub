@@ -10,7 +10,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { debounce } from 'lodash';
 import { pipeline } from '@huggingface/transformers';
 import EditorToolbar from './editor/EditorToolbar';
-import { supabase } from '@/integrations/supabase/client';
 
 interface RichTextEditorProps {
   content: string;
@@ -31,15 +30,15 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
   // Define performAnalysis using useCallback
   const performAnalysis = useCallback(
     debounce(async (text: string) => {
-      if (text.length < 50) return; // Don't analyze very short texts
+      if (text.length < 50) return;
       
       try {
         setIsAnalyzing(true);
-        const response = await fetch(`${process.env.SUPABASE_URL}/functions/v1/analyze-text`, {
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-text`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
           },
           body: JSON.stringify({ text }),
         });
@@ -78,14 +77,13 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
           "automatic-speech-recognition",
           "Xenova/whisper-tiny.en",
           { 
-            device: "webgpu",
-            revision: "main",
+            quantized: true,
             progress_callback: (progress) => {
               console.log('Model loading progress:', progress);
             }
           }
         );
-        
+
         if (!whisperPipeline) {
           throw new Error('Failed to initialize Whisper model');
         }
@@ -100,7 +98,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
         console.error('Error loading Whisper model:', error);
         toast({
           title: "Failed to load speech recognition",
-          description: "Please try again later or check if your browser supports WebGPU",
+          description: "Please try again later",
           variant: "destructive"
         });
       } finally {
@@ -133,24 +131,16 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
       console.log('Audio decoded, duration:', audioBuffer.duration, 'channels:', audioBuffer.numberOfChannels);
       
-      if (audioBuffer.duration === 0) {
-        throw new Error('Invalid audio data: zero duration');
-      }
-
       // Create an offline context for resampling
-      const offlineContext = new OfflineAudioContext(1, Math.ceil(audioBuffer.duration * 16000), 16000);
-
-      // Create source node
+      const offlineContext = new OfflineAudioContext(1, audioBuffer.duration * 16000, 16000);
       const source = offlineContext.createBufferSource();
       source.buffer = audioBuffer;
       source.connect(offlineContext.destination);
       source.start();
 
-      // Render the audio
       const resampled = await offlineContext.startRendering();
-      console.log('Audio resampled to 16kHz, length:', resampled.length);
+      console.log('Audio resampled to 16kHz');
 
-      // Convert to mono and validate
       const monoData = new Float32Array(resampled.length);
       const channelData = resampled.getChannelData(0);
       
@@ -201,7 +191,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       });
       
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus',
+        mimeType: 'audio/webm',
         audioBitsPerSecond: 16000
       });
       
@@ -209,7 +199,6 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       chunksRef.current = [];
 
       mediaRecorder.ondataavailable = (e) => {
-        console.log('Data available:', e.data.size);
         if (e.data.size > 0) {
           chunksRef.current.push(e.data);
         }
@@ -221,7 +210,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
             throw new Error('No audio data recorded');
           }
 
-          const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm;codecs=opus' });
+          const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
           console.log('Audio blob created:', audioBlob.size);
           
           if (audioBlob.size === 0) {
@@ -233,29 +222,25 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
             description: "Converting your speech to text...",
           });
 
-          console.log('Converting blob to audio data...');
           const audioData = await convertBlobToAudioData(audioBlob);
           
           if (!audioData || audioData.length === 0) {
             throw new Error('Invalid audio data generated');
           }
-          
+
           console.log('Sending audio data to transcriber, length:', audioData.length);
-          const output = await transcriber(audioData, {
-            task: "transcribe",
-            language: "en"
-          });
+          const output = await transcriber(audioData);
           
-          console.log('Transcription output:', output);
-          
-          if (output && output.text && editor) {
+          if (!output?.text) {
+            throw new Error('No transcription output');
+          }
+
+          if (editor) {
             editor.commands.insertContent(output.text);
             toast({
               title: "Transcription complete",
               description: "Your dictated text has been added"
             });
-          } else {
-            throw new Error('No transcription output');
           }
         } catch (error) {
           console.error('Transcription error:', error);
