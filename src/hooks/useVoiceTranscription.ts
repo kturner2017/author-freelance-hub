@@ -1,4 +1,3 @@
-
 import { useState, useRef, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { pipeline } from '@huggingface/transformers';
@@ -90,7 +89,6 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
             console.log('Model loading progress:', progress);
           },
           config: {
-            sampling_rate: 16000,
             return_timestamps: false
           }
         }
