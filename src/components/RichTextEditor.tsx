@@ -28,7 +28,6 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
   const chunksRef = useRef<Blob[]>([]);
   const { toast } = useToast();
 
-  // Initialize the Whisper model
   useEffect(() => {
     const initializeWhisper = async () => {
       try {
@@ -151,26 +150,28 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
     try {
       console.log('Starting audio conversion, blob size:', blob.size);
       
-      if (blob.size === 0) {
-        throw new Error('Audio blob is empty');
+      if (!blob || blob.size === 0) {
+        throw new Error('Invalid audio data: empty blob');
       }
 
-      // Create AudioContext with specific sample rate
       const audioContext = new AudioContext({
-        sampleRate: 16000 // Whisper requires 16kHz
+        sampleRate: 16000
       });
       
       const arrayBuffer = await blob.arrayBuffer();
       console.log('ArrayBuffer created, size:', arrayBuffer.byteLength);
       
       if (arrayBuffer.byteLength === 0) {
-        throw new Error('ArrayBuffer is empty');
+        throw new Error('Invalid audio data: empty array buffer');
       }
 
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
       console.log('Audio decoded, duration:', audioBuffer.duration, 'channels:', audioBuffer.numberOfChannels);
       
-      // Create offline context for resampling
+      if (audioBuffer.duration === 0) {
+        throw new Error('Invalid audio data: zero duration');
+      }
+
       const offlineContext = new OfflineAudioContext({
         numberOfChannels: 1,
         length: Math.ceil(audioBuffer.duration * 16000),
@@ -185,20 +186,19 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       const resampled = await offlineContext.startRendering();
       console.log('Audio resampled to 16kHz, length:', resampled.length);
       
-      // Convert to mono Float32Array
       const monoData = new Float32Array(resampled.length);
       const channelData = resampled.getChannelData(0);
       monoData.set(channelData);
       
       if (monoData.length === 0) {
-        throw new Error('Generated audio data is empty');
+        throw new Error('Invalid audio data: empty mono data');
       }
 
       console.log('Final audio data prepared, length:', monoData.length);
       return monoData;
     } catch (error) {
       console.error('Error converting audio:', error);
-      throw new Error('Failed to convert audio data: ' + error.message);
+      throw error;
     }
   };
 
@@ -224,12 +224,14 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           channelCount: 1,
-          sampleRate: 16000
+          sampleRate: 16000,
+          echoCancellation: true,
+          noiseSuppression: true
         } 
       });
       
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm'
+        mimeType: 'audio/webm;codecs=opus'
       });
       
       mediaRecorderRef.current = mediaRecorder;
@@ -248,7 +250,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
             throw new Error('No audio data recorded');
           }
 
-          const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
+          const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm;codecs=opus' });
           console.log('Audio blob created:', audioBlob.size);
           
           if (audioBlob.size === 0) {
@@ -294,7 +296,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
         }
       };
 
-      mediaRecorder.start();
+      mediaRecorder.start(1000);
       setIsRecording(true);
       toast({
         title: "Recording started",
