@@ -26,58 +26,42 @@ export const validateAudioData = (audioData: Float32Array): boolean => {
 
 export const convertBlobToAudioData = async (blob: Blob): Promise<Float32Array | null> => {
   try {
-    const audioContext = new AudioContext({
-      sampleRate: 16000 // Required sample rate for Whisper
-    });
-    
+    const audioContext = new AudioContext();
     const arrayBuffer = await blob.arrayBuffer();
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
     
-    // Create an offline context for resampling if needed
-    const offlineContext = new OfflineAudioContext({
-      numberOfChannels: 1,
-      length: Math.ceil(audioBuffer.duration * 16000),
-      sampleRate: 16000
-    });
-
+    // Create buffer at 16kHz
+    const offlineContext = new OfflineAudioContext(1, audioBuffer.duration * 16000, 16000);
     const source = offlineContext.createBufferSource();
     source.buffer = audioBuffer;
     source.connect(offlineContext.destination);
     source.start();
 
     const renderedBuffer = await offlineContext.startRendering();
-    
-    // Get the mono channel data
-    const channelData = renderedBuffer.getChannelData(0);
-    const monoData = new Float32Array(channelData.length);
-    
-    // Copy and validate the audio data
-    for (let i = 0; i < channelData.length; i++) {
-      monoData[i] = channelData[i];
-    }
-    
-    // Validate before proceeding
-    if (!validateAudioData(monoData)) {
-      console.error('Audio validation failed');
+    const audioData = renderedBuffer.getChannelData(0);
+
+    // Validate the audio data
+    if (!validateAudioData(audioData)) {
       return null;
     }
-    
-    // Normalize the audio data
-    const maxAmplitude = Math.max(...Array.from(monoData).map(Math.abs));
+
+    // Normalize audio
+    const maxAmplitude = Math.max(...Array.from(audioData).map(Math.abs));
     if (maxAmplitude === 0) {
       console.error('Audio data has zero amplitude');
       return null;
     }
-    
-    const normalizedData = new Float32Array(monoData.length);
-    for (let i = 0; i < monoData.length; i++) {
-      normalizedData[i] = monoData[i] / maxAmplitude;
+
+    const normalizedData = new Float32Array(audioData.length);
+    for (let i = 0; i < audioData.length; i++) {
+      normalizedData[i] = audioData[i] / maxAmplitude;
     }
 
     console.log('Audio processing complete:', {
       sampleRate: 16000,
       duration: normalizedData.length / 16000,
-      samples: normalizedData.length
+      samples: normalizedData.length,
+      maxAmplitude
     });
 
     return normalizedData;
