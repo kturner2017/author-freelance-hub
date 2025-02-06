@@ -24,9 +24,9 @@ const features = [
 
 export const Features = () => {
   return (
-    <div className="py-12 bg-white">
+    <div className="py-6 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
+        <div className="text-center -mt-12">
           <h2 className="text-3xl font-bold text-primary">Everything You Need to Publish</h2>
           <p className="mt-4 text-xl text-gray-500">
             From writing to publishing, we've got you covered.
