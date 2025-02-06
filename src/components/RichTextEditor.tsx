@@ -1,3 +1,4 @@
+
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -73,11 +74,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
           "Xenova/whisper-tiny.en"
         );
 
-        if (!whisperPipeline) {
-          throw new Error('Failed to initialize Whisper model');
-        }
-
-        console.log('Whisper model initialized successfully');
+        console.log('Whisper model initialized:', whisperPipeline);
         setTranscriber(whisperPipeline);
         toast({
           title: "Speech recognition ready",
@@ -109,6 +106,13 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       return false;
     }
     
+    // Check if the audio data contains actual values
+    const hasValidSamples = audioData.some(sample => sample !== 0);
+    if (!hasValidSamples) {
+      console.error('Audio data contains no valid samples');
+      return false;
+    }
+    
     return true;
   };
 
@@ -134,6 +138,10 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
       console.log('Audio decoded, duration:', audioBuffer.duration, 'channels:', audioBuffer.numberOfChannels);
       
+      if (audioBuffer.duration === 0) {
+        throw new Error('Invalid audio data: zero duration');
+      }
+
       const offlineContext = new OfflineAudioContext(1, audioBuffer.duration * 16000, 16000);
       const source = offlineContext.createBufferSource();
       source.buffer = audioBuffer;
@@ -228,10 +236,6 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
           
           if (!audioData) {
             throw new Error('Failed to process audio data');
-          }
-
-          if (!validateAudioData(audioData)) {
-            throw new Error('Invalid audio data generated');
           }
 
           console.log('Sending audio data to transcriber, length:', audioData.length);
