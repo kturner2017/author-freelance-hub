@@ -1,6 +1,5 @@
 
 import { EditorContent } from '@tiptap/react';
-import { useEffect } from 'react';
 import EditorToolbar from './editor/EditorToolbar';
 import { useVoiceTranscription } from '@/hooks/useVoiceTranscription';
 import { useRichTextEditor } from '@/hooks/useRichTextEditor';
@@ -17,17 +16,13 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
     onChange
   });
 
-  const { isRecording, isModelLoading, toggleRecording, initializeWhisper } = useVoiceTranscription({
+  const { isRecording, isModelLoading, toggleRecording } = useVoiceTranscription({
     onTranscriptionComplete: (text) => {
       if (editor) {
         editor.commands.insertContent(text);
       }
     }
   });
-
-  useEffect(() => {
-    initializeWhisper();
-  }, [initializeWhisper]);
 
   if (!editor) {
     return null;

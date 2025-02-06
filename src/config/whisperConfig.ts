@@ -14,18 +14,13 @@ export const initializeWhisperModel = async (
   try {
     console.log('Initializing Whisper model...');
     
-    // Initialize the pipeline with explicit configuration
     const whisperPipeline = await pipeline(
       "automatic-speech-recognition",
       "Xenova/whisper-tiny.en",
       {
         progress_callback: onProgress,
         revision: "main",
-        quantized: true,
-        config: {
-          chunk_length_s: 30,
-          stride_length_s: 5
-        }
+        quantized: true
       }
     );
 

@@ -40,9 +40,7 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
       console.log('Audio processed, calling transcriber...');
       const output = await transcriber(audioData, {
         task: 'transcribe',
-        language: 'en',
-        chunk_length_s: 30,
-        stride_length_s: 5
+        language: 'en'
       });
 
       if (!output?.text) {
@@ -117,14 +115,9 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
     }
   }, [toast, transcriber]);
 
-  const toggleRecording = useCallback(() => {
-    if (!transcriber) {
-      toast({
-        title: "Speech recognition not ready",
-        description: "Please wait for the model to load",
-        variant: "destructive"
-      });
-      return;
+  const toggleRecording = useCallback(async () => {
+    if (!transcriber && !isModelLoading) {
+      await initializeWhisper();
     }
 
     if (isRecording) {
@@ -133,19 +126,18 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
         title: "Recording stopped",
         description: "Processing your speech..."
       });
-    } else {
+    } else if (!isModelLoading) {
       startRecording();
       toast({
         title: "Recording started",
         description: "Speak clearly into your microphone"
       });
     }
-  }, [isRecording, startRecording, stopRecording, toast, transcriber]);
+  }, [isRecording, isModelLoading, startRecording, stopRecording, toast, transcriber, initializeWhisper]);
 
   return {
     isRecording,
     isModelLoading,
-    toggleRecording,
-    initializeWhisper
+    toggleRecording
   };
 };
