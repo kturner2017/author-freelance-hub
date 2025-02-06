@@ -11,10 +11,19 @@ interface UseVoiceTranscriptionProps {
 
 export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTranscriptionProps) => {
   const [isModelLoading, setIsModelLoading] = useState(false);
-  const [transcriber, setTranscriber] = useState(null);
+  const [transcriber, setTranscriber] = useState<any>(null);
   const { toast } = useToast();
 
   const handleRecordingComplete = async (chunks: Blob[]) => {
+    if (!transcriber) {
+      toast({
+        title: "Error",
+        description: "Speech recognition not initialized",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       const audioBlob = new Blob(chunks, { type: 'audio/webm' });
       console.log('Processing audio, size:', audioBlob.size);
@@ -31,11 +40,13 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
       console.log('Audio processed, calling transcriber...');
       const output = await transcriber(audioData, {
         task: 'transcribe',
-        language: 'en'
+        language: 'en',
+        chunk_length_s: 30,
+        stride_length_s: 5
       });
 
       if (!output?.text) {
-        throw new Error('Transcription failed');
+        throw new Error('Transcription failed - no text output');
       }
 
       onTranscriptionComplete(output.text);
@@ -47,7 +58,7 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
       console.error('Transcription error:', error);
       toast({
         title: "Transcription failed",
-        description: error.message,
+        description: error.message || 'Error processing audio',
         variant: "destructive"
       });
     }
@@ -56,6 +67,11 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
   const { isRecording, startRecording, stopRecording } = useMediaRecording(handleRecordingComplete);
 
   const initializeWhisper = useCallback(async () => {
+    if (transcriber) {
+      console.log('Whisper already initialized');
+      return;
+    }
+
     try {
       setIsModelLoading(true);
       toast({
@@ -64,8 +80,16 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
       });
 
       await initializeWhisperModel(
-        (progress) => console.log('Model loading progress:', progress),
+        (progress) => {
+          console.log('Model loading progress:', progress);
+          if (progress?.status === 'error') {
+            throw new Error('Model loading failed');
+          }
+        },
         (whisperPipeline) => {
+          if (!whisperPipeline) {
+            throw new Error('Invalid pipeline initialization');
+          }
           setTranscriber(whisperPipeline);
           toast({
             title: "Speech recognition ready",
@@ -81,12 +105,19 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
           });
         }
       );
+    } catch (error) {
+      console.error('Error in initializeWhisper:', error);
+      toast({
+        title: "Initialization failed",
+        description: error.message || "Failed to initialize speech recognition",
+        variant: "destructive"
+      });
     } finally {
       setIsModelLoading(false);
     }
-  }, [toast]);
+  }, [toast, transcriber]);
 
-  const toggleRecording = () => {
+  const toggleRecording = useCallback(() => {
     if (!transcriber) {
       toast({
         title: "Speech recognition not ready",
@@ -104,8 +135,12 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
       });
     } else {
       startRecording();
+      toast({
+        title: "Recording started",
+        description: "Speak clearly into your microphone"
+      });
     }
-  };
+  }, [isRecording, startRecording, stopRecording, toast, transcriber]);
 
   return {
     isRecording,
