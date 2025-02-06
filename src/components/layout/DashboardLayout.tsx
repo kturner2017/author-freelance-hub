@@ -1,54 +1,49 @@
 import React from 'react';
-import { Button } from '../ui/button';
-import { ChevronLeft, Plus, Home } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import Navigation from '../Navigation';
+import { cn } from '@/lib/utils';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
   title: string;
   subtitle?: string;
   actions?: React.ReactNode;
+  className?: string;
 }
 
-const DashboardLayout = ({ children, title, subtitle, actions }: DashboardLayoutProps) => {
-  const navigate = useNavigate();
-
+const DashboardLayout = ({
+  children,
+  title,
+  subtitle,
+  actions,
+  className
+}: DashboardLayoutProps) => {
   return (
-    <div className="h-screen flex flex-col">
-      <div className="h-24 border-b flex items-center px-8 justify-between bg-gradient-to-r from-primary-900 to-primary-700 text-white shadow-lg">
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-3">
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => navigate(-1)}
-              className="hover:bg-white/10 text-white rounded-full transition-all duration-200 ease-in-out"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => navigate('/')}
-              className="hover:bg-white/10 text-white rounded-full transition-all duration-200 ease-in-out"
-            >
-              <Home className="h-5 w-5" />
-            </Button>
-          </div>
-          <div>
-            <h1 className="text-3xl font-serif font-semibold leading-tight tracking-tight text-white">{title}</h1>
-            {subtitle && <p className="text-sm text-gray-200 leading-tight mt-1 font-medium">{subtitle}</p>}
+    <div className="min-h-screen flex flex-col">
+      <Navigation />
+      <header className="border-b border-gray-200 bg-[#FFFFFF] shadow-sm">
+        <div className="container mx-auto px-8 h-16">
+          <div className="flex items-center justify-between h-full">
+            <div>
+              <h1 className="text-[#0F172A] font-serif font-bold text-2xl">
+                {title}
+              </h1>
+              {subtitle && (
+                <p className="text-[#1E293B] font-sans text-sm mt-1">
+                  {subtitle}
+                </p>
+              )}
+            </div>
+            {actions && (
+              <div className="flex items-center gap-4">
+                {actions}
+              </div>
+            )}
           </div>
         </div>
-        {actions && (
-          <div className="flex items-center gap-3">
-            {actions}
-          </div>
-        )}
-      </div>
-      <div className="flex-1 overflow-auto bg-gray-50">
+      </header>
+      <main className={cn("flex-1 bg-gray-50", className)}>
         {children}
-      </div>
+      </main>
     </div>
   );
 };
