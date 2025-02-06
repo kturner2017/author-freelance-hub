@@ -25,7 +25,9 @@ const ChaptersEditor = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadChapters();
+    if (bookId) {
+      loadChapters();
+    }
   }, [bookId]);
 
   const loadChapters = async () => {
@@ -63,7 +65,6 @@ const ChaptersEditor = () => {
         });
         
         setChapters(chaptersMap);
-        // Set the first chapter as selected if none is selected
         if (!selectedChapter) {
           const firstChapter = Object.values(chaptersMap)[0];
           console.log('Setting initial chapter:', firstChapter);
