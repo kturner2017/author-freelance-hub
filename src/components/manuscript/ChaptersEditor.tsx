@@ -304,21 +304,23 @@ const ChaptersEditor = () => {
   const headerActions = (
     <>
       <div className="flex items-center gap-4">
-        <Badge variant="secondary" className="text-sm">
+        <Badge variant="secondary" className="text-sm bg-white/10 text-white border-0">
           <BookOpen className="h-4 w-4 mr-1" />
           Total Words: {totalWordCount.toLocaleString()}
         </Badge>
         <Button 
           size="sm"
           onClick={handleSave}
-          className="bg-white text-primary hover:bg-gray-100 transition-colors"
+          variant="secondary"
+          className="font-medium"
         >
-          Save
+          Save Changes
         </Button>
         <Button 
           size="sm"
           onClick={handleAddChapter}
-          className="bg-white text-primary hover:bg-gray-100 transition-colors"
+          variant="secondary"
+          className="font-medium"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Chapter
@@ -327,7 +329,7 @@ const ChaptersEditor = () => {
           variant="outline" 
           size="sm"
           onClick={() => navigate('/editor/manuscript/boxes')}
-          className="border-white text-white hover:bg-white/10 transition-colors"
+          className="border-white text-white hover:bg-white/10 font-medium"
         >
           Switch to Boxes View
         </Button>
@@ -342,19 +344,19 @@ const ChaptersEditor = () => {
       actions={headerActions}
     >
       <div className="flex-1 flex">
-        <div className="w-64 border-r bg-gray-50">
+        <div className="w-72 border-r bg-white shadow-sm">
           <ScrollArea className="h-full">
-            <div className="p-4 space-y-2">
+            <div className="p-4 space-y-3">
               {Object.values(chapters).map((chapter) => (
                 <Card 
                   key={chapter.id}
-                  className={`hover:shadow-lg transition-shadow cursor-pointer ${
-                    selectedChapter?.id === chapter.id ? 'border-blue-500 shadow-md' : ''
+                  className={`hover:shadow-lg transition-all cursor-pointer ${
+                    selectedChapter?.id === chapter.id ? 'border-primary shadow-md ring-1 ring-primary/20' : ''
                   }`}
                   onClick={() => handleChapterSelect(chapter)}
                 >
                   <CardContent className="p-4">
-                    <h4 className="font-semibold">{chapter.title}</h4>
+                    <h4 className="text-lg font-serif font-semibold text-primary-800">{chapter.title}</h4>
                     <p className="text-sm text-gray-500 mt-1">
                       {getWordCount(chapter.content).toLocaleString()} words
                     </p>
@@ -365,13 +367,13 @@ const ChaptersEditor = () => {
           </ScrollArea>
         </div>
 
-        <div className="flex-1">
+        <div className="flex-1 bg-white">
           <ScrollArea className="h-full">
             {selectedChapter ? (
-              <div className="p-6 max-w-4xl mx-auto">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-3xl font-serif">{selectedChapter.title}</h2>
-                  <Badge variant="outline" className="text-sm">
+              <div className="p-8 max-w-4xl mx-auto">
+                <div className="flex justify-between items-center mb-8">
+                  <h2 className="text-3xl font-serif font-semibold text-primary-800">{selectedChapter.title}</h2>
+                  <Badge variant="secondary" className="text-sm bg-primary-50 text-primary-700 border-primary-200">
                     {getWordCount(selectedChapter.content).toLocaleString()} words
                   </Badge>
                 </div>
@@ -387,7 +389,7 @@ const ChaptersEditor = () => {
                 />
               </div>
             ) : (
-              <div className="p-6 text-center text-gray-500">
+              <div className="p-8 text-center text-gray-500">
                 Select a chapter to start editing
               </div>
             )}

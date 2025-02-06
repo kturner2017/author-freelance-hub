@@ -15,36 +15,40 @@ const DashboardLayout = ({ children, title, subtitle, actions }: DashboardLayout
 
   return (
     <div className="h-screen flex flex-col">
-      <div className="h-20 border-b flex items-center px-6 justify-between bg-[#0F172A] text-white">
-        <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => navigate(-1)}
-            className="hover:bg-white/10 text-white"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => navigate('/')}
-            className="hover:bg-white/10 text-white"
-          >
-            <Home className="h-5 w-5" />
-          </Button>
+      <div className="h-24 border-b flex items-center px-8 justify-between bg-gradient-to-r from-primary-900 to-primary-700 text-white shadow-lg">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => navigate(-1)}
+              className="hover:bg-white/10 text-white rounded-full transition-all duration-200 ease-in-out"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => navigate('/')}
+              className="hover:bg-white/10 text-white rounded-full transition-all duration-200 ease-in-out"
+            >
+              <Home className="h-5 w-5" />
+            </Button>
+          </div>
           <div>
-            <h1 className="text-2xl font-serif font-semibold leading-tight">{title}</h1>
-            {subtitle && <p className="text-sm text-gray-300 leading-tight">{subtitle}</p>}
+            <h1 className="text-3xl font-serif font-semibold leading-tight tracking-tight text-white">{title}</h1>
+            {subtitle && <p className="text-sm text-gray-200 leading-tight mt-1 font-medium">{subtitle}</p>}
           </div>
         </div>
         {actions && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {actions}
           </div>
         )}
       </div>
-      {children}
+      <div className="flex-1 overflow-auto bg-gray-50">
+        {children}
+      </div>
     </div>
   );
 };
