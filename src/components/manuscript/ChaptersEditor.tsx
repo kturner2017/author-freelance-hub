@@ -31,12 +31,19 @@ const ChaptersEditor = () => {
   const { toast } = useToast();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<any>({});
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadChapters = async () => {
-      if (!bookId) return;
+    loadChapters();
+  }, [bookId]);
 
-      console.log('Loading chapters for book:', bookId);
+  const loadChapters = async () => {
+    if (!bookId) return;
+
+    setIsLoading(true);
+    console.log('Loading chapters for book:', bookId);
+    
+    try {
       const { data: existingChapters, error } = await supabase
         .from('manuscript_chapters')
         .select('*')
@@ -58,13 +65,17 @@ const ChaptersEditor = () => {
       if (existingChapters && existingChapters.length > 0) {
         const chaptersMap: { [key: string]: Chapter } = {};
         existingChapters.forEach((chapter: ManuscriptChapter) => {
-          chaptersMap[chapter.chapter_id] = {
-            id: chapter.id,
-            chapter_id: chapter.chapter_id,
-            title: chapter.title,
-            content: chapter.content || '',
-          };
+          // Only add the chapter if it doesn't already exist in the map
+          if (!chaptersMap[chapter.chapter_id]) {
+            chaptersMap[chapter.chapter_id] = {
+              id: chapter.id,
+              chapter_id: chapter.chapter_id,
+              title: chapter.title,
+              content: chapter.content || '',
+            };
+          }
         });
+        
         setChapters(chaptersMap);
         
         // Select the first chapter by default
@@ -107,19 +118,21 @@ const ChaptersEditor = () => {
             content: newChapter.content || '',
           };
 
-          const chaptersMap = {
-            [newChapter.chapter_id]: chapterData
-          };
-          
-          console.log('Setting initial chapter data:', chapterData);
-          setChapters(chaptersMap);
+          setChapters({ [newChapter.chapter_id]: chapterData });
           setSelectedChapter(chapterData);
         }
       }
-    };
-
-    loadChapters();
-  }, [bookId, toast]);
+    } catch (error) {
+      console.error('Error in loadChapters:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load chapters. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleContentChange = async (content: string) => {
     if (!selectedChapter) return;
@@ -298,6 +311,19 @@ const ChaptersEditor = () => {
       });
     }
   };
+
+  if (isLoading) {
+    return (
+      <DashboardLayout 
+        title="Chapters Editor"
+        subtitle="Manuscript"
+      >
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   const totalWordCount = getTotalWordCount(Object.values(chapters));
 
