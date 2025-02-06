@@ -46,48 +46,49 @@ const Navigation = () => {
   
   return (
     <nav className="border-b bg-white shadow-sm">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="text-2xl font-serif font-bold text-primary hover:text-primary-600 transition-colors">
-                Authorify
-              </Link>
-            </div>
+      <div className="container mx-auto px-8 h-16">
+        <div className="flex items-center justify-between h-full">
+          <div className="flex items-center">
+            <Link 
+              to="/" 
+              className="text-2xl font-serif font-bold text-[#0F172A] hover:text-[#1E293B] transition-colors duration-200"
+            >
+              Authorify
+            </Link>
           </div>
           
-          <div className="hidden sm:flex sm:space-x-1 items-center">
+          <div className="hidden sm:flex items-center space-x-6">
             <Button 
               asChild 
               variant="ghost"
-              className="text-base font-medium px-4 py-2 hover:bg-primary-50 hover:text-primary-700 transition-colors"
+              className="text-base font-medium text-[#0F172A] hover:text-[#1E293B] hover:bg-gray-50 transition-all duration-200"
             >
               <Link to="/editor">Editor</Link>
             </Button>
             <Button 
               asChild 
               variant="ghost"
-              className="text-base font-medium px-4 py-2 hover:bg-primary-50 hover:text-primary-700 transition-colors"
+              className="text-base font-medium text-[#0F172A] hover:text-[#1E293B] hover:bg-gray-50 transition-all duration-200"
             >
               <Link to="/for-authors">For Authors</Link>
             </Button>
             <Button 
               asChild 
               variant="ghost"
-              className="text-base font-medium px-4 py-2 hover:bg-primary-50 hover:text-primary-700 transition-colors"
+              className="text-base font-medium text-[#0F172A] hover:text-[#1E293B] hover:bg-gray-50 transition-all duration-200"
             >
               <Link to="/publishing-support">Publishing Support</Link>
             </Button>
             <Button 
               asChild 
               variant="ghost"
-              className="text-base font-medium px-4 py-2 hover:bg-primary-50 hover:text-primary-700 transition-colors"
+              className="text-base font-medium text-[#0F172A] hover:text-[#1E293B] hover:bg-gray-50 transition-all duration-200"
             >
               <Link to="/professional-network">Professional Network</Link>
             </Button>
             <Button 
               asChild
-              className="bg-primary hover:bg-primary-600 text-white font-medium shadow-sm hover:shadow transition-all ml-2"
+              className="bg-[#0F172A] hover:bg-[#1E293B] text-white font-medium px-5 py-3 transition-colors duration-200"
             >
               <Link to="/professional-network/projects">
                 <Briefcase className="mr-2 h-4 w-4" />
@@ -98,7 +99,7 @@ const Navigation = () => {
               <Button 
                 onClick={handleLogout} 
                 variant="outline"
-                className="ml-2 font-medium border-2 hover:bg-gray-50 transition-colors"
+                className="font-medium border-2 hover:bg-gray-50 text-[#0F172A] transition-colors duration-200"
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 Logout
@@ -106,7 +107,7 @@ const Navigation = () => {
             ) : (
               <Button 
                 asChild
-                className="bg-primary hover:bg-primary-600 text-white font-medium shadow-sm hover:shadow transition-all ml-2"
+                className="bg-[#0F172A] hover:bg-[#1E293B] text-white font-medium px-5 py-3 transition-colors duration-200"
               >
                 <Link to="/auth">
                   <LogIn className="mr-2 h-4 w-4" />
