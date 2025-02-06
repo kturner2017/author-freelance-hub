@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card } from './ui/card';
-import { Plus, Upload, Image as ImageIcon, ChevronLeft } from 'lucide-react';
+import { Plus, Upload, Image as ImageIcon, ChevronLeft, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from './ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -249,27 +249,40 @@ const BooksDashboard = () => {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-[#F1F0FB] text-primary h-16 px-6 flex items-center shadow-sm">
         <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => navigate('/')}
+              className="hover:bg-white/20 text-primary rounded-full transition-all duration-200 ease-in-out"
+            >
+              <Home className="h-5 w-5" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate('/')}
-              className="hover:bg-white/20 text-primary"
+              onClick={() => navigate(-1)}
+              className="hover:bg-white/20 text-primary rounded-full transition-all duration-200 ease-in-out"
             >
               <ChevronLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-lg font-medium text-primary">Your Bookshelf</h1>
+            <div>
+              <h1 className="text-lg font-medium text-primary">Your Bookshelf</h1>
+              <p className="text-sm text-primary/60">Manage your manuscripts</p>
+            </div>
           </div>
-          <Button 
-            variant="outline" 
-            onClick={async () => {
-              await supabase.auth.signOut();
-              navigate('/auth');
-            }} 
-            className="text-primary border-primary hover:bg-primary/10"
-          >
-            Sign Out
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              onClick={async () => {
+                await supabase.auth.signOut();
+                navigate('/auth');
+              }} 
+              className="text-primary border-primary hover:bg-primary/10"
+            >
+              Sign Out
+            </Button>
+          </div>
         </div>
       </header>
 
