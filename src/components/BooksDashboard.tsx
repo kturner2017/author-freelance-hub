@@ -373,7 +373,7 @@ const BooksDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Card className="p-6 flex flex-col items-center justify-center text-center bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer min-h-[280px]">
+              <Card className="p-6 flex flex-col items-center justify-center text-center bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer aspect-[6/9]">
                 <Plus className="w-12 h-12 text-primary mb-4" />
                 <h3 className="font-medium mb-2">Create book</h3>
                 <p className="text-sm text-gray-500">Start writing from scratch</p>
@@ -447,7 +447,7 @@ const BooksDashboard = () => {
           </Dialog>
 
           <Card 
-            className="p-6 flex flex-col items-center justify-center text-center bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer min-h-[280px]"
+            className="p-6 flex flex-col items-center justify-center text-center bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer aspect-[6/9]"
             onClick={handleImportClick}
           >
             <Upload className="w-12 h-12 text-primary mb-4" />
@@ -458,16 +458,32 @@ const BooksDashboard = () => {
           {books.map((book) => (
             <Card 
               key={book.id}
-              className="overflow-hidden cursor-pointer min-h-[280px] flex flex-col hover:shadow-lg transition-shadow"
+              className="group overflow-hidden cursor-pointer aspect-[6/9] relative perspective hover:z-10"
               onClick={() => handleBookClick(book.id)}
             >
-              <div className="bg-white p-6 flex-1">
-                <h3 className="text-xl font-medium mb-2">{book.title}</h3>
-                <p className="text-gray-500 mb-2">{book.author}</p>
-                <p className="text-sm text-gray-400">
-                  {bookWordCounts[book.id]?.toLocaleString() || 0} words
-                </p>
+              <div className="absolute inset-0 bg-gradient-to-r from-gray-900/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative h-full transform-gpu transition-transform duration-300 group-hover:scale-[1.02] group-hover:rotate-y-3">
+                {book.cover_image_url ? (
+                  <img 
+                    src={book.cover_image_url}
+                    alt={book.title}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="h-full bg-gradient-to-br from-primary/5 to-primary/10 p-6 flex flex-col">
+                    <h3 className="text-xl font-medium mb-2 text-primary">{book.title}</h3>
+                    <p className="text-gray-500 mb-2">{book.author}</p>
+                    <p className="text-sm text-gray-400 mt-auto">
+                      {bookWordCounts[book.id]?.toLocaleString() || 0} words
+                    </p>
+                  </div>
+                )}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent p-4 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                  <h3 className="text-lg font-medium mb-1">{book.title}</h3>
+                  <p className="text-sm text-gray-200">{book.author}</p>
+                </div>
               </div>
+              <div className="absolute inset-y-0 right-0 w-4 bg-gradient-to-l from-black/10 to-transparent transform skew-y-6" />
             </Card>
           ))}
         </div>
