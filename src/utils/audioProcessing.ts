@@ -33,7 +33,10 @@ export const convertBlobToAudioData = async (blob: Blob): Promise<Float32Array |
 
     const audioContext = new AudioContext();
     const arrayBuffer = await blob.arrayBuffer();
+    console.log('Audio buffer size:', arrayBuffer.byteLength);
+    
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    console.log('Decoded audio duration:', audioBuffer.duration);
     
     // Create buffer at 16kHz
     const offlineContext = new OfflineAudioContext(1, audioBuffer.duration * 16000, 16000);
@@ -44,6 +47,7 @@ export const convertBlobToAudioData = async (blob: Blob): Promise<Float32Array |
 
     const renderedBuffer = await offlineContext.startRendering();
     const audioData = renderedBuffer.getChannelData(0);
+    console.log('Rendered audio data length:', audioData.length);
 
     // Validate the audio data
     if (!validateAudioData(audioData)) {

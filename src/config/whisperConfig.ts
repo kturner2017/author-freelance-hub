@@ -13,8 +13,13 @@ export const initializeWhisperModel = async (
       "Xenova/whisper-tiny.en",
       {
         progress_callback: onProgress,
-        chunk_length_s: 30,
-        stride_length_s: 5
+        quantized: false,
+        revision: "main",
+        config: {
+          max_new_tokens: 128,
+          chunk_length: 30,
+          stride_length: 5
+        }
       }
     );
     console.log('Whisper model initialized successfully');
