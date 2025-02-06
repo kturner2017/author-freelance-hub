@@ -28,6 +28,43 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
   const chunksRef = useRef<Blob[]>([]);
   const { toast } = useToast();
 
+  // Define performAnalysis using useCallback
+  const performAnalysis = useCallback(
+    debounce(async (text: string) => {
+      if (text.length < 50) return; // Don't analyze very short texts
+      
+      try {
+        setIsAnalyzing(true);
+        const response = await fetch(`${process.env.SUPABASE_URL}/functions/v1/analyze-text`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ text }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to analyze text');
+        }
+
+        const analysis = await response.json();
+        console.log('Text analysis result:', analysis);
+        setAiAnalysis(analysis);
+      } catch (error) {
+        console.error('Error analyzing text:', error);
+        toast({
+          title: 'Analysis failed',
+          description: 'There was an error analyzing your text',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsAnalyzing(false);
+      }
+    }, 1000),
+    [toast]
+  );
+
   useEffect(() => {
     const initializeWhisper = async () => {
       try {
