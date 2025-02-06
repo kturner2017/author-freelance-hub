@@ -146,6 +146,31 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
     }
   }, [content, editor, performAnalysis]);
 
+  const convertBlobToAudioData = async (blob: Blob): Promise<Float32Array> => {
+    const audioContext = new AudioContext();
+    const arrayBuffer = await blob.arrayBuffer();
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    
+    // Convert to mono channel if needed
+    const numberOfChannels = audioBuffer.numberOfChannels;
+    const length = audioBuffer.length;
+    const audioData = new Float32Array(length);
+    
+    // If stereo, average the channels
+    if (numberOfChannels === 2) {
+      const channel1 = audioBuffer.getChannelData(0);
+      const channel2 = audioBuffer.getChannelData(1);
+      for (let i = 0; i < length; i++) {
+        audioData[i] = (channel1[i] + channel2[i]) / 2;
+      }
+    } else {
+      // If mono, just get the single channel
+      audioData.set(audioBuffer.getChannelData(0));
+    }
+    
+    return audioData;
+  };
+
   const startRecording = async () => {
     if (isModelLoading) {
       toast({
@@ -199,11 +224,10 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
             description: "Converting your speech to text...",
           });
 
-          // Convert blob to ArrayBuffer for processing
-          const arrayBuffer = await audioBlob.arrayBuffer();
-          const audioData = new Float32Array(arrayBuffer);
+          console.log('Converting blob to audio data...');
+          const audioData = await convertBlobToAudioData(audioBlob);
+          console.log('Audio data created:', audioData.length);
           
-          console.log('Processing audio data:', audioData.length);
           const output = await transcriber(audioData);
           console.log('Transcription output:', output);
           
