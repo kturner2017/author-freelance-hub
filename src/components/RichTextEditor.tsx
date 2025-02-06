@@ -39,7 +39,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
 
         const whisperPipeline = await pipeline(
           "automatic-speech-recognition",
-          "onnx-community/whisper-tiny.en",
+          "Xenova/whisper-tiny.en",
           { 
             device: "webgpu",
             revision: "main",
@@ -187,8 +187,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       console.log('Audio resampled to 16kHz, length:', resampled.length);
       
       const monoData = new Float32Array(resampled.length);
-      const channelData = resampled.getChannelData(0);
-      monoData.set(channelData);
+      monoData.set(resampled.getChannelData(0));
       
       if (monoData.length === 0) {
         throw new Error('Invalid audio data: empty mono data');
@@ -224,7 +223,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           channelCount: 1,
-          sampleRate: 16000,
+          sampleRate: { ideal: 16000 },
           echoCancellation: true,
           noiseSuppression: true
         } 
