@@ -166,18 +166,32 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm;codecs=opus'
+      });
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
 
       mediaRecorder.ondataavailable = (e) => {
+        console.log('Data available:', e.data.size);
         if (e.data.size > 0) {
           chunksRef.current.push(e.data);
         }
       };
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        if (chunksRef.current.length === 0) {
+          console.error('No audio data recorded');
+          toast({
+            title: "Recording failed",
+            description: "No audio data was captured",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm;codecs=opus' });
+        console.log('Audio blob created:', audioBlob.size);
         
         try {
           toast({
@@ -186,6 +200,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
           });
 
           const output = await transcriber(audioBlob);
+          console.log('Transcription output:', output);
           
           if (output && output.text && editor) {
             editor.commands.insertContent(output.text);
