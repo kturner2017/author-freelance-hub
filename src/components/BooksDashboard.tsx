@@ -93,29 +93,35 @@ const BooksDashboard = () => {
       
       // Fetch word counts for each book
       for (const book of books || []) {
-        console.log('Fetching chapters for book:', book.id);
-        const { data: chapters, error: chaptersError } = await supabase
-          .from('manuscript_chapters')
-          .select('content')
-          .eq('book_id', book.id); // Changed from chapter_id to book_id
+        try {
+          console.log('Fetching chapters for book:', book.id);
+          const { data: chapters, error: chaptersError } = await supabase
+            .from('manuscript_chapters')
+            .select('content')
+            .eq('book_id', book.id);
+            
+          if (chaptersError) {
+            console.error('Error fetching chapters for book', book.id, ':', chaptersError);
+            continue;
+          }
           
-        if (chaptersError) {
-          console.error('Error fetching chapters for book', book.id, ':', chaptersError);
-          continue;
+          console.log('Chapters fetched for book', book.id, ':', chapters?.length || 0);
+          const totalWords = chapters?.reduce((sum, chapter) => {
+            const chapterContent = chapter.content || '';
+            const chapterWords = getWordCount(chapterContent);
+            console.log('Chapter content length:', chapterContent.length);
+            console.log('Chapter words:', chapterWords);
+            return sum + chapterWords;
+          }, 0) || 0;
+          
+          console.log('Total words for book', book.id, ':', totalWords);
+          setBookWordCounts(prev => ({
+            ...prev,
+            [book.id]: totalWords
+          }));
+        } catch (error) {
+          console.error('Error calculating word count for book', book.id, ':', error);
         }
-        
-        console.log('Chapters fetched for book', book.id, ':', chapters?.length || 0);
-        const totalWords = chapters?.reduce((sum, chapter) => {
-          const chapterWords = getWordCount(chapter.content || '');
-          console.log('Chapter words:', chapterWords);
-          return sum + chapterWords;
-        }, 0) || 0;
-        
-        console.log('Total words for book', book.id, ':', totalWords);
-        setBookWordCounts(prev => ({
-          ...prev,
-          [book.id]: totalWords
-        }));
       }
     } catch (error) {
       console.error('Error in fetchBooks:', error);

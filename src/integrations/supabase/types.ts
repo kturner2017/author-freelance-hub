@@ -229,6 +229,7 @@ export type Database = {
       }
       manuscript_chapters: {
         Row: {
+          book_id: string | null
           chapter_id: string
           content: string | null
           created_at: string | null
@@ -237,6 +238,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          book_id?: string | null
           chapter_id: string
           content?: string | null
           created_at?: string | null
@@ -245,6 +247,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          book_id?: string | null
           chapter_id?: string
           content?: string | null
           created_at?: string | null
@@ -252,7 +255,15 @@ export type Database = {
           title?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "manuscript_chapters_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       manuscript_files: {
         Row: {
