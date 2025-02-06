@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ScrollArea } from '../ui/scroll-area';
 import { Card, CardContent } from '../ui/card';
@@ -10,6 +11,7 @@ import TextAnalysis from '../TextAnalysis';
 import calculateScores from '@/utils/readabilityScores';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Box {
   id: string;
