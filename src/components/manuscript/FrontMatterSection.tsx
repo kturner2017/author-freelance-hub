@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Switch } from '@/components/ui/switch';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, FileText } from 'lucide-react';
 import { Button } from '../ui/button';
 
 interface FrontMatterOption {
@@ -45,9 +45,12 @@ const FrontMatterSection = ({
           {options.map((option) => (
             <div
               key={option.id}
-              className="flex items-center justify-between px-2 py-1 text-sm text-gray-300"
+              className="flex items-center justify-between px-2 py-1 text-sm text-gray-300 hover:bg-gray-700 rounded-sm"
             >
-              <span>{option.title}</span>
+              <div className="flex items-center">
+                <FileText className="h-4 w-4 mr-2 text-gray-400" />
+                <span>{option.title}</span>
+              </div>
               <Switch
                 checked={option.enabled}
                 onCheckedChange={() => onOptionToggle(option.id)}

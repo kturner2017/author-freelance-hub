@@ -1,11 +1,13 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
 import { ChevronRight } from 'lucide-react';
 import FrontMatterSection from './FrontMatterSection';
 import ChapterListSection from './ChapterListSection';
 import ActSection from './ActSection';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface Chapter {
   id: string;
@@ -74,6 +76,63 @@ const ManuscriptSidebar = ({
   onBoxSelect,
   onFrontMatterOptionToggle,
 }: ManuscriptSidebarProps) => {
+  const { toast } = useToast();
+  const [localFrontMatterOptions, setLocalFrontMatterOptions] = useState(frontMatterOptions);
+  const bookId = window.location.pathname.split('/')[3]; // Get book ID from URL
+
+  useEffect(() => {
+    const fetchFrontMatterOptions = async () => {
+      const { data, error } = await supabase
+        .from('front_matter_options')
+        .select('*')
+        .eq('book_id', bookId);
+
+      if (error) {
+        console.error('Error fetching front matter options:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load front matter options",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data) {
+        setLocalFrontMatterOptions(data);
+      }
+    };
+
+    fetchFrontMatterOptions();
+  }, [bookId]);
+
+  const handleFrontMatterOptionToggle = async (id: string) => {
+    const option = localFrontMatterOptions.find(opt => opt.id === id);
+    if (!option) return;
+
+    const { error } = await supabase
+      .from('front_matter_options')
+      .update({ enabled: !option.enabled })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating front matter option:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update front matter option",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLocalFrontMatterOptions(prevOptions =>
+      prevOptions.map(opt =>
+        opt.id === id ? { ...opt, enabled: !opt.enabled } : opt
+      )
+    );
+
+    onFrontMatterOptionToggle(id);
+  };
+
   const getBoxesForAct = (act: 'act1' | 'act2' | 'act3') => {
     return Object.values(boxes).filter(box => box.act === act);
   };
@@ -99,9 +158,9 @@ const ManuscriptSidebar = ({
 
             <FrontMatterSection
               expanded={expandedSections.frontMatter}
-              options={frontMatterOptions}
+              options={localFrontMatterOptions}
               onToggleExpand={() => onSectionToggle('frontMatter')}
-              onOptionToggle={onFrontMatterOptionToggle}
+              onOptionToggle={handleFrontMatterOptionToggle}
             />
 
             <ChapterListSection
