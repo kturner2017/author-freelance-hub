@@ -7,6 +7,7 @@ import { getTotalWordCount } from '@/utils/wordCount';
 import ChapterList from './ChapterList';
 import ChapterEditor from './ChapterEditor';
 import ChapterToolbar from './ChapterToolbar';
+import ManuscriptSidebar from './ManuscriptSidebar';
 
 interface Chapter {
   id: string;
@@ -23,6 +24,49 @@ const ChaptersEditor = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<any>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [bookData, setBookData] = useState({ title: '', author: '' });
+  const [expandedSections, setExpandedSections] = useState({
+    frontMatter: true,
+    act1: false,
+    act2: false,
+    act3: false
+  });
+  const [boxes, setBoxes] = useState<{
+    [key: string]: {
+      id: string;
+      title: string;
+      content: string;
+      act: 'act1' | 'act2' | 'act3';
+    };
+  }>({});
+
+  useEffect(() => {
+    const fetchBookData = async () => {
+      if (!bookId) return;
+      
+      const { data, error } = await supabase
+        .from('books')
+        .select('title, author')
+        .eq('id', bookId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching book data:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load book details",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (data) {
+        setBookData(data);
+      }
+    };
+
+    fetchBookData();
+  }, [bookId, toast]);
 
   useEffect(() => {
     if (bookId) {
@@ -376,9 +420,7 @@ const ChaptersEditor = () => {
 
   if (isLoading) {
     return (
-      <DashboardLayout 
-        title="Chapters Editor"
-      >
+      <DashboardLayout title="Chapters Editor">
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
@@ -386,14 +428,17 @@ const ChaptersEditor = () => {
     );
   }
 
-  const totalWordCount = getTotalWordCount(Object.values(chapters));
+  const chaptersList = Object.values(chapters).map(chapter => ({
+    id: chapter.id,
+    title: chapter.chapter_id
+  }));
 
   return (
     <DashboardLayout 
       title="Chapters Editor"
       actions={
         <ChapterToolbar 
-          totalWordCount={totalWordCount}
+          totalWordCount={getTotalWordCount(Object.values(chapters))}
           onSave={handleSave}
           onAddChapter={handleAddChapter}
           onSwitchView={() => navigate('/editor/manuscript/boxes')}
@@ -401,16 +446,36 @@ const ChaptersEditor = () => {
       }
     >
       <div className="flex-1 flex">
-        <ChapterList
-          chapters={chapters}
-          selectedChapter={selectedChapter}
-          onChapterSelect={(chapter) => {
-            console.log('Selecting chapter:', chapter);
-            setSelectedChapter(chapter);
+        <ManuscriptSidebar
+          bookData={bookData}
+          chapters={chaptersList}
+          selectedChapter={selectedChapter?.id || ''}
+          expandedSections={expandedSections}
+          editingChapterId={null}
+          editingChapterTitle=""
+          boxes={boxes}
+          frontMatterOptions={[]}
+          onChapterSelect={(chapterId) => {
+            const chapter = chapters[chapterId];
+            if (chapter) {
+              setSelectedChapter(chapter);
+            }
           }}
-          onChapterRename={handleChapterRename}
+          onChapterAdd={handleAddChapter}
           onChapterDelete={handleChapterDelete}
           onChapterMove={handleChapterMove}
+          onChapterEditStart={() => {}}
+          onChapterEditSave={() => {}}
+          onChapterEditCancel={() => {}}
+          onChapterTitleChange={() => {}}
+          onSectionToggle={(section) => {
+            setExpandedSections(prev => ({
+              ...prev,
+              [section]: !prev[section]
+            }));
+          }}
+          onBoxSelect={() => {}}
+          onFrontMatterOptionToggle={() => {}}
         />
         <div className="flex-1 bg-white">
           {selectedChapter ? (
