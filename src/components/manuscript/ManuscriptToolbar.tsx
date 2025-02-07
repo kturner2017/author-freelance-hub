@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
@@ -44,6 +45,17 @@ const ManuscriptToolbar = ({
 }: ManuscriptToolbarProps) => {
   const navigate = useNavigate();
 
+  const handleViewChange = (view: 'boxes' | 'document') => {
+    if (view === 'document') {
+      // Extract book ID from current URL
+      const pathParts = window.location.pathname.split('/');
+      const bookId = pathParts[3]; // Assuming URL pattern is /editor/manuscript/:bookId/boxes
+      navigate(`/editor/manuscript/${bookId}/chapters`);
+    } else {
+      onViewChange(view);
+    }
+  };
+
   return (
     <div className="h-16 border-b flex items-center px-4 justify-between bg-white">
       <div className="flex items-center gap-2">
@@ -84,7 +96,7 @@ const ManuscriptToolbar = ({
             variant="ghost"
             size="sm"
             className={`flex items-center gap-2 ${editorView === 'boxes' ? 'bg-gray-100' : ''}`}
-            onClick={() => onViewChange('boxes')}
+            onClick={() => handleViewChange('boxes')}
           >
             <LayoutDashboard className="h-4 w-4" />
             <span>Boxes</span>
@@ -93,7 +105,7 @@ const ManuscriptToolbar = ({
             variant="ghost"
             size="sm"
             className={`flex items-center gap-2 ${editorView === 'document' ? 'bg-gray-100' : ''}`}
-            onClick={() => onViewChange('document')}
+            onClick={() => handleViewChange('document')}
           >
             <BookOpen className="h-4 w-4" />
             <span>Document</span>
