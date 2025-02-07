@@ -77,11 +77,17 @@ const ManuscriptSidebar = ({
   onFrontMatterOptionToggle,
 }: ManuscriptSidebarProps) => {
   const { toast } = useToast();
-  const [localFrontMatterOptions, setLocalFrontMatterOptions] = useState(frontMatterOptions);
-  const bookId = window.location.pathname.split('/')[3]; // Get book ID from URL
+  const [localFrontMatterOptions, setLocalFrontMatterOptions] = useState<{
+    id: string;
+    title: string;
+    enabled: boolean;
+  }[]>([]);
+  
+  const bookId = window.location.pathname.split('/')[3];
 
   useEffect(() => {
     const fetchFrontMatterOptions = async () => {
+      console.log('Fetching front matter options for book:', bookId);
       const { data, error } = await supabase
         .from('front_matter_options')
         .select('*')
@@ -98,12 +104,15 @@ const ManuscriptSidebar = ({
       }
 
       if (data) {
+        console.log('Fetched front matter options:', data);
         setLocalFrontMatterOptions(data);
       }
     };
 
-    fetchFrontMatterOptions();
-  }, [bookId]);
+    if (bookId) {
+      fetchFrontMatterOptions();
+    }
+  }, [bookId, toast]);
 
   const handleFrontMatterOptionToggle = async (id: string) => {
     const option = localFrontMatterOptions.find(opt => opt.id === id);
@@ -146,16 +155,6 @@ const ManuscriptSidebar = ({
       <ScrollArea className="flex-1">
         <div className="p-2">
           <div className="space-y-1">
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start text-gray-300 hover:bg-gray-700 active:bg-gray-600 transition-colors duration-200 py-1 h-auto"
-            >
-              <div className="flex items-center">
-                <ChevronRight className="h-4 w-4 mr-2" />
-                Get Started
-              </div>
-            </Button>
-
             <FrontMatterSection
               expanded={expandedSections.frontMatter}
               options={localFrontMatterOptions}
