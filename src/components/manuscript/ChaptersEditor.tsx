@@ -53,9 +53,9 @@ const ChaptersEditor = () => {
         .select('*')
         .eq('book_id', bookId)
         .eq('front_matter_option_id', frontMatterId)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found" error
+      if (error && error.code !== 'PGRST116') {
         throw error;
       }
 
