@@ -147,6 +147,41 @@ export type Database = {
         }
         Relationships: []
       }
+      front_matter_content: {
+        Row: {
+          book_id: string
+          content: string | null
+          created_at: string
+          front_matter_option_id: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          book_id: string
+          content?: string | null
+          created_at?: string
+          front_matter_option_id: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          book_id?: string
+          content?: string | null
+          created_at?: string
+          front_matter_option_id?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "front_matter_content_front_matter_option_id_fkey"
+            columns: ["front_matter_option_id"]
+            isOneToOne: false
+            referencedRelation: "front_matter_options"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       front_matter_options: {
         Row: {
           book_id: string | null

@@ -15,9 +15,10 @@ interface FrontMatterOption {
 
 interface ManuscriptSidebarProps {
   bookId: string;
+  onFrontMatterSelect: (id: string, title: string) => void;
 }
 
-const ManuscriptSidebar = ({ bookId }: ManuscriptSidebarProps) => {
+const ManuscriptSidebar = ({ bookId, onFrontMatterSelect }: ManuscriptSidebarProps) => {
   const { toast } = useToast();
   const [expandedSections, setExpandedSections] = useState({
     frontMatter: true,
@@ -89,6 +90,12 @@ const ManuscriptSidebar = ({ bookId }: ManuscriptSidebarProps) => {
     }
   };
 
+  const handleOptionClick = (option: FrontMatterOption) => {
+    if (option.enabled) {
+      onFrontMatterSelect(option.id, option.title);
+    }
+  };
+
   return (
     <div className="w-64 bg-[#2c3643] text-white flex flex-col">
       <div className="p-4 border-b border-gray-700">
@@ -97,7 +104,6 @@ const ManuscriptSidebar = ({ bookId }: ManuscriptSidebarProps) => {
       <ScrollArea className="flex-1">
         <div className="p-2">
           <div className="space-y-1">
-            {/* Front Matter Section */}
             <div>
               <button
                 onClick={() => handleToggleSection('frontMatter')}
@@ -119,12 +125,18 @@ const ManuscriptSidebar = ({ bookId }: ManuscriptSidebarProps) => {
                     frontMatterOptions.map(option => (
                       <div
                         key={option.id}
-                        className="flex items-center justify-between p-2 hover:bg-white/5 rounded"
+                        className={`flex items-center justify-between p-2 rounded cursor-pointer ${
+                          option.enabled ? 'hover:bg-white/10' : ''
+                        }`}
+                        onClick={() => handleOptionClick(option)}
                       >
-                        <span className="text-sm">{option.title}</span>
+                        <span className={`text-sm ${option.enabled ? 'text-white' : 'text-gray-400'}`}>
+                          {option.title}
+                        </span>
                         <Switch
                           checked={option.enabled}
                           onCheckedChange={(checked) => handleToggleOption(option.id, checked)}
+                          onClick={(e) => e.stopPropagation()}
                         />
                       </div>
                     ))
