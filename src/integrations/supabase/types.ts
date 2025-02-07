@@ -269,6 +269,7 @@ export type Database = {
           content: string | null
           created_at: string | null
           id: string
+          sort_order: number
           updated_at: string | null
         }
         Insert: {
@@ -277,6 +278,7 @@ export type Database = {
           content?: string | null
           created_at?: string | null
           id?: string
+          sort_order: number
           updated_at?: string | null
         }
         Update: {
@@ -285,6 +287,7 @@ export type Database = {
           content?: string | null
           created_at?: string | null
           id?: string
+          sort_order?: number
           updated_at?: string | null
         }
         Relationships: [
