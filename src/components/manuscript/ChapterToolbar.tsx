@@ -1,21 +1,28 @@
+
 import React from 'react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { BookOpen } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 interface ChapterToolbarProps {
   totalWordCount: number;
   onSave: () => void;
   onAddChapter: () => void;
-  onSwitchView: () => void;
 }
 
 const ChapterToolbar = ({ 
   totalWordCount, 
   onSave, 
-  onAddChapter, 
-  onSwitchView 
+  onAddChapter
 }: ChapterToolbarProps) => {
+  const navigate = useNavigate();
+  const { bookId } = useParams();
+
+  const handleSwitchView = () => {
+    navigate(`/editor/manuscript/${bookId}/boxes`);
+  };
+
   return (
     <div className="flex items-center gap-4">
       <Badge variant="secondary" className="text-sm bg-white/10 text-white border-0">
@@ -41,7 +48,7 @@ const ChapterToolbar = ({
       <Button 
         variant="outline" 
         size="sm"
-        onClick={onSwitchView}
+        onClick={handleSwitchView}
         className="border-white text-white hover:bg-white/10 font-medium"
       >
         Switch to Boxes View
@@ -51,3 +58,4 @@ const ChapterToolbar = ({
 };
 
 export default ChapterToolbar;
+
