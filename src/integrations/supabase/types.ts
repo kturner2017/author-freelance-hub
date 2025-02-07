@@ -188,6 +188,7 @@ export type Database = {
           created_at: string
           enabled: boolean | null
           id: string
+          sort_order: number
           title: string
           updated_at: string
         }
@@ -196,6 +197,7 @@ export type Database = {
           created_at?: string
           enabled?: boolean | null
           id?: string
+          sort_order?: number
           title: string
           updated_at?: string
         }
@@ -204,6 +206,7 @@ export type Database = {
           created_at?: string
           enabled?: boolean | null
           id?: string
+          sort_order?: number
           title?: string
           updated_at?: string
         }

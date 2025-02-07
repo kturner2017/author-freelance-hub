@@ -17,6 +17,7 @@ interface FrontMatterContent {
   id: string;
   title: string;
   content: string;
+  sort_order: number;
 }
 
 const ChaptersEditor = () => {
@@ -24,6 +25,7 @@ const ChaptersEditor = () => {
   const { bookId } = useParams();
   const { toast } = useToast();
   const [bookData, setBookData] = useState({ title: '', author: '' });
+  const [frontMatterContents, setFrontMatterContents] = useState<FrontMatterContent[]>([]);
   const [selectedFrontMatter, setSelectedFrontMatter] = useState<FrontMatterContent | null>(null);
   
   const {
@@ -44,6 +46,48 @@ const ChaptersEditor = () => {
     handleSave
   } = useContentManagement();
 
+  const fetchEnabledFrontMatter = async () => {
+    if (!bookId) return;
+    
+    try {
+      const { data: options, error: optionsError } = await supabase
+        .from('front_matter_options')
+        .select('*')
+        .eq('book_id', bookId)
+        .eq('enabled', true)
+        .order('sort_order', { ascending: true });
+
+      if (optionsError) throw optionsError;
+
+      const enabledContents: FrontMatterContent[] = [];
+      
+      for (const option of options || []) {
+        const { data: content } = await supabase
+          .from('front_matter_content')
+          .select('*')
+          .eq('book_id', bookId)
+          .eq('front_matter_option_id', option.id)
+          .maybeSingle();
+
+        enabledContents.push({
+          id: option.id,
+          title: option.title,
+          content: content?.content || '',
+          sort_order: option.sort_order
+        });
+      }
+
+      setFrontMatterContents(enabledContents.sort((a, b) => a.sort_order - b.sort_order));
+    } catch (error) {
+      console.error('Error fetching front matter:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load front matter content",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleFrontMatterSelect = async (frontMatterId: string, title: string) => {
     if (!bookId) return;
     
@@ -59,14 +103,19 @@ const ChaptersEditor = () => {
         throw error;
       }
 
+      const selectedOption = frontMatterContents.find(fm => fm.id === frontMatterId) || {
+        id: frontMatterId,
+        title,
+        content: '',
+        sort_order: frontMatterContents.length
+      };
+
       if (data) {
         setSelectedFrontMatter({
-          id: frontMatterId,
-          title,
+          ...selectedOption,
           content: data.content || ''
         });
       } else {
-        // Create new front matter content if it doesn't exist
         const { data: newContent, error: insertError } = await supabase
           .from('front_matter_content')
           .insert({
@@ -79,14 +128,10 @@ const ChaptersEditor = () => {
 
         if (insertError) throw insertError;
 
-        setSelectedFrontMatter({
-          id: frontMatterId,
-          title,
-          content: ''
-        });
+        setSelectedFrontMatter(selectedOption);
       }
       
-      setSelectedChapter(null); // Deselect chapter when front matter is selected
+      setSelectedChapter(null);
     } catch (error) {
       console.error('Error loading front matter content:', error);
       toast({
@@ -112,6 +157,13 @@ const ChaptersEditor = () => {
       if (error) throw error;
 
       setSelectedFrontMatter(prev => prev ? { ...prev, content } : null);
+      setFrontMatterContents(prev => 
+        prev.map(fm => 
+          fm.id === selectedFrontMatter.id 
+            ? { ...fm, content } 
+            : fm
+        )
+      );
     } catch (error) {
       console.error('Error saving front matter content:', error);
       toast({
@@ -148,6 +200,7 @@ const ChaptersEditor = () => {
     };
 
     fetchBookData();
+    fetchEnabledFrontMatter();
   }, [bookId, toast]);
 
   if (isLoading) {
@@ -195,7 +248,23 @@ const ChaptersEditor = () => {
                 onChange={handleFrontMatterContentChange}
               />
             </div>
-          ) : selectedChapter ? (
+          ) : !selectedChapter ? (
+            <div className="max-w-4xl mx-auto p-8">
+              {frontMatterContents.map((fm) => (
+                <div key={fm.id} className="mb-12">
+                  <h2 className="text-3xl font-serif font-semibold text-primary-800 mb-8">
+                    {fm.title}
+                  </h2>
+                  <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: fm.content }} />
+                </div>
+              ))}
+              {frontMatterContents.length === 0 && (
+                <div className="text-center text-gray-500">
+                  Select a chapter or front matter section to start editing
+                </div>
+              )}
+            </div>
+          ) : (
             <ChapterEditor
               key={`chapter-${selectedChapter.id}`}
               chapter={selectedChapter}
@@ -207,10 +276,6 @@ const ChaptersEditor = () => {
               aiAnalysis={aiAnalysis}
               isAnalyzing={isAnalyzing}
             />
-          ) : (
-            <div className="p-8 text-center text-gray-500">
-              Select a chapter or front matter section to start editing
-            </div>
           )}
         </div>
       </div>
