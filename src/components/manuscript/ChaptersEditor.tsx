@@ -50,6 +50,7 @@ const ChaptersEditor = () => {
     if (!bookId) return;
     
     try {
+      console.log('Fetching front matter for book:', bookId);
       const { data: options, error: optionsError } = await supabase
         .from('front_matter_options')
         .select('*')
@@ -59,16 +60,22 @@ const ChaptersEditor = () => {
 
       if (optionsError) throw optionsError;
 
+      console.log('Enabled front matter options:', options);
       const enabledContents: FrontMatterContent[] = [];
       
       for (const option of options || []) {
-        const { data: content } = await supabase
+        const { data: content, error: contentError } = await supabase
           .from('front_matter_content')
           .select('*')
           .eq('book_id', bookId)
           .eq('front_matter_option_id', option.id)
           .maybeSingle();
 
+        if (contentError && contentError.code !== 'PGRST116') {
+          throw contentError;
+        }
+
+        console.log(`Front matter content for option ${option.id}:`, content);
         enabledContents.push({
           id: option.id,
           title: option.title,
@@ -77,7 +84,9 @@ const ChaptersEditor = () => {
         });
       }
 
-      setFrontMatterContents(enabledContents.sort((a, b) => a.sort_order - b.sort_order));
+      const sortedContents = enabledContents.sort((a, b) => a.sort_order - b.sort_order);
+      console.log('Sorted front matter contents:', sortedContents);
+      setFrontMatterContents(sortedContents);
     } catch (error) {
       console.error('Error fetching front matter:', error);
       toast({
@@ -201,7 +210,7 @@ const ChaptersEditor = () => {
 
     fetchBookData();
     fetchEnabledFrontMatter();
-  }, [bookId, toast]);
+  }, [bookId]);
 
   if (isLoading) {
     return (
@@ -284,3 +293,4 @@ const ChaptersEditor = () => {
 };
 
 export default ChaptersEditor;
+
