@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
-import { ChevronRight, ChevronDown } from 'lucide-react';
+import { ChevronRight, ChevronDown, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '../ui/switch';
@@ -11,6 +11,7 @@ interface FrontMatterOption {
   id: string;
   title: string;
   enabled: boolean;
+  sort_order: number;
 }
 
 interface ManuscriptSidebarProps {
@@ -37,7 +38,7 @@ const ManuscriptSidebar = ({ bookId, onFrontMatterSelect }: ManuscriptSidebarPro
         .from('front_matter_options')
         .select('*')
         .eq('book_id', bookId)
-        .order('created_at', { ascending: true });
+        .order('sort_order', { ascending: true });
 
       if (error) throw error;
 
@@ -78,7 +79,7 @@ const ManuscriptSidebar = ({ bookId, onFrontMatterSelect }: ManuscriptSidebarPro
 
       toast({
         title: "Success",
-        description: `${enabled ? 'Enabled' : 'Disabled'} front matter option`,
+        description: `${enabled ? 'Added' : 'Removed'} ${frontMatterOptions.find(opt => opt.id === optionId)?.title}`,
       });
     } catch (error) {
       console.error('Error updating front matter option:', error);
@@ -87,12 +88,6 @@ const ManuscriptSidebar = ({ bookId, onFrontMatterSelect }: ManuscriptSidebarPro
         description: "Failed to update front matter option",
         variant: "destructive",
       });
-    }
-  };
-
-  const handleOptionClick = (option: FrontMatterOption) => {
-    if (option.enabled) {
-      onFrontMatterSelect(option.id, option.title);
     }
   };
 
@@ -118,26 +113,32 @@ const ManuscriptSidebar = ({ bookId, onFrontMatterSelect }: ManuscriptSidebarPro
               </button>
               
               {expandedSections.frontMatter && (
-                <div className="ml-4 space-y-2 mt-2">
+                <div className="ml-4 space-y-1">
                   {isLoading ? (
                     <div className="text-sm text-gray-400">Loading...</div>
                   ) : (
                     frontMatterOptions.map(option => (
-                      <div
-                        key={option.id}
-                        className={`flex items-center justify-between p-2 rounded cursor-pointer ${
-                          option.enabled ? 'hover:bg-white/10' : ''
-                        }`}
-                        onClick={() => handleOptionClick(option)}
-                      >
-                        <span className={`text-sm ${option.enabled ? 'text-white' : 'text-gray-400'}`}>
-                          {option.title}
-                        </span>
-                        <Switch
-                          checked={option.enabled}
-                          onCheckedChange={(checked) => handleToggleOption(option.id, checked)}
-                          onClick={(e) => e.stopPropagation()}
-                        />
+                      <div key={option.id} className="space-y-1">
+                        <div
+                          className="flex items-center justify-between p-2 rounded"
+                        >
+                          <span className={`text-sm ${option.enabled ? 'text-white' : 'text-gray-400'}`}>
+                            {option.title}
+                          </span>
+                          <Switch
+                            checked={option.enabled}
+                            onCheckedChange={(checked) => handleToggleOption(option.id, checked)}
+                          />
+                        </div>
+                        {option.enabled && (
+                          <button
+                            onClick={() => onFrontMatterSelect(option.id, option.title)}
+                            className="w-full flex items-center px-2 py-1.5 text-sm text-gray-300 hover:bg-white/10 rounded transition-colors"
+                          >
+                            <FileText className="h-4 w-4 mr-2" />
+                            {option.title}
+                          </button>
+                        )}
                       </div>
                     ))
                   )}
