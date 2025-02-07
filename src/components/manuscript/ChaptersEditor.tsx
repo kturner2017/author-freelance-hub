@@ -216,14 +216,12 @@ const ChaptersEditor = () => {
     const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
     if (newIndex < 0 || newIndex >= chaptersList.length) return;
 
-    // Swap chapter numbers
     const currentChapter = chaptersList[currentIndex];
     const targetChapter = chaptersList[newIndex];
     const currentNum = parseInt(currentChapter.chapter_id.split(' ')[1]);
     const targetNum = parseInt(targetChapter.chapter_id.split(' ')[1]);
 
     try {
-      // Update both chapters in the database
       const updates = [
         supabase
           .from('manuscript_chapters')
@@ -237,7 +235,6 @@ const ChaptersEditor = () => {
 
       await Promise.all(updates);
 
-      // Update local state
       setChapters(prev => ({
         ...prev,
         [currentChapter.id]: { ...currentChapter, chapter_id: `Chapter ${targetNum}` },
@@ -441,41 +438,17 @@ const ChaptersEditor = () => {
           totalWordCount={getTotalWordCount(Object.values(chapters))}
           onSave={handleSave}
           onAddChapter={handleAddChapter}
-          onSwitchView={() => navigate('/editor/manuscript/boxes')}
         />
       }
     >
       <div className="flex-1 flex">
-        <ManuscriptSidebar
-          bookData={bookData}
-          chapters={chaptersList}
-          selectedChapter={selectedChapter?.id || ''}
-          expandedSections={expandedSections}
-          editingChapterId={null}
-          editingChapterTitle=""
-          boxes={boxes}
-          frontMatterOptions={[]}
-          onChapterSelect={(chapterId) => {
-            const chapter = chapters[chapterId];
-            if (chapter) {
-              setSelectedChapter(chapter);
-            }
-          }}
-          onChapterAdd={handleAddChapter}
+        <ChapterList
+          chapters={chapters}
+          selectedChapter={selectedChapter}
+          onChapterSelect={setSelectedChapter}
+          onChapterRename={handleChapterRename}
           onChapterDelete={handleChapterDelete}
           onChapterMove={handleChapterMove}
-          onChapterEditStart={() => {}}
-          onChapterEditSave={() => {}}
-          onChapterEditCancel={() => {}}
-          onChapterTitleChange={() => {}}
-          onSectionToggle={(section) => {
-            setExpandedSections(prev => ({
-              ...prev,
-              [section]: !prev[section]
-            }));
-          }}
-          onBoxSelect={() => {}}
-          onFrontMatterOptionToggle={() => {}}
         />
         <div className="flex-1 bg-white">
           {selectedChapter ? (
