@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useToast } from '../ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -266,7 +267,8 @@ const ChaptersEditor = () => {
     const initialChapter = {
       chapter_id: 'Chapter 1',
       content: '',
-      book_id: bookId
+      book_id: bookId,
+      sort_order: 1  // Add sort_order for the first chapter
     };
     
     console.log('Creating initial chapter:', initialChapter);
@@ -370,11 +372,24 @@ const ChaptersEditor = () => {
   const handleAddChapter = async () => {
     if (!bookId) return;
 
+    // Get the current highest sort order
+    const { data: existingChapters } = await supabase
+      .from('manuscript_chapters')
+      .select('sort_order')
+      .eq('book_id', bookId)
+      .order('sort_order', { ascending: false })
+      .limit(1);
+
+    const nextSortOrder = existingChapters && existingChapters.length > 0 
+      ? existingChapters[0].sort_order + 1 
+      : 1;
+
     const newChapterNumber = Object.keys(chapters).length + 1;
     const newChapter = {
       chapter_id: `Chapter ${newChapterNumber}`,
       content: '',
-      book_id: bookId
+      book_id: bookId,
+      sort_order: nextSortOrder  // Add sort_order for the new chapter
     };
 
     console.log('Creating new chapter:', newChapter);
