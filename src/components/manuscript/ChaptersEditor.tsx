@@ -457,6 +457,7 @@ const ChaptersEditor = () => {
       }
     >
       <div className="flex-1 flex">
+        <ManuscriptSidebar bookId={bookId || ''} />
         <ChapterList
           chapters={chapters}
           selectedChapter={selectedChapter}
