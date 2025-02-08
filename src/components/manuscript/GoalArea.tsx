@@ -106,89 +106,92 @@ const GoalArea = ({ bookId, currentWordCount }: GoalAreaProps) => {
   };
 
   return (
-    <Collapsible
-      open={isOpen}
-      onOpenChange={setIsOpen}
-      className="bg-white rounded-lg shadow"
-    >
-      <CollapsibleTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="w-10 h-10 rounded-full hover:bg-gray-100"
-        >
-          <Target className={`h-5 w-5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-          <span className="sr-only">Toggle goals</span>
-        </Button>
-      </CollapsibleTrigger>
-      <CollapsibleContent className="p-4">
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold mb-2">Word Count Goal</h3>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-600">
-              {currentWordCount.toLocaleString()} / {targetWordCount.toLocaleString()} words
-            </span>
-            <span className="text-sm font-medium">{progress}%</span>
-          </div>
-          <Progress value={progress} className="h-2" />
-        </div>
-
-        <div className="mb-4">
-          <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-            <span>Target Date:</span>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="flex gap-2 items-center">
-                  <CalendarIcon className="h-4 w-4" />
-                  {format(targetDate, 'MMM d, yyyy')}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="end">
-                <Calendar
-                  mode="single"
-                  selected={targetDate}
-                  onSelect={(date) => date && setTargetDate(date)}
-                  disabled={(date) => date < new Date()}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          <div className="text-sm text-gray-600">
-            <p>Days remaining: {daysRemaining}</p>
-            <p>Required pace: {wordsPerDay.toLocaleString()} words/day</p>
-          </div>
-        </div>
-        
-        <div className="mt-4">
-          {isEditing ? (
-            <div className="flex gap-2">
-              <Input
-                type="number"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                className="w-32"
-              />
-              <Button size="sm" onClick={handleSave}>
-                <Save className="h-4 w-4" />
-              </Button>
-            </div>
-          ) : (
+    <div className="relative">
+      <Collapsible
+        open={isOpen}
+        onOpenChange={setIsOpen}
+        className="absolute right-0 top-0 flex transition-all duration-200"
+      >
+        <div className="flex items-start">
+          <CollapsibleTrigger asChild>
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsEditing(true)}
-              className="w-full"
+              variant="ghost"
+              size="icon"
+              className="w-10 h-10 rounded-full hover:bg-gray-100 flex-shrink-0"
             >
-              <Pencil className="h-4 w-4 mr-2" />
-              Edit Goal
+              <Target className={`h-5 w-5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+              <span className="sr-only">Toggle goals</span>
             </Button>
-          )}
+          </CollapsibleTrigger>
+          <CollapsibleContent className="min-w-[300px] bg-white rounded-lg shadow p-4 ml-2">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-2">Word Count Goal</h3>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-600">
+                  {currentWordCount.toLocaleString()} / {targetWordCount.toLocaleString()} words
+                </span>
+                <span className="text-sm font-medium">{progress}%</span>
+              </div>
+              <Progress value={progress} className="h-2" />
+            </div>
+
+            <div className="mb-4">
+              <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+                <span>Target Date:</span>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="flex gap-2 items-center">
+                      <CalendarIcon className="h-4 w-4" />
+                      {format(targetDate, 'MMM d, yyyy')}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="end">
+                    <Calendar
+                      mode="single"
+                      selected={targetDate}
+                      onSelect={(date) => date && setTargetDate(date)}
+                      disabled={(date) => date < new Date()}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="text-sm text-gray-600">
+                <p>Days remaining: {daysRemaining}</p>
+                <p>Required pace: {wordsPerDay.toLocaleString()} words/day</p>
+              </div>
+            </div>
+            
+            <div className="mt-4">
+              {isEditing ? (
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    className="w-32"
+                  />
+                  <Button size="sm" onClick={handleSave}>
+                    <Save className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditing(true)}
+                  className="w-full"
+                >
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Edit Goal
+                </Button>
+              )}
+            </div>
+          </CollapsibleContent>
         </div>
-      </CollapsibleContent>
-    </Collapsible>
+      </Collapsible>
+    </div>
   );
 };
 
 export default GoalArea;
-
