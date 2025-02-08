@@ -14,9 +14,10 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 interface GoalAreaProps {
   bookId: string;
   currentWordCount: number;
+  onToggle?: (expanded: boolean) => void;
 }
 
-const GoalArea = ({ bookId, currentWordCount }: GoalAreaProps) => {
+const GoalArea = ({ bookId, currentWordCount, onToggle }: GoalAreaProps) => {
   const [targetWordCount, setTargetWordCount] = useState(50000);
   const [targetDate, setTargetDate] = useState<Date>(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
   const [isEditing, setIsEditing] = useState(false);
@@ -64,6 +65,12 @@ const GoalArea = ({ bookId, currentWordCount }: GoalAreaProps) => {
       fetchGoal();
     }
   }, [bookId]);
+
+  useEffect(() => {
+    if (onToggle) {
+      onToggle(isOpen);
+    }
+  }, [isOpen, onToggle]);
 
   const progress = Math.min(Math.round((currentWordCount / targetWordCount) * 100), 100);
   const daysRemaining = Math.max(differenceInDays(targetDate, new Date()), 0);
@@ -195,3 +202,4 @@ const GoalArea = ({ bookId, currentWordCount }: GoalAreaProps) => {
 };
 
 export default GoalArea;
+

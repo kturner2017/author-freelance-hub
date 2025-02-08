@@ -20,6 +20,7 @@ const ChaptersEditor = () => {
   const { bookId } = useParams();
   const { toast } = useToast();
   const [bookData, setBookData] = useState({ title: '', author: '' });
+  const [isGoalExpanded, setIsGoalExpanded] = useState(true);
 
   const {
     selectedChapter,
@@ -127,8 +128,8 @@ const ChaptersEditor = () => {
           ) : !selectedChapter ? (
             <FrontMatterPreview frontMatterContents={frontMatterContents} />
           ) : (
-            <div className="flex">
-              <div className="flex-1">
+            <div className="flex transition-all duration-200">
+              <div className={`flex-1 transition-all duration-200 ${!isGoalExpanded ? 'mr-[-272px]' : ''}`}>
                 <ChapterEditor
                   key={`chapter-${selectedChapter.id}`}
                   chapter={selectedChapter}
@@ -141,10 +142,11 @@ const ChaptersEditor = () => {
                   isAnalyzing={isAnalyzing}
                 />
               </div>
-              <div className="w-72 p-4 border-l">
+              <div className="w-72">
                 <GoalArea 
                   bookId={bookId || ''} 
                   currentWordCount={totalWordCount}
+                  onToggle={(expanded) => setIsGoalExpanded(expanded)}
                 />
               </div>
             </div>
@@ -156,3 +158,4 @@ const ChaptersEditor = () => {
 };
 
 export default ChaptersEditor;
+
