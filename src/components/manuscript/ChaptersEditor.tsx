@@ -8,6 +8,7 @@ import ChapterList from './ChapterList';
 import ChapterEditor from './ChapterEditor';
 import ChapterToolbar from './ChapterToolbar';
 import ManuscriptSidebar from './ManuscriptSidebar';
+import GoalArea from './GoalArea';
 import { useChapterManagement } from '@/hooks/useChapterManagement';
 import { useContentManagement } from '@/hooks/useContentManagement';
 import { useFrontMatterManager } from '@/hooks/useFrontMatterManager';
@@ -91,12 +92,14 @@ const ChaptersEditor = () => {
     setSelectedChapter(null);
   };
 
+  const totalWordCount = getTotalWordCount(Object.values(chapters));
+
   return (
     <DashboardLayout 
       title="Chapters Editor"
       actions={
         <ChapterToolbar 
-          totalWordCount={getTotalWordCount(Object.values(chapters))}
+          totalWordCount={totalWordCount}
           onSave={() => handleSave(selectedChapter)}
           onAddChapter={handleAddChapter}
         />
@@ -124,17 +127,27 @@ const ChaptersEditor = () => {
           ) : !selectedChapter ? (
             <FrontMatterPreview frontMatterContents={frontMatterContents} />
           ) : (
-            <ChapterEditor
-              key={`chapter-${selectedChapter.id}`}
-              chapter={selectedChapter}
-              onContentChange={(content) => {
-                const updatedChapter = { ...selectedChapter, content };
-                setSelectedChapter(updatedChapter);
-                handleContentChange(content, updatedChapter);
-              }}
-              aiAnalysis={aiAnalysis}
-              isAnalyzing={isAnalyzing}
-            />
+            <div className="flex">
+              <div className="flex-1">
+                <ChapterEditor
+                  key={`chapter-${selectedChapter.id}`}
+                  chapter={selectedChapter}
+                  onContentChange={(content) => {
+                    const updatedChapter = { ...selectedChapter, content };
+                    setSelectedChapter(updatedChapter);
+                    handleContentChange(content, updatedChapter);
+                  }}
+                  aiAnalysis={aiAnalysis}
+                  isAnalyzing={isAnalyzing}
+                />
+              </div>
+              <div className="w-72 p-4 border-l">
+                <GoalArea 
+                  bookId={bookId || ''} 
+                  currentWordCount={totalWordCount}
+                />
+              </div>
+            </div>
           )}
         </div>
       </div>
