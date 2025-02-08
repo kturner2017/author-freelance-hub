@@ -24,7 +24,7 @@ const GoalArea = ({ bookId, currentWordCount }: GoalAreaProps) => {
         .from('manuscript_goals')
         .select('target_word_count')
         .eq('book_id', bookId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching goal:', error);
