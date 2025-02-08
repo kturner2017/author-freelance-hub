@@ -373,6 +373,7 @@ export type Database = {
           book_id: string
           created_at: string
           id: string
+          target_date: string
           target_word_count: number
           updated_at: string
         }
@@ -380,6 +381,7 @@ export type Database = {
           book_id: string
           created_at?: string
           id?: string
+          target_date?: string
           target_word_count?: number
           updated_at?: string
         }
@@ -387,6 +389,7 @@ export type Database = {
           book_id?: string
           created_at?: string
           id?: string
+          target_date?: string
           target_word_count?: number
           updated_at?: string
         }

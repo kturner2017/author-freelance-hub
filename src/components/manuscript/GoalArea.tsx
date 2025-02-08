@@ -3,9 +3,12 @@ import React, { useEffect, useState } from 'react';
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Pencil, Save } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Pencil, Save, Calendar as CalendarIcon } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '../ui/use-toast';
+import { format, differenceInDays } from "date-fns";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface GoalAreaProps {
   bookId: string;
@@ -14,6 +17,7 @@ interface GoalAreaProps {
 
 const GoalArea = ({ bookId, currentWordCount }: GoalAreaProps) => {
   const [targetWordCount, setTargetWordCount] = useState(50000);
+  const [targetDate, setTargetDate] = useState<Date>(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState('50000');
   const { toast } = useToast();
@@ -22,7 +26,7 @@ const GoalArea = ({ bookId, currentWordCount }: GoalAreaProps) => {
     const fetchGoal = async () => {
       const { data, error } = await supabase
         .from('manuscript_goals')
-        .select('target_word_count')
+        .select('target_word_count, target_date')
         .eq('book_id', bookId)
         .maybeSingle();
 
@@ -33,13 +37,19 @@ const GoalArea = ({ bookId, currentWordCount }: GoalAreaProps) => {
 
       if (data) {
         setTargetWordCount(data.target_word_count);
+        setTargetDate(new Date(data.target_date));
         setInputValue(data.target_word_count.toString());
       } else {
         // Create default goal if none exists
+        const defaultDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
         const { error: insertError } = await supabase
           .from('manuscript_goals')
           .insert([
-            { book_id: bookId, target_word_count: 50000 }
+            { 
+              book_id: bookId, 
+              target_word_count: 50000,
+              target_date: defaultDate.toISOString().split('T')[0]
+            }
           ]);
 
         if (insertError) {
@@ -54,6 +64,8 @@ const GoalArea = ({ bookId, currentWordCount }: GoalAreaProps) => {
   }, [bookId]);
 
   const progress = Math.min(Math.round((currentWordCount / targetWordCount) * 100), 100);
+  const daysRemaining = Math.max(differenceInDays(targetDate, new Date()), 0);
+  const wordsPerDay = Math.ceil((targetWordCount - currentWordCount) / (daysRemaining || 1));
 
   const handleSave = async () => {
     const newTarget = parseInt(inputValue);
@@ -70,7 +82,8 @@ const GoalArea = ({ bookId, currentWordCount }: GoalAreaProps) => {
       .from('manuscript_goals')
       .upsert({
         book_id: bookId,
-        target_word_count: newTarget
+        target_word_count: newTarget,
+        target_date: targetDate.toISOString().split('T')[0]
       });
 
     if (error) {
@@ -101,6 +114,33 @@ const GoalArea = ({ bookId, currentWordCount }: GoalAreaProps) => {
           <span className="text-sm font-medium">{progress}%</span>
         </div>
         <Progress value={progress} className="h-2" />
+      </div>
+
+      <div className="mb-4">
+        <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+          <span>Target Date:</span>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="flex gap-2 items-center">
+                <CalendarIcon className="h-4 w-4" />
+                {format(targetDate, 'MMM d, yyyy')}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                mode="single"
+                selected={targetDate}
+                onSelect={(date) => date && setTargetDate(date)}
+                disabled={(date) => date < new Date()}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+        <div className="text-sm text-gray-600">
+          <p>Days remaining: {daysRemaining}</p>
+          <p>Required pace: {wordsPerDay.toLocaleString()} words/day</p>
+        </div>
       </div>
       
       <div className="mt-4">
