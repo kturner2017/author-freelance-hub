@@ -47,7 +47,10 @@ const EditorToolbar = ({
   const addImage = () => {
     const url = window.prompt('Enter image URL:');
     if (url) {
-      editor.chain().focus().setImage({ src: url }).run();
+      editor.chain().focus().insertContent({
+        type: 'image',
+        attrs: { src: url }
+      }).run();
     }
   };
 
@@ -241,4 +244,3 @@ const EditorToolbar = ({
 };
 
 export default EditorToolbar;
-
