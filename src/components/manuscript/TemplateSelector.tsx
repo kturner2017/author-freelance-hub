@@ -18,7 +18,7 @@ interface TemplateSelectorProps {
 const templates: ChapterTemplate[] = [
   {
     id: 'reedsy',
-    name: 'Reedsy',
+    name: 'Authorify',
     font: 'Merriweather',
     preview: '1'
   },
