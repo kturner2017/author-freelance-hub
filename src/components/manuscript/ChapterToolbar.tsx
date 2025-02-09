@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import { BookOpen, Home, ArrowLeft } from 'lucide-react';
+import { BookOpen, Home, ArrowLeft, LayoutDashboard } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 interface ChapterToolbarProps {
@@ -39,8 +39,8 @@ const ChapterToolbar = ({
           <Home className="h-5 w-5" />
         </Button>
         <div>
-          <h2 className="text-lg font-semibold leading-tight">Chapters Editor</h2>
-          <p className="text-sm text-gray-300 leading-tight">Manuscript</p>
+          <h2 className="text-lg font-semibold leading-tight">Document View</h2>
+          <p className="text-sm text-gray-300 leading-tight">Manuscript Editor</p>
         </div>
       </div>
 
@@ -57,7 +57,8 @@ const ChapterToolbar = ({
             className="text-white bg-white/10 hover:bg-white/20"
             onClick={() => navigate(`/editor/manuscript/${bookId}/chapters`)}
           >
-            Chapters
+            <BookOpen className="h-4 w-4 mr-2" />
+            Document
           </Button>
           <Button 
             variant="ghost"
@@ -65,7 +66,8 @@ const ChapterToolbar = ({
             className="text-white hover:bg-white/20"
             onClick={() => navigate(`/editor/manuscript/${bookId}/boxes`)}
           >
-            Acts
+            <LayoutDashboard className="h-4 w-4 mr-2" />
+            Boxes
           </Button>
         </div>
 

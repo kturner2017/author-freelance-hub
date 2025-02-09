@@ -1,7 +1,7 @@
 
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, Briefcase, LogIn, LogOut } from "lucide-react";
+import { Briefcase, LogIn, LogOut } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import useIsMobile from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
@@ -85,20 +85,11 @@ const Navigation = () => {
             >
               <Link to="/professional-network">Professional Network</Link>
             </Button>
-            <Button 
-              asChild
-              className="bg-white hover:bg-gray-100 text-[#0F172A] font-medium px-5 py-3 transition-colors duration-200"
-            >
-              <Link to="/professional-network/projects">
-                <Briefcase className="mr-2 h-4 w-4" />
-                For Freelancers
-              </Link>
-            </Button>
             {isAuthenticated ? (
               <Button 
                 onClick={handleLogout} 
                 variant="outline"
-                className="font-medium border-2 border-white text-white hover:bg-white/10 transition-colors duration-200"
+                className="font-medium border border-white text-white hover:bg-white/10 transition-colors duration-200"
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 Logout
@@ -119,7 +110,7 @@ const Navigation = () => {
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="sm:hidden text-white hover:bg-white/10">
-                <Menu className="h-6 w-6" />
+                <Briefcase className="h-6 w-6" />
               </Button>
             </SheetTrigger>
             <SheetContent>
@@ -135,12 +126,6 @@ const Navigation = () => {
                 </Button>
                 <Button asChild variant="ghost">
                   <Link to="/professional-network">Professional Network</Link>
-                </Button>
-                <Button asChild>
-                  <Link to="/professional-network/projects">
-                    <Briefcase className="mr-2 h-4 w-4" />
-                    For Freelancers
-                  </Link>
                 </Button>
                 {isAuthenticated ? (
                   <Button onClick={handleLogout} variant="secondary">

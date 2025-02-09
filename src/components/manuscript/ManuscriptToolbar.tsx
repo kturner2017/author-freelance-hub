@@ -75,7 +75,7 @@ const ManuscriptToolbar = ({
           <Home className="h-5 w-5" />
         </Button>
         <div>
-          <h2 className="text-lg font-semibold leading-tight">{selectedChapter}</h2>
+          <h2 className="text-lg font-semibold leading-tight">Box View</h2>
           <p className="text-sm text-gray-300 leading-tight">{bookData.title}</p>
         </div>
       </div>
