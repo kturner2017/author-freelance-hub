@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollArea } from '../ui/scroll-area';
 import { Badge } from '../ui/badge';
 import RichTextEditor from '../RichTextEditor';
@@ -8,11 +8,13 @@ import calculateScores from '@/utils/readabilityScores';
 import { getWordCount } from '@/utils/wordCount';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import TemplateSelector from './TemplateSelector';
 
 interface Chapter {
   id: string;
   chapter_id: string;
   content: string;
+  template?: string;
 }
 
 interface ChapterEditorProps {
@@ -29,27 +31,35 @@ const ChapterEditor = ({
   isAnalyzing 
 }: ChapterEditorProps) => {
   const { toast } = useToast();
+  const [selectedTemplate, setSelectedTemplate] = useState(chapter.template || 'classic');
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false);
 
-  const handleAnalyze = async () => {
+  const handleTemplateSelect = async (templateId: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke('analyze-text', {
-        body: { text: chapter.content }
-      });
+      const { error } = await supabase
+        .from('chapters')
+        .update({ template: templateId })
+        .eq('id', chapter.id);
 
       if (error) throw error;
-      
+
+      setSelectedTemplate(templateId);
       toast({
-        title: "Analysis complete",
-        description: "Your text has been analyzed successfully"
+        title: "Template updated",
+        description: "Your chapter formatting has been updated"
       });
     } catch (error) {
-      console.error('Error analyzing text:', error);
+      console.error('Error updating template:', error);
       toast({
-        title: "Analysis failed",
-        description: "There was an error analyzing your text",
+        title: "Update failed",
+        description: "Failed to update chapter template",
         variant: "destructive"
       });
     }
+  };
+
+  const toggleTemplateSelector = () => {
+    setShowTemplateSelector(!showTemplateSelector);
   };
   
   return (
@@ -59,10 +69,29 @@ const ChapterEditor = ({
           <h2 className="text-3xl font-serif font-semibold text-primary-800">
             {chapter.chapter_id}
           </h2>
-          <Badge variant="secondary" className="text-sm bg-primary-50 text-primary-700 border-primary-200">
-            {getWordCount(chapter.content).toLocaleString()} words
-          </Badge>
+          <div className="flex items-center gap-4">
+            <Badge 
+              variant="secondary" 
+              className="text-sm bg-primary-50 text-primary-700 border-primary-200 cursor-pointer"
+              onClick={toggleTemplateSelector}
+            >
+              Template: {selectedTemplate}
+            </Badge>
+            <Badge variant="secondary" className="text-sm bg-primary-50 text-primary-700 border-primary-200">
+              {getWordCount(chapter.content).toLocaleString()} words
+            </Badge>
+          </div>
         </div>
+
+        {showTemplateSelector && (
+          <div className="mb-8">
+            <TemplateSelector
+              selectedTemplate={selectedTemplate}
+              onTemplateSelect={handleTemplateSelect}
+            />
+          </div>
+        )}
+
         <RichTextEditor
           key={`editor-${chapter.id}`}
           content={chapter.content || ''}
