@@ -60,28 +60,28 @@ const Navigation = () => {
             <Button 
               asChild 
               variant="ghost"
-              className="text-base font-medium text-[#0F172A] hover:bg-gray-100 transition-all duration-200"
+              className="text-base font-medium text-[#0F172A] border border-[#0F172A] hover:bg-gray-100 transition-all duration-200"
             >
               <Link to="/editor">Editor</Link>
             </Button>
             <Button 
               asChild 
               variant="ghost"
-              className="text-base font-medium text-[#0F172A] hover:bg-gray-100 transition-all duration-200"
+              className="text-base font-medium text-[#0F172A] border border-[#0F172A] hover:bg-gray-100 transition-all duration-200"
             >
               <Link to="/for-authors">For Authors</Link>
             </Button>
             <Button 
               asChild 
               variant="ghost"
-              className="text-base font-medium text-[#0F172A] hover:bg-gray-100 transition-all duration-200"
+              className="text-base font-medium text-[#0F172A] border border-[#0F172A] hover:bg-gray-100 transition-all duration-200"
             >
               <Link to="/publishing-support">Publishing Support</Link>
             </Button>
             <Button 
               asChild 
               variant="ghost"
-              className="text-base font-medium text-[#0F172A] hover:bg-gray-100 transition-all duration-200"
+              className="text-base font-medium text-[#0F172A] border border-[#0F172A] hover:bg-gray-100 transition-all duration-200"
             >
               <Link to="/professional-network">Professional Network</Link>
             </Button>
@@ -109,31 +109,31 @@ const Navigation = () => {
 
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="sm:hidden text-[#0F172A] hover:bg-gray-100">
+              <Button variant="ghost" size="icon" className="sm:hidden text-[#0F172A] hover:bg-gray-100 border border-[#0F172A]">
                 <Briefcase className="h-6 w-6" />
               </Button>
             </SheetTrigger>
             <SheetContent>
               <div className="flex flex-col space-y-4 mt-4">
-                <Button asChild variant="ghost">
+                <Button asChild variant="ghost" className="border border-[#0F172A]">
                   <Link to="/editor">Editor</Link>
                 </Button>
-                <Button asChild variant="ghost">
+                <Button asChild variant="ghost" className="border border-[#0F172A]">
                   <Link to="/for-authors">For Authors</Link>
                 </Button>
-                <Button asChild variant="ghost">
+                <Button asChild variant="ghost" className="border border-[#0F172A]">
                   <Link to="/publishing-support">Publishing Support</Link>
                 </Button>
-                <Button asChild variant="ghost">
+                <Button asChild variant="ghost" className="border border-[#0F172A]">
                   <Link to="/professional-network">Professional Network</Link>
                 </Button>
                 {isAuthenticated ? (
-                  <Button onClick={handleLogout} variant="secondary">
+                  <Button onClick={handleLogout} variant="secondary" className="border border-[#0F172A]">
                     <LogOut className="mr-2 h-4 w-4" />
                     Logout
                   </Button>
                 ) : (
-                  <Button asChild>
+                  <Button asChild className="border border-[#0F172A]">
                     <Link to="/auth">
                       <LogIn className="mr-2 h-4 w-4" />
                       Login
