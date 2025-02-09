@@ -6,6 +6,7 @@ import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
 import Highlight from '@tiptap/extension-highlight';
 import CodeBlock from '@tiptap/extension-code-block';
+import Image from '@tiptap/extension-image';
 import { useToast } from '@/hooks/use-toast';
 import calculateScores from '@/utils/readabilityScores';
 import { supabase } from '@/integrations/supabase/client';
@@ -74,6 +75,7 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
       }),
       Highlight,
       CodeBlock,
+      Image,
     ],
     content: content,
     editorProps: {

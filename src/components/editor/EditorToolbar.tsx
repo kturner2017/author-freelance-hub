@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Editor } from '@tiptap/react';
 import { Button } from '../ui/button';
@@ -22,7 +23,8 @@ import {
   IndentDecrease,
   Mic,
   MicOff,
-  Loader2
+  Loader2,
+  Image
 } from 'lucide-react';
 
 interface EditorToolbarProps {
@@ -40,6 +42,13 @@ const EditorToolbar = ({
 }: EditorToolbarProps) => {
   const handleIndentParagraph = () => {
     editor?.chain().focus().sinkListItem('listItem').run();
+  };
+
+  const addImage = () => {
+    const url = window.prompt('Enter image URL:');
+    if (url) {
+      editor.chain().focus().setImage({ src: url }).run();
+    }
   };
 
   return (
@@ -185,6 +194,17 @@ const EditorToolbar = ({
       <Button
         variant="ghost"
         size="sm"
+        onClick={addImage}
+        className="h-8 w-8 p-0"
+      >
+        <Image className="h-4 w-4" />
+      </Button>
+
+      <Separator orientation="vertical" className="h-6" />
+
+      <Button
+        variant="ghost"
+        size="sm"
         onClick={() => editor.chain().focus().undo().run()}
         className="h-8 w-8 p-0"
       >
@@ -198,8 +218,6 @@ const EditorToolbar = ({
       >
         <Redo className="h-4 w-4" />
       </Button>
-
-      <Separator orientation="vertical" className="h-6" />
 
       <Separator orientation="vertical" className="h-6" />
 
@@ -223,3 +241,4 @@ const EditorToolbar = ({
 };
 
 export default EditorToolbar;
+
