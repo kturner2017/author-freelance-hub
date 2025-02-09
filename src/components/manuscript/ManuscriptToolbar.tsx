@@ -75,8 +75,8 @@ const ManuscriptToolbar = ({
           <Home className="h-5 w-5" />
         </Button>
         <div>
-          <h2 className="text-lg font-semibold leading-tight">Box View</h2>
-          <p className="text-sm text-gray-300 leading-tight">{bookData.title}</p>
+          <h2 className="text-lg font-semibold leading-tight">Manuscript Editor</h2>
+          <p className="text-sm text-gray-300 leading-tight">{editorView === 'boxes' ? 'Box View' : 'Document View'}</p>
         </div>
       </div>
       
