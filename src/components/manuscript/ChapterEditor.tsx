@@ -37,7 +37,7 @@ const ChapterEditor = ({
   const handleTemplateSelect = async (templateId: string) => {
     try {
       const { error } = await supabase
-        .from('chapters')
+        .from('manuscript_chapters')
         .update({ template: templateId })
         .eq('id', chapter.id);
 
