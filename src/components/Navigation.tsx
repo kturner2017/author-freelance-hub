@@ -44,13 +44,13 @@ const Navigation = () => {
   };
   
   return (
-    <nav className="border-b border-gray-200 bg-[#0F172A] shadow-sm">
+    <nav className="border-b border-gray-200 bg-white shadow-sm">
       <div className="container mx-auto px-8 h-16">
         <div className="flex items-center justify-between h-full">
           <div className="flex items-center">
             <Link 
               to="/" 
-              className="text-2xl font-serif font-bold text-white hover:text-gray-200 transition-colors duration-200"
+              className="text-2xl font-serif font-bold text-[#0F172A] hover:text-gray-700 transition-colors duration-200"
             >
               Authorify
             </Link>
@@ -60,28 +60,28 @@ const Navigation = () => {
             <Button 
               asChild 
               variant="ghost"
-              className="text-base font-medium text-white hover:bg-white/10 transition-all duration-200"
+              className="text-base font-medium text-[#0F172A] hover:bg-gray-100 transition-all duration-200"
             >
               <Link to="/editor">Editor</Link>
             </Button>
             <Button 
               asChild 
               variant="ghost"
-              className="text-base font-medium text-white hover:bg-white/10 transition-all duration-200"
+              className="text-base font-medium text-[#0F172A] hover:bg-gray-100 transition-all duration-200"
             >
               <Link to="/for-authors">For Authors</Link>
             </Button>
             <Button 
               asChild 
               variant="ghost"
-              className="text-base font-medium text-white hover:bg-white/10 transition-all duration-200"
+              className="text-base font-medium text-[#0F172A] hover:bg-gray-100 transition-all duration-200"
             >
               <Link to="/publishing-support">Publishing Support</Link>
             </Button>
             <Button 
               asChild 
               variant="ghost"
-              className="text-base font-medium text-white hover:bg-white/10 transition-all duration-200"
+              className="text-base font-medium text-[#0F172A] hover:bg-gray-100 transition-all duration-200"
             >
               <Link to="/professional-network">Professional Network</Link>
             </Button>
@@ -89,7 +89,7 @@ const Navigation = () => {
               <Button 
                 onClick={handleLogout} 
                 variant="outline"
-                className="font-medium border border-white text-white hover:bg-white/10 transition-colors duration-200"
+                className="font-medium border border-[#0F172A] text-[#0F172A] hover:bg-gray-100 transition-colors duration-200"
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 Logout
@@ -97,7 +97,7 @@ const Navigation = () => {
             ) : (
               <Button 
                 asChild
-                className="bg-white hover:bg-gray-100 text-[#0F172A] font-medium px-5 py-3 transition-colors duration-200"
+                className="bg-[#0F172A] hover:bg-[#1E293B] text-white font-medium px-5 py-3 transition-colors duration-200"
               >
                 <Link to="/auth">
                   <LogIn className="mr-2 h-4 w-4" />
@@ -109,7 +109,7 @@ const Navigation = () => {
 
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="sm:hidden text-white hover:bg-white/10">
+              <Button variant="ghost" size="icon" className="sm:hidden text-[#0F172A] hover:bg-gray-100">
                 <Briefcase className="h-6 w-6" />
               </Button>
             </SheetTrigger>
