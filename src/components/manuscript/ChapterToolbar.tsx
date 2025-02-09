@@ -39,7 +39,7 @@ const ChapterToolbar = ({
           <Home className="h-5 w-5" />
         </Button>
         <div>
-          <h2 className="text-lg font-semibold leading-tight">Chapters View</h2>
+          <h2 className="text-lg font-semibold leading-tight">Chapters Editor</h2>
           <p className="text-sm text-gray-300 leading-tight">Manuscript</p>
         </div>
       </div>
