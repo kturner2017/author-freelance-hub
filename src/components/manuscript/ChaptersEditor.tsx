@@ -78,6 +78,14 @@ const ChaptersEditor = () => {
     fetchEnabledFrontMatter();
   }, [bookId]);
 
+  const handleAddAct = async () => {
+    // For now we'll just show a toast - you can implement the actual act creation later
+    toast({
+      title: "Add Act",
+      description: "This functionality will be implemented soon",
+    });
+  };
+
   if (isLoading) {
     return (
       <DashboardLayout title="Chapters Editor">
@@ -103,6 +111,7 @@ const ChaptersEditor = () => {
           totalWordCount={totalWordCount}
           onSave={() => handleSave(selectedChapter)}
           onAddChapter={handleAddChapter}
+          onAddAct={handleAddAct}
         />
       }
     >
@@ -158,4 +167,3 @@ const ChaptersEditor = () => {
 };
 
 export default ChaptersEditor;
-
