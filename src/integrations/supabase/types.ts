@@ -256,6 +256,41 @@ export type Database = {
         }
         Relationships: []
       }
+      manuscript_acts: {
+        Row: {
+          book_id: string | null
+          created_at: string | null
+          id: string
+          sort_order: number
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          book_id?: string | null
+          created_at?: string | null
+          id?: string
+          sort_order: number
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          book_id?: string | null
+          created_at?: string | null
+          id?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manuscript_acts_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       manuscript_boxes: {
         Row: {
           act: string

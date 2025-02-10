@@ -12,6 +12,7 @@ import GoalArea from './GoalArea';
 import { useChapterManagement } from '@/hooks/useChapterManagement';
 import { useContentManagement } from '@/hooks/useContentManagement';
 import { useFrontMatterManager } from '@/hooks/useFrontMatterManager';
+import { useActManagement } from '@/hooks/useActManagement';
 import { supabase } from '@/integrations/supabase/client';
 import FrontMatterEditor from './FrontMatterEditor';
 import FrontMatterPreview from './FrontMatterPreview';
@@ -49,6 +50,8 @@ const ChaptersEditor = () => {
     handleFrontMatterContentChange
   } = useFrontMatterManager(bookId);
 
+  const { handleAddAct } = useActManagement(bookId);
+
   useEffect(() => {
     const fetchBookData = async () => {
       if (!bookId) return;
@@ -78,13 +81,12 @@ const ChaptersEditor = () => {
     fetchEnabledFrontMatter();
   }, [bookId]);
 
-  const handleAddAct = async () => {
-    // For now we'll just show a toast - you can implement the actual act creation later
-    toast({
-      title: "Add Act",
-      description: "This functionality will be implemented soon",
-    });
+  const handleFrontMatterSelectWithReset = (frontMatterId: string, title: string) => {
+    handleFrontMatterSelect(frontMatterId, title);
+    setSelectedChapter(null);
   };
+
+  const totalWordCount = getTotalWordCount(Object.values(chapters));
 
   if (isLoading) {
     return (
@@ -95,13 +97,6 @@ const ChaptersEditor = () => {
       </DashboardLayout>
     );
   }
-
-  const handleFrontMatterSelectWithReset = (frontMatterId: string, title: string) => {
-    handleFrontMatterSelect(frontMatterId, title);
-    setSelectedChapter(null);
-  };
-
-  const totalWordCount = getTotalWordCount(Object.values(chapters));
 
   return (
     <DashboardLayout 
