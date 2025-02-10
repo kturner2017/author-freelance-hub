@@ -24,10 +24,10 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
 
   const performAnalysis = useCallback(async (text: string) => {
     const cleanText = text.trim();
-    if (cleanText.length < 50) {
+    if (cleanText.length < 10) {
       toast({
         title: 'Text too short',
-        description: 'Please write at least 50 characters before analyzing',
+        description: 'Please write at least 10 characters before analyzing',
         variant: 'default',
       });
       return;
@@ -41,13 +41,11 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
 
       if (error) {
         console.error('Analysis error:', error);
-        if (!error.message?.includes('characters long')) {
-          toast({
-            title: 'Analysis failed',
-            description: 'There was an error analyzing your text',
-            variant: 'destructive',
-          });
-        }
+        toast({
+          title: 'Analysis failed',
+          description: error.message || 'There was an error analyzing your text',
+          variant: 'destructive',
+        });
         return;
       }
 
