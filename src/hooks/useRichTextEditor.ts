@@ -75,7 +75,11 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
       }),
       Highlight,
       CodeBlock,
-      Image,
+      Image.configure({
+        HTMLAttributes: {
+          class: 'float-left mr-4 mb-4 rounded-lg',
+        },
+      }),
     ],
     content: content,
     editorProps: {

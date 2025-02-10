@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { Editor } from '@tiptap/react';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
@@ -24,8 +24,10 @@ import {
   Mic,
   MicOff,
   Loader2,
-  Image
+  Image,
+  Upload
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface EditorToolbarProps {
   editor: Editor;
@@ -40,22 +42,62 @@ const EditorToolbar = ({
   isModelLoading,
   onToggleRecording 
 }: EditorToolbarProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const handleIndentParagraph = () => {
     editor?.chain().focus().sinkListItem('listItem').run();
   };
 
-  const addImage = () => {
-    const url = window.prompt('Enter image URL:');
-    if (url) {
-      editor.chain().focus().insertContent({
-        type: 'image',
-        attrs: { src: url }
+  const handleImageUpload = async (file: File) => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { data, error: uploadError } = await supabase.storage
+        .from('editor_images')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('editor_images')
+        .getPublicUrl(filePath);
+
+      editor.chain().focus().setImage({ 
+        src: publicUrl,
+        alt: file.name,
+        title: file.name
       }).run();
+
+    } catch (error) {
+      console.error('Error uploading image:', error);
     }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      handleImageUpload(file);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
   };
 
   return (
     <div className="bg-gray-100 p-2 rounded-t-lg border-b flex flex-wrap items-center gap-2">
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileSelect}
+        accept="image/*"
+        className="hidden"
+      />
+      
       <Button
         variant="ghost"
         size="sm"
@@ -197,10 +239,11 @@ const EditorToolbar = ({
       <Button
         variant="ghost"
         size="sm"
-        onClick={addImage}
+        onClick={triggerFileInput}
         className="h-8 w-8 p-0"
+        title="Upload image"
       >
-        <Image className="h-4 w-4" />
+        <Upload className="h-4 w-4" />
       </Button>
 
       <Separator orientation="vertical" className="h-6" />
