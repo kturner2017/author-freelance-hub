@@ -2,19 +2,21 @@
 import React from 'react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import { BookOpen, Home, ArrowLeft, LayoutDashboard } from 'lucide-react';
+import { BookOpen, Home, ArrowLeft, LayoutDashboard, Plus } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 interface ChapterToolbarProps {
   totalWordCount: number;
   onSave: () => void;
   onAddChapter: () => void;
+  onAddAct: () => void;
 }
 
 const ChapterToolbar = ({ 
   totalWordCount, 
   onSave, 
-  onAddChapter
+  onAddChapter,
+  onAddAct
 }: ChapterToolbarProps) => {
   const navigate = useNavigate();
   const { bookId } = useParams();
@@ -85,9 +87,18 @@ const ChapterToolbar = ({
         >
           Add Chapter
         </Button>
+        <Button 
+          size="sm"
+          onClick={onAddAct}
+          className="bg-white text-[#0F172A] hover:bg-gray-100 transition-colors"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add Act
+        </Button>
       </div>
     </div>
   );
 };
 
 export default ChapterToolbar;
+
