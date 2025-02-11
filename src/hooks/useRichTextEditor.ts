@@ -79,7 +79,6 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
         HTMLAttributes: {
           class: 'rounded-lg max-w-full cursor-pointer transition-transform',
         },
-        draggable: true,
       }),
     ],
     content: content,
