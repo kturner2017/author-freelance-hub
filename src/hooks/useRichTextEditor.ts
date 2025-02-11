@@ -79,7 +79,6 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
         HTMLAttributes: {
           class: 'rounded-lg max-w-full cursor-pointer transition-transform',
         },
-        resizable: true,
         draggable: true,
       }),
     ],
@@ -90,22 +89,27 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
       },
       handleDOMEvents: {
         keydown: (view, event) => {
-          // Handle image resizing with arrow keys when image is selected
-          if (event.key.startsWith('Arrow') && view.state.selection.$anchor.node?.type.name === 'image') {
-            const image = view.state.selection.$anchor.node;
-            const pos = view.state.selection.$anchor.pos;
-            let newAttrs = { ...image.attrs };
+          // Check if there's a selected node and it's an image
+          const { state } = view;
+          const selectedNode = state.selection.$anchor.nodeAfter;
+          
+          if (!selectedNode || selectedNode.type.name !== 'image') {
+            return false;
+          }
 
-            if (event.shiftKey) {
-              // Resize with Shift + Arrow keys
-              if (event.key === 'ArrowUp') newAttrs.height = (image.attrs.height || 100) - 10;
-              if (event.key === 'ArrowDown') newAttrs.height = (image.attrs.height || 100) + 10;
-              if (event.key === 'ArrowLeft') newAttrs.width = (image.attrs.width || 100) - 10;
-              if (event.key === 'ArrowRight') newAttrs.width = (image.attrs.width || 100) + 10;
+          if (event.key.startsWith('Arrow') && event.shiftKey) {
+            const imageAttrs = selectedNode.attrs;
+            const pos = state.selection.$anchor.pos;
+            let newAttrs = { ...imageAttrs };
 
-              view.dispatch(view.state.tr.setNodeMarkup(pos, undefined, newAttrs));
-              return true;
-            }
+            // Resize with Shift + Arrow keys
+            if (event.key === 'ArrowUp') newAttrs.height = (imageAttrs.height || 100) - 10;
+            if (event.key === 'ArrowDown') newAttrs.height = (imageAttrs.height || 100) + 10;
+            if (event.key === 'ArrowLeft') newAttrs.width = (imageAttrs.width || 100) - 10;
+            if (event.key === 'ArrowRight') newAttrs.width = (imageAttrs.width || 100) + 10;
+
+            view.dispatch(view.state.tr.setNodeMarkup(pos, undefined, newAttrs));
+            return true;
           }
           return false;
         },
