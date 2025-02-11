@@ -3,6 +3,7 @@ import React from 'react';
 import { Editor } from '@tiptap/react';
 import { Button } from '../../ui/button';
 import { AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface AlignmentButtonsProps {
   editor: Editor;
@@ -15,7 +16,10 @@ const AlignmentButtons = ({ editor }: AlignmentButtonsProps) => {
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().setTextAlign('left').run()}
-        className={`h-8 w-8 p-0 ${editor.isActive({ textAlign: 'left' }) ? 'bg-gray-200' : ''}`}
+        className={cn(
+          'h-8 w-8 p-0',
+          editor.isActive({ textAlign: 'left' }) && 'bg-muted'
+        )}
         title="Align left"
       >
         <AlignLeft className="h-4 w-4" />
@@ -24,7 +28,10 @@ const AlignmentButtons = ({ editor }: AlignmentButtonsProps) => {
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().setTextAlign('center').run()}
-        className={`h-8 w-8 p-0 ${editor.isActive({ textAlign: 'center' }) ? 'bg-gray-200' : ''}`}
+        className={cn(
+          'h-8 w-8 p-0',
+          editor.isActive({ textAlign: 'center' }) && 'bg-muted'
+        )}
         title="Center"
       >
         <AlignCenter className="h-4 w-4" />
@@ -33,7 +40,10 @@ const AlignmentButtons = ({ editor }: AlignmentButtonsProps) => {
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().setTextAlign('right').run()}
-        className={`h-8 w-8 p-0 ${editor.isActive({ textAlign: 'right' }) ? 'bg-gray-200' : ''}`}
+        className={cn(
+          'h-8 w-8 p-0',
+          editor.isActive({ textAlign: 'right' }) && 'bg-muted'
+        )}
         title="Align right"
       >
         <AlignRight className="h-4 w-4" />
