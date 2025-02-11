@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
@@ -27,9 +28,9 @@ const PublishingSupport = () => {
     },
     {
       title: "Quality Assurance",
-      description: "Ensure your manuscript meets industry standards with our professional review service.",
+      description: "Join award-winning authors who trust our professional review and writing tools for their success.",
       icon: Award,
-      link: "/professional-network/find"
+      link: "/quality-assurance"
     }
   ];
 

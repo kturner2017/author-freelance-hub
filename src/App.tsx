@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Index from './pages/Index';
@@ -15,6 +16,7 @@ import ContractTemplates from './pages/ContractTemplates';
 import FindProfessional from './pages/FindProfessional';
 import FreelancerApplication from './pages/FreelancerApplication';
 import ProjectListing from './pages/ProjectListing';
+import QualityAssurance from './pages/QualityAssurance';
 import ProtectedRoute from './components/ProtectedRoute';
 import { supabase } from './integrations/supabase/client';
 import BooksDashboard from './components/BooksDashboard';
@@ -139,6 +141,12 @@ function App() {
         <Route path="/contract-templates" element={
           <ProtectedRoute>
             <ContractTemplates />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/quality-assurance" element={
+          <ProtectedRoute>
+            <QualityAssurance />
           </ProtectedRoute>
         } />
         
