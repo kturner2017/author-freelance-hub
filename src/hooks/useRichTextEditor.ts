@@ -68,21 +68,47 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
       }),
       Underline,
       TextAlign.configure({
-        types: ['paragraph', 'heading'],
+        types: ['heading', 'paragraph', 'image'],
         alignments: ['left', 'center', 'right'],
       }),
       Highlight,
       CodeBlock,
       Image.configure({
+        inline: true,
+        allowBase64: true,
         HTMLAttributes: {
-          class: 'float-left mr-4 mb-4 rounded-lg',
+          class: 'rounded-lg max-w-full cursor-pointer transition-transform',
         },
+        resizable: true,
+        draggable: true,
       }),
     ],
     content: content,
     editorProps: {
       attributes: {
         class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[600px] p-8',
+      },
+      handleDOMEvents: {
+        keydown: (view, event) => {
+          // Handle image resizing with arrow keys when image is selected
+          if (event.key.startsWith('Arrow') && view.state.selection.$anchor.node?.type.name === 'image') {
+            const image = view.state.selection.$anchor.node;
+            const pos = view.state.selection.$anchor.pos;
+            let newAttrs = { ...image.attrs };
+
+            if (event.shiftKey) {
+              // Resize with Shift + Arrow keys
+              if (event.key === 'ArrowUp') newAttrs.height = (image.attrs.height || 100) - 10;
+              if (event.key === 'ArrowDown') newAttrs.height = (image.attrs.height || 100) + 10;
+              if (event.key === 'ArrowLeft') newAttrs.width = (image.attrs.width || 100) - 10;
+              if (event.key === 'ArrowRight') newAttrs.width = (image.attrs.width || 100) + 10;
+
+              view.dispatch(view.state.tr.setNodeMarkup(pos, undefined, newAttrs));
+              return true;
+            }
+          }
+          return false;
+        },
       },
     },
     onUpdate: ({ editor }) => {
