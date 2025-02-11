@@ -5,9 +5,10 @@ import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
 import { Card, CardContent } from '../ui/card';
 import { ChevronLeft, Plus, Home } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import BoxEditor from '../BoxEditor';
 import FileUploader from '../FileUploader';
+import { useActManagement } from '@/hooks/useActManagement';
 
 interface Box {
   id: string;
@@ -27,11 +28,13 @@ const INITIAL_BOXES = {
 
 const BoxesEditor = () => {
   const navigate = useNavigate();
+  const { bookId } = useParams();
   const [selectedAct, setSelectedAct] = useState<'act1' | 'act2' | 'act3'>('act1');
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   const [boxes, setBoxes] = useState<{ [key: string]: Box }>(INITIAL_BOXES);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const { toast } = useToast();
+  const { acts, handleAddAct } = useActManagement(bookId);
 
   useEffect(() => {
     const loadBoxes = async () => {
@@ -222,6 +225,14 @@ const BoxesEditor = () => {
             Add Box
           </Button>
           <Button 
+            size="sm"
+            onClick={handleAddAct}
+            className="bg-white text-[#0F172A] hover:bg-gray-100 transition-colors"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Act
+          </Button>
+          <Button 
             variant="outline" 
             size="sm"
             onClick={() => navigate('/editor/manuscript')}
@@ -236,17 +247,17 @@ const BoxesEditor = () => {
         <div className="w-64 border-r p-4">
           <h3 className="font-semibold mb-4">Acts</h3>
           <div className="space-y-2">
-            {(['act1', 'act2', 'act3'] as const).map((act) => (
+            {acts.map((act) => (
               <Button
-                key={act}
-                variant={selectedAct === act ? "default" : "ghost"}
+                key={act.id}
+                variant={selectedAct === act.title ? "default" : "ghost"}
                 className="w-full justify-start"
                 onClick={() => {
-                  setSelectedAct(act);
+                  setSelectedAct(act.title as 'act1' | 'act2' | 'act3');
                   setSelectedBox(null);
                 }}
               >
-                {act === 'act1' ? 'Act I' : act === 'act2' ? 'Act II' : 'Act III'}
+                {act.title === 'act1' ? 'Act I' : act.title === 'act2' ? 'Act II' : 'Act III'}
               </Button>
             ))}
           </div>
