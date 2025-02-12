@@ -104,6 +104,7 @@ export type Database = {
           bio: string
           created_at: string | null
           education: string[] | null
+          email: string | null
           experience: string[] | null
           expertise_areas: Database["public"]["Enums"]["expertise_area"][]
           full_name: string
@@ -119,6 +120,7 @@ export type Database = {
           bio: string
           created_at?: string | null
           education?: string[] | null
+          email?: string | null
           experience?: string[] | null
           expertise_areas?: Database["public"]["Enums"]["expertise_area"][]
           full_name: string
@@ -134,6 +136,7 @@ export type Database = {
           bio?: string
           created_at?: string | null
           education?: string[] | null
+          email?: string | null
           experience?: string[] | null
           expertise_areas?: Database["public"]["Enums"]["expertise_area"][]
           full_name?: string
