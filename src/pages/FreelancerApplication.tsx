@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ const FreelancerApplication = () => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
+    email: '',
     headline: '',
     bio: '',
     expertiseAreas: [] as typeof expertiseAreas[number][],
@@ -75,6 +77,7 @@ const FreelancerApplication = () => {
       const { error } = await supabase.from('freelancers').insert({
         user_id: user.id,
         full_name: formData.fullName,
+        email: formData.email,
         headline: formData.headline,
         bio: formData.bio,
         expertise_areas: formData.expertiseAreas,
@@ -116,6 +119,18 @@ const FreelancerApplication = () => {
                 value={formData.fullName}
                 onChange={e => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
                 required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                required
+                placeholder="your.email@example.com"
               />
             </div>
             
