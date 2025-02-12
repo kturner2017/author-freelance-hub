@@ -20,6 +20,7 @@ import QualityAssurance from './pages/QualityAssurance';
 import ProtectedRoute from './components/ProtectedRoute';
 import { supabase } from './integrations/supabase/client';
 import BooksDashboard from './components/BooksDashboard';
+import FreelancerDetail from './pages/FreelancerDetail';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -111,6 +112,12 @@ function App() {
         <Route path="/professional-network/find" element={
           <ProtectedRoute>
             <FindProfessional />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/professional-network/find/freelancer/:id" element={
+          <ProtectedRoute>
+            <FreelancerDetail />
           </ProtectedRoute>
         } />
         
