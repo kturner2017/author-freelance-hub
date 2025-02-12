@@ -21,6 +21,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { supabase } from './integrations/supabase/client';
 import BooksDashboard from './components/BooksDashboard';
 import FreelancerDetail from './pages/FreelancerDetail';
+import PostProject from './pages/PostProject';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -130,6 +131,12 @@ function App() {
         <Route path="/professional-network/projects" element={
           <ProtectedRoute>
             <ProjectListing />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/professional-network/post-project" element={
+          <ProtectedRoute>
+            <PostProject />
           </ProtectedRoute>
         } />
         
