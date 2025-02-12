@@ -99,6 +99,44 @@ export type Database = {
         }
         Relationships: []
       }
+      freelancer_subscriptions: {
+        Row: {
+          created_at: string | null
+          ends_at: string | null
+          freelancer_id: string
+          id: string
+          starts_at: string
+          tier: Database["public"]["Enums"]["subscription_tier"]
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          ends_at?: string | null
+          freelancer_id: string
+          id?: string
+          starts_at?: string
+          tier?: Database["public"]["Enums"]["subscription_tier"]
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          ends_at?: string | null
+          freelancer_id?: string
+          id?: string
+          starts_at?: string
+          tier?: Database["public"]["Enums"]["subscription_tier"]
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "freelancer_subscriptions_freelancer_id_fkey"
+            columns: ["freelancer_id"]
+            isOneToOne: false
+            referencedRelation: "freelancers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       freelancers: {
         Row: {
           bio: string
@@ -471,6 +509,54 @@ export type Database = {
         }
         Relationships: []
       }
+      project_bids: {
+        Row: {
+          amount: number
+          created_at: string | null
+          freelancer_id: string
+          id: string
+          project_id: string
+          proposal_text: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          freelancer_id: string
+          id?: string
+          project_id: string
+          proposal_text: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          freelancer_id?: string
+          id?: string
+          project_id?: string
+          proposal_text?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_bids_freelancer_id_fkey"
+            columns: ["freelancer_id"]
+            isOneToOne: false
+            referencedRelation: "freelancers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_bids_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_files: {
         Row: {
           content_type: string | null
@@ -522,6 +608,7 @@ export type Database = {
           project_name: string
           type: string
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           author: string
@@ -532,6 +619,7 @@ export type Database = {
           project_name: string
           type: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           author?: string
@@ -542,6 +630,7 @@ export type Database = {
           project_name?: string
           type?: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -602,6 +691,7 @@ export type Database = {
         | "illustration"
         | "formatting"
         | "proofreading"
+      subscription_tier: "free" | "premium"
     }
     CompositeTypes: {
       [_ in never]: never
