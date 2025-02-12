@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { ArrowLeft, User2, Briefcase, DollarSign, GraduationCap, Award, Mail } from 'lucide-react';
+import { ArrowLeft, User2, Briefcase, DollarSign, GraduationCap, Award } from 'lucide-react';
 
 const FreelancerDetail = () => {
   const { id } = useParams();
@@ -65,12 +65,6 @@ const FreelancerDetail = () => {
 
   const formatExpertise = (areas: string[]) => {
     return areas.map(area => area.replace('_', ' ')).join(', ');
-  };
-
-  const handleContactClick = () => {
-    if (freelancer.email) {
-      window.location.href = `mailto:${freelancer.email}`;
-    }
   };
 
   return (
@@ -146,17 +140,6 @@ const FreelancerDetail = () => {
                 </ul>
               </div>
             )}
-
-            <div className="mt-8">
-              <Button 
-                className="w-full" 
-                onClick={handleContactClick}
-                disabled={!freelancer.email}
-              >
-                <Mail className="mr-2 h-4 w-4" />
-                {freelancer.email ? 'Contact via Email' : 'No Email Available'}
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </div>
