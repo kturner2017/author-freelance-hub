@@ -10,6 +10,8 @@ import TemplateSelector from './TemplateSelector';
 import { getWordCount } from '@/utils/wordCount';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 
 interface Chapter {
   id: string;
@@ -25,6 +27,13 @@ interface ChapterEditorProps {
   isAnalyzing: boolean;
 }
 
+interface Margins {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+}
+
 const ChapterEditor = ({ 
   chapter, 
   onContentChange,
@@ -38,6 +47,12 @@ const ChapterEditor = ({
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState<'6x9' | '8.5x11'>('6x9');
   const [showSinglePage, setShowSinglePage] = useState(false);
+  const [margins, setMargins] = useState<Margins>({
+    top: 1,
+    right: 1,
+    bottom: 1,
+    left: 1
+  });
   const editorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -45,13 +60,13 @@ const ChapterEditor = ({
       // Calculate total pages based on content height and page size
       const contentHeight = editorRef.current.scrollHeight;
       const pageHeight = pageSize === '6x9' ? 9 * 96 : 11 * 96; // Convert inches to pixels (96dpi)
-      const calculatedPages = Math.ceil(contentHeight / (pageHeight - 96)); // Subtract margins
+      const calculatedPages = Math.ceil(contentHeight / (pageHeight - (margins.top + margins.bottom) * 96)); // Account for margins
       setTotalPages(Math.max(1, calculatedPages));
       
       // Reset to first page when switching view modes or page sizes
       setCurrentPage(1);
     }
-  }, [showSinglePage, pageSize, chapter.content]);
+  }, [showSinglePage, pageSize, chapter.content, margins]);
 
   const handleTemplateSelect = async (templateId: string) => {
     try {
@@ -109,6 +124,14 @@ const ChapterEditor = ({
         editorRef.current.scrollTop = 0;
       }
     }
+  };
+
+  const handleMarginChange = (side: keyof Margins, value: string) => {
+    const numValue = parseFloat(value) || 0;
+    setMargins(prev => ({
+      ...prev,
+      [side]: Math.max(0, Math.min(3, numValue)) // Limit margins between 0 and 3 inches
+    }));
   };
 
   const pageClass = pageSize === '6x9' 
@@ -170,6 +193,59 @@ const ChapterEditor = ({
           </div>
         )}
 
+        {showSinglePage && (
+          <div className="grid grid-cols-4 gap-4 mb-4">
+            <div>
+              <Label htmlFor="top-margin">Top Margin (inches)</Label>
+              <Input
+                id="top-margin"
+                type="number"
+                min="0"
+                max="3"
+                step="0.25"
+                value={margins.top}
+                onChange={(e) => handleMarginChange('top', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="right-margin">Right Margin (inches)</Label>
+              <Input
+                id="right-margin"
+                type="number"
+                min="0"
+                max="3"
+                step="0.25"
+                value={margins.right}
+                onChange={(e) => handleMarginChange('right', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="bottom-margin">Bottom Margin (inches)</Label>
+              <Input
+                id="bottom-margin"
+                type="number"
+                min="0"
+                max="3"
+                step="0.25"
+                value={margins.bottom}
+                onChange={(e) => handleMarginChange('bottom', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="left-margin">Left Margin (inches)</Label>
+              <Input
+                id="left-margin"
+                type="number"
+                min="0"
+                max="3"
+                step="0.25"
+                value={margins.left}
+                onChange={(e) => handleMarginChange('left', e.target.value)}
+              />
+            </div>
+          </div>
+        )}
+
         <div className={`relative ${showSinglePage ? 'flex justify-center' : ''}`}>
           {showSinglePage && (
             <Button
@@ -188,10 +264,11 @@ const ChapterEditor = ({
             className={`${showSinglePage ? pageClass : ''} bg-white shadow-lg relative mx-auto overflow-hidden`}
             style={{
               transform: showSinglePage ? `translateY(-${(currentPage - 1) * 100}%)` : 'none',
-              transition: 'transform 0.3s ease-in-out'
+              transition: 'transform 0.3s ease-in-out',
+              padding: showSinglePage ? `${margins.top}in ${margins.right}in ${margins.bottom}in ${margins.left}in` : undefined
             }}
           >
-            <div className={`${showSinglePage ? 'p-8' : ''}`}>
+            <div>
               <RichTextEditor
                 key={`editor-${chapter.id}`}
                 content={chapter.content || ''}
