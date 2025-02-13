@@ -173,11 +173,12 @@ const ChapterEditor = ({
           
           <div 
             ref={editorRef}
-            className={`${showSinglePage ? getPageClass() : ''} bg-white shadow-lg relative mx-auto`}
+            className={`${showSinglePage ? getPageClass() : ''} bg-[#F5F5F5] shadow-lg relative mx-auto`}
             style={{
               height: showSinglePage ? undefined : 'auto',
               boxSizing: 'border-box',
-              position: 'relative'
+              position: 'relative',
+              backgroundColor: showSinglePage ? '#E8E8E8' : undefined
             }}
           >
             {/* Margins guide */}
@@ -185,9 +186,10 @@ const ChapterEditor = ({
               <div
                 className="absolute inset-0"
                 style={{
-                  border: '1px solid rgba(0,0,0,0.1)',
+                  border: '1px solid rgba(0,0,0,0.2)',
                   margin: `${margins.top}in ${margins.right}in ${margins.bottom}in ${margins.left}in`,
-                  pointerEvents: 'none'
+                  pointerEvents: 'none',
+                  backgroundColor: 'rgba(0,0,0,0.03)'
                 }}
               />
             )}
@@ -199,7 +201,8 @@ const ChapterEditor = ({
                   top: `${margins.top}in`,
                   left: `${margins.left}in`,
                   ...getTextAreaDimensions(),
-                  overflow: 'hidden'
+                  overflow: 'hidden',
+                  backgroundColor: '#FFFFFF'
                 }}
               >
                 <div
