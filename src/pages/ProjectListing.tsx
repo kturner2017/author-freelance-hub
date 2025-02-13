@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -6,8 +7,11 @@ import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
 import { Briefcase, Calendar } from "lucide-react";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
 
 const ProjectListing = () => {
+  const navigate = useNavigate();
+  
   const { data: projects, isLoading } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
@@ -69,7 +73,12 @@ const ProjectListing = () => {
                     <Calendar className="mr-2 h-4 w-4" />
                     <span>Posted {format(new Date(project.created_at), 'MMM d, yyyy')}</span>
                   </div>
-                  <Button className="w-full">View Details</Button>
+                  <Button 
+                    className="w-full"
+                    onClick={() => navigate(`/professional-network/projects/${project.id}`)}
+                  >
+                    View Details
+                  </Button>
                 </div>
               </CardContent>
             </Card>

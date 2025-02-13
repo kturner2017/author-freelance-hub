@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -5,6 +6,7 @@ import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Calendar, BookOpen, User2, Tag, FileType } from 'lucide-react';
+import { format } from 'date-fns';
 
 const ProjectDetail = () => {
   const { id } = useParams();
@@ -13,18 +15,13 @@ const ProjectDetail = () => {
   const { data: project, isLoading } = useQuery({
     queryKey: ['project', id],
     queryFn: async () => {
-      console.log('Fetching project details for ID:', id);
       const { data, error } = await supabase
         .from('projects')
         .select('*')
         .eq('id', id)
         .single();
 
-      if (error) {
-        console.error('Error fetching project:', error);
-        throw error;
-      }
-
+      if (error) throw error;
       return data;
     },
   });
@@ -52,7 +49,7 @@ const ProjectDetail = () => {
           <h1 className="text-2xl font-bold text-primary">Project not found</h1>
           <Button 
             className="mt-4"
-            onClick={() => navigate('/professional-network/find')}
+            onClick={() => navigate('/professional-network/projects')}
           >
             Back to Projects
           </Button>
@@ -68,7 +65,7 @@ const ProjectDetail = () => {
         <Button
           variant="ghost"
           className="mb-6"
-          onClick={() => navigate('/professional-network/find')}
+          onClick={() => navigate('/professional-network/projects')}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Projects
@@ -101,7 +98,7 @@ const ProjectDetail = () => {
               </div>
               <div className="flex items-center gap-2">
                 <Calendar className="h-5 w-5 text-primary" />
-                <span className="font-medium">Posted:</span> {new Date(project.created_at).toLocaleDateString()}
+                <span className="font-medium">Posted:</span> {format(new Date(project.created_at), 'MMM d, yyyy')}
               </div>
             </div>
 

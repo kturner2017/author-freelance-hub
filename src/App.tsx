@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Index from './pages/Index';
@@ -26,6 +25,7 @@ import SecurePayments from './pages/SecurePayments';
 import PaymentDetails from './pages/PaymentDetails';
 import PaymentSettings from './pages/PaymentSettings';
 import InitiatePayment from './pages/InitiatePayment';
+import ProjectDetail from './pages/ProjectDetail';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -135,6 +135,12 @@ function App() {
         <Route path="/professional-network/projects" element={
           <ProtectedRoute>
             <ProjectListing />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/professional-network/projects/:id" element={
+          <ProtectedRoute>
+            <ProjectDetail />
           </ProtectedRoute>
         } />
 
