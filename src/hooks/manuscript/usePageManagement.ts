@@ -25,9 +25,9 @@ export const usePageManagement = (
 
   const getTextAreaHeight = () => {
     if (pageSize === '6x9') {
-      return 7; // 9" - 2" (top and bottom margins)
+      return (9 - margins.top - margins.bottom) * 96; // Convert inches to pixels (96dpi)
     }
-    return 9; // 11" - 2" (top and bottom margins)
+    return (11 - margins.top - margins.bottom) * 96; // Convert inches to pixels (96dpi)
   };
 
   useEffect(() => {
@@ -37,9 +37,11 @@ export const usePageManagement = (
 
       requestAnimationFrame(() => {
         const contentHeight = contentDiv.scrollHeight;
-        const effectivePageHeight = getTextAreaHeight() * 96; // Convert inches to pixels (96dpi)
+        const effectivePageHeight = getTextAreaHeight();
         const calculatedPages = Math.ceil(contentHeight / effectivePageHeight) || 1;
         setTotalPages(calculatedPages);
+        // Reset to first page when changing page size or margins
+        setCurrentPage(1);
       });
     }
   }, [showSinglePage, pageSize, content, margins, editorRef]);

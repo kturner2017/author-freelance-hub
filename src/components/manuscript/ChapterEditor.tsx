@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { ScrollArea } from '../ui/scroll-area';
 import { Button } from '../ui/button';
@@ -124,6 +123,12 @@ const ChapterEditor = ({
     }
   };
 
+  const getPageHeight = () => {
+    const currentSize = standardPaperSizes[pageSize];
+    if (!currentSize || currentSize.unit !== 'in') return '7in';
+    return `${currentSize.height - margins.top - margins.bottom}in`;
+  };
+
   return (
     <ScrollArea className="h-full">
       <div className="p-8 max-w-[11in] mx-auto">
@@ -201,13 +206,15 @@ const ChapterEditor = ({
                     left: `${margins.left}in`,
                     ...getTextAreaDimensions(),
                     overflow: 'hidden',
-                    backgroundColor: '#FFFFFF'
+                    backgroundColor: '#FFFFFF',
+                    height: getPageHeight()
                   }}
                 >
                   <div
+                    className="ProseMirror-wrapper"
                     style={{
-                      height: getTextAreaDimensions().height,
-                      transform: `translateY(-${(currentPage - 1) * parseFloat(getTextAreaDimensions().height)}px)`,
+                      height: '100%',
+                      transform: `translateY(-${(currentPage - 1) * 100}%)`,
                       transition: 'transform 0.3s ease-in-out',
                     }}
                   >
