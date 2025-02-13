@@ -3,24 +3,64 @@ import { useEffect } from 'react';
 
 export const useEditorStyles = () => {
   useEffect(() => {
+    // Add styles to handle image alignment
     const style = document.createElement('style');
-    style.textContent = `
-      .resize-handle {
-        position: relative;
-      }
-      .resize-handle::after {
-        content: '';
-        position: absolute;
-        right: 0;
-        bottom: 0;
-        width: 20px;
-        height: 20px;
-        cursor: nwse-resize;
-        background: rgba(0, 0, 0, 0.1);
-        border-radius: 0 0 4px 0;
+    style.innerHTML = `
+      .ProseMirror {
+        > * {
+          margin-top: 0.75em;
+        }
+        
+        img {
+          max-height: 400px;
+          height: auto;
+          &.resize-handle {
+            position: relative;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+          }
+          &.resize-handle::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            width: 8px;
+            height: 8px;
+            border: 2px solid #0f172a;
+            border-radius: 2px;
+            background: white;
+          }
+        }
+
+        div[data-text-align='center'] {
+          text-align: center;
+          
+          img {
+            margin-left: auto;
+            margin-right: auto;
+          }
+        }
+
+        div[data-text-align='right'] {
+          text-align: right;
+          
+          img {
+            margin-left: auto;
+          }
+        }
+
+        div[data-text-align='left'] {
+          text-align: left;
+          
+          img {
+            margin-right: auto;
+          }
+        }
       }
     `;
     document.head.appendChild(style);
+
     return () => {
       document.head.removeChild(style);
     };

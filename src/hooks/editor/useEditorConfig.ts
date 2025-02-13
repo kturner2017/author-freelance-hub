@@ -20,10 +20,10 @@ export const useEditorConfig = () => {
     Highlight,
     CodeBlock,
     Image.configure({
-      inline: true,
+      inline: false, // Changed to false to allow block-level alignment
       allowBase64: true,
       HTMLAttributes: {
-        class: 'rounded-lg max-w-full cursor-pointer transition-transform hover:shadow-lg resize-handle',
+        class: 'rounded-lg max-w-full cursor-pointer transition-transform hover:shadow-lg resize-handle mx-auto',
         draggable: false,
       },
     }),
@@ -31,7 +31,7 @@ export const useEditorConfig = () => {
 
   const getEditorProps = () => ({
     attributes: {
-      class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[600px] p-8',
+      class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[600px] p-8 [&_.is-editor-empty]:text-gray-400',
     },
     handleDOMEvents: {
       mousedown: (view: any, event: MouseEvent) => {
