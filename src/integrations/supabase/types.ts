@@ -509,6 +509,107 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_milestones: {
+        Row: {
+          amount: number
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          payment_id: string | null
+          status: Database["public"]["Enums"]["payment_status"] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          payment_id?: string | null
+          status?: Database["public"]["Enums"]["payment_status"] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          payment_id?: string | null
+          status?: Database["public"]["Enums"]["payment_status"] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_milestones_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          client_id: string
+          created_at: string
+          description: string | null
+          freelancer_id: string | null
+          id: string
+          project_id: string | null
+          status: Database["public"]["Enums"]["payment_status"] | null
+          type: Database["public"]["Enums"]["payment_type"] | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          client_id: string
+          created_at?: string
+          description?: string | null
+          freelancer_id?: string | null
+          id?: string
+          project_id?: string | null
+          status?: Database["public"]["Enums"]["payment_status"] | null
+          type?: Database["public"]["Enums"]["payment_type"] | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          client_id?: string
+          created_at?: string
+          description?: string | null
+          freelancer_id?: string | null
+          id?: string
+          project_id?: string | null
+          status?: Database["public"]["Enums"]["payment_status"] | null
+          type?: Database["public"]["Enums"]["payment_type"] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_freelancer_id_fkey"
+            columns: ["freelancer_id"]
+            isOneToOne: false
+            referencedRelation: "freelancers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_bids: {
         Row: {
           amount: number
@@ -691,6 +792,8 @@ export type Database = {
         | "illustration"
         | "formatting"
         | "proofreading"
+      payment_status: "pending" | "completed" | "failed" | "refunded"
+      payment_type: "milestone" | "full"
       subscription_tier: "free" | "premium"
     }
     CompositeTypes: {
