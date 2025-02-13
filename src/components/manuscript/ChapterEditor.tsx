@@ -60,11 +60,9 @@ const ChapterEditor = ({
       // Calculate total pages based on content height and page size
       const contentHeight = editorRef.current.scrollHeight;
       const pageHeight = pageSize === '6x9' ? 9 * 96 : 11 * 96; // Convert inches to pixels (96dpi)
-      const calculatedPages = Math.ceil(contentHeight / (pageHeight - (margins.top + margins.bottom) * 96)); // Account for margins
+      const effectivePageHeight = pageHeight - (margins.top + margins.bottom) * 96; // Account for margins
+      const calculatedPages = Math.ceil(contentHeight / effectivePageHeight);
       setTotalPages(Math.max(1, calculatedPages));
-      
-      // Reset to first page when switching view modes or page sizes
-      setCurrentPage(1);
     }
   }, [showSinglePage, pageSize, chapter.content, margins]);
 
@@ -251,7 +249,7 @@ const ChapterEditor = ({
             <Button
               variant="ghost"
               size="icon"
-              className="absolute left-4 top-1/2 -translate-y-1/2"
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
               onClick={handlePrevPage}
               disabled={currentPage === 1}
             >
@@ -261,14 +259,21 @@ const ChapterEditor = ({
           
           <div 
             ref={editorRef}
-            className={`${showSinglePage ? pageClass : ''} bg-white shadow-lg relative mx-auto overflow-hidden`}
+            className={`${showSinglePage ? pageClass : ''} bg-white shadow-lg relative mx-auto`}
             style={{
-              transform: showSinglePage ? `translateY(-${(currentPage - 1) * 100}%)` : 'none',
-              transition: 'transform 0.3s ease-in-out',
-              padding: showSinglePage ? `${margins.top}in ${margins.right}in ${margins.bottom}in ${margins.left}in` : undefined
+              padding: showSinglePage ? `${margins.top}in ${margins.right}in ${margins.bottom}in ${margins.left}in` : undefined,
+              height: showSinglePage ? (pageSize === '6x9' ? '9in' : '11in') : 'auto',
+              position: 'relative',
+              overflow: 'hidden'
             }}
           >
-            <div>
+            <div
+              style={{
+                transform: showSinglePage ? `translateY(-${(currentPage - 1) * 100}%)` : 'none',
+                transition: 'transform 0.3s ease-in-out',
+                height: showSinglePage ? `${totalPages * 100}%` : 'auto'
+              }}
+            >
               <RichTextEditor
                 key={`editor-${chapter.id}`}
                 content={chapter.content || ''}
@@ -286,7 +291,7 @@ const ChapterEditor = ({
             <Button
               variant="ghost"
               size="icon"
-              className="absolute right-4 top-1/2 -translate-y-1/2"
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-10"
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
             >
