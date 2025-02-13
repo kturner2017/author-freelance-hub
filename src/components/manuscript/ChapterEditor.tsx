@@ -137,35 +137,32 @@ const ChapterEditor = ({
           
           <div 
             ref={editorRef}
-            className={`${showSinglePage ? pageClass : ''} bg-white shadow-lg relative mx-auto overflow-hidden`}
+            className={`${showSinglePage ? pageClass : ''} bg-white shadow-lg relative mx-auto`}
             style={{
               padding: showSinglePage ? `${margins.top}in ${margins.right}in ${margins.bottom}in ${margins.left}in` : '1rem',
               height: showSinglePage ? (pageSize === '6x9' ? '9in' : '11in') : 'auto',
+              width: showSinglePage ? (pageSize === '6x9' ? '6in' : '8.5in') : 'auto',
+              boxSizing: 'border-box'
             }}
           >
             {showSinglePage ? (
               <div
                 style={{
                   position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
+                  top: `${margins.top}in`,
+                  left: `${margins.left}in`,
+                  right: `${margins.right}in`,
+                  bottom: `${margins.bottom}in`,
                   transform: `translateY(-${(currentPage - 1) * 100}%)`,
-                  transition: 'transform 0.3s ease-in-out'
+                  transition: 'transform 0.3s ease-in-out',
+                  overflow: 'hidden'
                 }}
               >
-                <div
-                  style={{
-                    height: `${(pageSize === '6x9' ? 9 : 11) - margins.top - margins.bottom}in`,
-                    overflow: 'hidden'
-                  }}
-                >
-                  <RichTextEditor
-                    key={`editor-${chapter.id}`}
-                    content={chapter.content || ''}
-                    onChange={onContentChange}
-                  />
-                </div>
+                <RichTextEditor
+                  key={`editor-${chapter.id}`}
+                  content={chapter.content || ''}
+                  onChange={onContentChange}
+                />
               </div>
             ) : (
               <RichTextEditor

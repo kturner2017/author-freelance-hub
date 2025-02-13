@@ -36,8 +36,8 @@ export const usePageManagement = (
       // Use requestAnimationFrame to ensure content is rendered
       requestAnimationFrame(() => {
         const contentHeight = contentDiv.scrollHeight;
-        const pageHeight = pageDimensions[pageSize].height * 96; // Convert inches to pixels (96dpi)
-        const effectivePageHeight = pageHeight - (margins.top + margins.bottom) * 96;
+        const pageHeight = pageDimensions[pageSize].height;
+        const effectivePageHeight = (pageHeight - margins.top - margins.bottom) * 96; // Convert to pixels
         const calculatedPages = Math.ceil(contentHeight / effectivePageHeight) || 1;
         setTotalPages(calculatedPages);
       });
