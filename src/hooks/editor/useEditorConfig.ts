@@ -20,11 +20,12 @@ export const useEditorConfig = () => {
     Highlight,
     CodeBlock,
     Image.configure({
-      inline: false, // Changed to false to allow block-level alignment
+      inline: true, // Changed back to true to allow text wrapping
       allowBase64: true,
+      draggable: true, // Enable dragging
       HTMLAttributes: {
-        class: 'rounded-lg max-w-full cursor-pointer transition-transform hover:shadow-lg resize-handle mx-auto',
-        draggable: false,
+        class: 'rounded-lg cursor-move transition-transform hover:shadow-lg resize-handle',
+        draggable: true,
       },
     }),
   ];

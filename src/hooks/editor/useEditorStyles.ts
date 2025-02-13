@@ -3,7 +3,6 @@ import { useEffect } from 'react';
 
 export const useEditorStyles = () => {
   useEffect(() => {
-    // Add styles to handle image alignment
     const style = document.createElement('style');
     style.innerHTML = `
       .ProseMirror {
@@ -14,12 +13,15 @@ export const useEditorStyles = () => {
         img {
           max-height: 400px;
           height: auto;
+          cursor: move;
+          float: left;
+          margin: 0.5em 1em 0.5em 0;
+          
           &.resize-handle {
             position: relative;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
+            display: inline-block;
           }
+          
           &.resize-handle::after {
             content: '';
             position: absolute;
@@ -30,32 +32,45 @@ export const useEditorStyles = () => {
             border: 2px solid #0f172a;
             border-radius: 2px;
             background: white;
+            cursor: nwse-resize;
           }
         }
 
         div[data-text-align='center'] {
           text-align: center;
+          clear: both;
           
           img {
-            margin-left: auto;
-            margin-right: auto;
+            float: none;
+            margin: 0.5em auto;
+            display: block;
           }
         }
 
         div[data-text-align='right'] {
           text-align: right;
+          clear: both;
           
           img {
-            margin-left: auto;
+            float: right;
+            margin: 0.5em 0 0.5em 1em;
           }
         }
 
         div[data-text-align='left'] {
           text-align: left;
+          clear: both;
           
           img {
-            margin-right: auto;
+            float: left;
+            margin: 0.5em 1em 0.5em 0;
           }
+        }
+
+        &::after {
+          content: '';
+          display: table;
+          clear: both;
         }
       }
     `;
