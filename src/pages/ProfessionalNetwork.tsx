@@ -93,9 +93,14 @@ const ProfessionalNetwork = () => {
               <p className="text-gray-600 mb-6">
                 Handle payments securely through our platform. Set up milestones and release payments as work progresses.
               </p>
-              <Button variant="outline" asChild className="w-full">
-                <Link to="/professional-network/payment-settings">Payment Settings</Link>
-              </Button>
+              <div className="flex flex-col gap-2">
+                <Button variant="outline" asChild className="w-full">
+                  <Link to="/professional-network/secure-payments">View Payments</Link>
+                </Button>
+                <Button asChild className="w-full">
+                  <Link to="/professional-network/initiate-payment">Initiate Payment</Link>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
