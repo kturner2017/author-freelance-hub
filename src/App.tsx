@@ -25,6 +25,7 @@ import PostProject from './pages/PostProject';
 import SecurePayments from './pages/SecurePayments';
 import PaymentDetails from './pages/PaymentDetails';
 import PaymentSettings from './pages/PaymentSettings';
+import InitiatePayment from './pages/InitiatePayment';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -143,7 +144,7 @@ function App() {
           </ProtectedRoute>
         } />
 
-        <Route path="/professional-network/payments" element={
+        <Route path="/professional-network/secure-payments" element={
           <ProtectedRoute>
             <SecurePayments />
           </ProtectedRoute>
@@ -158,6 +159,12 @@ function App() {
         <Route path="/professional-network/payment-settings" element={
           <ProtectedRoute>
             <PaymentSettings />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/professional-network/initiate-payment" element={
+          <ProtectedRoute>
+            <InitiatePayment />
           </ProtectedRoute>
         } />
         
