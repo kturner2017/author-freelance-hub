@@ -7,8 +7,9 @@ import TemplateSelector from './TemplateSelector';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import EditorHeader from './EditorHeader';
-import MarginControls from './MarginControls';
 import { usePageManagement } from '@/hooks/manuscript/usePageManagement';
+import PageFormatControls from './PageFormatControls';
+import { standardPaperSizes, type MarginSettings } from '@/types/paper';
 
 interface Chapter {
   id: string;
@@ -24,11 +25,14 @@ interface ChapterEditorProps {
   isAnalyzing: boolean;
 }
 
-interface Margins {
+interface MarginSettings {
   top: number;
   right: number;
   bottom: number;
   left: number;
+  gutter: number;
+  headerDistance: number;
+  footerDistance: number;
 }
 
 const ChapterEditor = ({ 
@@ -40,13 +44,16 @@ const ChapterEditor = ({
   const { toast } = useToast();
   const [selectedTemplate, setSelectedTemplate] = useState(chapter.template || 'classic');
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
-  const [pageSize, setPageSize] = useState<'6x9' | '8.5x11'>('6x9');
+  const [pageSize, setPageSize] = useState<string>('6x9');
   const [showSinglePage, setShowSinglePage] = useState(false);
-  const [margins, setMargins] = useState<Margins>({
+  const [margins, setMargins] = useState<MarginSettings>({
     top: 1,
     right: 1,
     bottom: 1,
-    left: 1
+    left: 1,
+    gutter: 0,
+    headerDistance: 0.5,
+    footerDistance: 0.5
   });
   const editorRef = useRef<HTMLDivElement>(null);
 
@@ -82,26 +89,41 @@ const ChapterEditor = ({
     }
   };
 
-  const handleMarginChange = (side: keyof Margins, value: string) => {
-    const numValue = parseFloat(value) || 0;
+  const handleMarginChange = (key: keyof MarginSettings, value: number) => {
     setMargins(prev => ({
       ...prev,
-      [side]: Math.max(0, Math.min(3, numValue))
+      [key]: Math.max(0.25, Math.min(3, value))
     }));
   };
 
-  const pageClass = pageSize === '6x9' ? 'w-[6in] h-[9in]' : 'w-[8.5in] h-[11in]';
+  const getPageClass = () => {
+    const currentSize = standardPaperSizes[pageSize];
+    if (!currentSize) return '';
+    
+    if (currentSize.unit === 'in') {
+      return `w-[${currentSize.width}in] h-[${currentSize.height}in]`;
+    }
+    return `w-[${currentSize.width}mm] h-[${currentSize.height}mm]`;
+  };
 
   const getTextAreaDimensions = () => {
-    if (pageSize === '6x9') {
+    const currentSize = standardPaperSizes[pageSize];
+    if (!currentSize) return { width: '4in', height: '7in' };
+    
+    if (currentSize.unit === 'in') {
+      const width = currentSize.width - margins.left - margins.right - margins.gutter;
+      const height = currentSize.height - margins.top - margins.bottom;
       return {
-        width: '4in',
-        height: '7in'
+        width: `${width}in`,
+        height: `${height}in`
       };
     }
+    
+    const width = currentSize.width - ((margins.left + margins.right + margins.gutter) * 25.4);
+    const height = currentSize.height - ((margins.top + margins.bottom) * 25.4);
     return {
-      width: '6.5in',
-      height: '9in'
+      width: `${width}mm`,
+      height: `${height}mm`
     };
   };
 
@@ -129,10 +151,14 @@ const ChapterEditor = ({
         )}
 
         {showSinglePage && (
-          <MarginControls
-            margins={margins}
-            onMarginChange={handleMarginChange}
-          />
+          <div className="mb-8">
+            <PageFormatControls
+              margins={margins}
+              onMarginChange={handleMarginChange}
+              selectedPaperSize={pageSize}
+              onPaperSizeChange={setPageSize}
+            />
+          </div>
         )}
 
         <div className={`relative ${showSinglePage ? 'flex justify-center' : ''}`}>
@@ -150,20 +176,20 @@ const ChapterEditor = ({
           
           <div 
             ref={editorRef}
-            className={`${showSinglePage ? pageClass : ''} bg-white shadow-lg relative mx-auto`}
+            className={`${showSinglePage ? getPageClass() : ''} bg-white shadow-lg relative mx-auto`}
             style={{
-              height: showSinglePage ? (pageSize === '6x9' ? '9in' : '11in') : 'auto',
-              width: showSinglePage ? (pageSize === '6x9' ? '6in' : '8.5in') : 'auto',
+              height: showSinglePage ? undefined : 'auto',
               boxSizing: 'border-box',
               position: 'relative'
             }}
           >
+            {/* Margins guide */}
             {showSinglePage && (
               <div
                 className="absolute inset-0"
                 style={{
                   border: '1px solid rgba(0,0,0,0.1)',
-                  margin: '1in',
+                  margin: `${margins.top}in ${margins.right}in ${margins.bottom}in ${margins.left}in`,
                   pointerEvents: 'none'
                 }}
               />
@@ -173,10 +199,9 @@ const ChapterEditor = ({
               <div
                 style={{
                   position: 'absolute',
-                  top: '1in',
-                  left: '1in',
-                  width: getTextAreaDimensions().width,
-                  height: getTextAreaDimensions().height,
+                  top: `${margins.top}in`,
+                  left: `${margins.left}in`,
+                  ...getTextAreaDimensions(),
                   overflow: 'hidden'
                 }}
               >
