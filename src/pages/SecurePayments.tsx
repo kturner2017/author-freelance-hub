@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Settings } from 'lucide-react';
 import Layout from '@/components/layout/DashboardLayout';
 
 interface Payment {
@@ -69,9 +69,19 @@ export default function SecurePayments() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Secure Payments</h1>
-          <Button onClick={() => navigate('/professional-network/new-payment')}>
-            Create New Payment
-          </Button>
+          <div className="flex gap-4">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/professional-network/payment-settings')}
+              className="flex items-center gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              Settings
+            </Button>
+            <Button onClick={() => navigate('/professional-network/new-payment')}>
+              Create New Payment
+            </Button>
+          </div>
         </div>
 
         {isLoading ? (

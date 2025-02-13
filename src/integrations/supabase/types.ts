@@ -556,6 +556,42 @@ export type Database = {
           },
         ]
       }
+      payment_settings: {
+        Row: {
+          auto_release_payments: boolean | null
+          created_at: string
+          default_payment_type:
+            | Database["public"]["Enums"]["payment_type"]
+            | null
+          id: string
+          notification_preferences: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_release_payments?: boolean | null
+          created_at?: string
+          default_payment_type?:
+            | Database["public"]["Enums"]["payment_type"]
+            | null
+          id?: string
+          notification_preferences?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_release_payments?: boolean | null
+          created_at?: string
+          default_payment_type?:
+            | Database["public"]["Enums"]["payment_type"]
+            | null
+          id?: string
+          notification_preferences?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
