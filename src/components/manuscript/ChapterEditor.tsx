@@ -206,7 +206,8 @@ const ChapterEditor = ({
                 >
                   <div
                     style={{
-                      transform: `translateY(-${(currentPage - 1) * 100}%)`,
+                      height: getTextAreaDimensions().height,
+                      transform: `translateY(-${(currentPage - 1) * parseFloat(getTextAreaDimensions().height)}px)`,
                       transition: 'transform 0.3s ease-in-out',
                     }}
                   >
