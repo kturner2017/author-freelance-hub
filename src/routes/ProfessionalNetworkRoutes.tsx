@@ -13,74 +13,114 @@ import PaymentDetails from '@/pages/PaymentDetails';
 import PaymentSettings from '@/pages/PaymentSettings';
 import InitiatePayment from '@/pages/InitiatePayment';
 
-export const ProfessionalNetworkRoutes = () => {
-  return (
-    <>
-      <Route path="/professional-network" element={
-        <ProtectedRoute>
-          <ProfessionalNetwork />
-        </ProtectedRoute>
-      } />
-      
-      <Route path="/professional-network/find" element={
-        <ProtectedRoute>
-          <FindProfessional />
-        </ProtectedRoute>
-      } />
+export const professionalNetworkRoutes = [
+  <Route
+    key="professional-network"
+    path="/professional-network"
+    element={
+      <ProtectedRoute>
+        <ProfessionalNetwork />
+      </ProtectedRoute>
+    }
+  />,
+  
+  <Route
+    key="find-professional"
+    path="/professional-network/find"
+    element={
+      <ProtectedRoute>
+        <FindProfessional />
+      </ProtectedRoute>
+    }
+  />,
 
-      <Route path="/professional-network/find/freelancer/:id" element={
-        <ProtectedRoute>
-          <FreelancerDetail />
-        </ProtectedRoute>
-      } />
-      
-      <Route path="/professional-network/apply" element={
-        <ProtectedRoute>
-          <FreelancerApplication />
-        </ProtectedRoute>
-      } />
-      
-      <Route path="/professional-network/projects" element={
-        <ProtectedRoute>
-          <ProjectListing />
-        </ProtectedRoute>
-      } />
+  <Route
+    key="freelancer-detail"
+    path="/professional-network/find/freelancer/:id"
+    element={
+      <ProtectedRoute>
+        <FreelancerDetail />
+      </ProtectedRoute>
+    }
+  />,
+  
+  <Route
+    key="freelancer-application"
+    path="/professional-network/apply"
+    element={
+      <ProtectedRoute>
+        <FreelancerApplication />
+      </ProtectedRoute>
+    }
+  />,
+  
+  <Route
+    key="project-listing"
+    path="/professional-network/projects"
+    element={
+      <ProtectedRoute>
+        <ProjectListing />
+      </ProtectedRoute>
+    }
+  />,
 
-      <Route path="/professional-network/projects/:id" element={
-        <ProtectedRoute>
-          <ProjectDetail />
-        </ProtectedRoute>
-      } />
+  <Route
+    key="project-detail"
+    path="/professional-network/projects/:id"
+    element={
+      <ProtectedRoute>
+        <ProjectDetail />
+      </ProtectedRoute>
+    }
+  />,
 
-      <Route path="/professional-network/post-project" element={
-        <ProtectedRoute>
-          <PostProject />
-        </ProtectedRoute>
-      } />
+  <Route
+    key="post-project"
+    path="/professional-network/post-project"
+    element={
+      <ProtectedRoute>
+        <PostProject />
+      </ProtectedRoute>
+    }
+  />,
 
-      <Route path="/professional-network/secure-payments" element={
-        <ProtectedRoute>
-          <SecurePayments />
-        </ProtectedRoute>
-      } />
+  <Route
+    key="secure-payments"
+    path="/professional-network/secure-payments"
+    element={
+      <ProtectedRoute>
+        <SecurePayments />
+      </ProtectedRoute>
+    }
+  />,
 
-      <Route path="/professional-network/payments/:id" element={
-        <ProtectedRoute>
-          <PaymentDetails />
-        </ProtectedRoute>
-      } />
+  <Route
+    key="payment-details"
+    path="/professional-network/payments/:id"
+    element={
+      <ProtectedRoute>
+        <PaymentDetails />
+      </ProtectedRoute>
+    }
+  />,
 
-      <Route path="/professional-network/payment-settings" element={
-        <ProtectedRoute>
-          <PaymentSettings />
-        </ProtectedRoute>
-      } />
+  <Route
+    key="payment-settings"
+    path="/professional-network/payment-settings"
+    element={
+      <ProtectedRoute>
+        <PaymentSettings />
+      </ProtectedRoute>
+    }
+  />,
 
-      <Route path="/professional-network/initiate-payment" element={
-        <ProtectedRoute>
-          <InitiatePayment />
-        </ProtectedRoute>
-      } />
-    </>
-  );
-};
+  <Route
+    key="initiate-payment"
+    path="/professional-network/initiate-payment"
+    element={
+      <ProtectedRoute>
+        <InitiatePayment />
+      </ProtectedRoute>
+    }
+  />
+];

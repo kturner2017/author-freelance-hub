@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import { supabase } from './integrations/supabase/client';
 import Index from './pages/Index';
 import NotFound from './pages/NotFound';
-import { AuthRoutes } from './routes/AuthRoutes';
-import { ProfessionalNetworkRoutes } from './routes/ProfessionalNetworkRoutes';
-import { PublishingRoutes } from './routes/PublishingRoutes';
+import { authRoutes } from './routes/AuthRoutes';
+import { professionalNetworkRoutes } from './routes/ProfessionalNetworkRoutes';
+import { publishingRoutes } from './routes/PublishingRoutes';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -47,9 +47,9 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Index />} />
-        <AuthRoutes />
-        <ProfessionalNetworkRoutes />
-        <PublishingRoutes />
+        {authRoutes}
+        {professionalNetworkRoutes}
+        {publishingRoutes}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
