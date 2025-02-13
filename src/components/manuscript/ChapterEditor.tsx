@@ -1,17 +1,15 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { ScrollArea } from '../ui/scroll-area';
-import { Badge } from '../ui/badge';
-import RichTextEditor from '../RichTextEditor';
-import TextAnalysis from '../TextAnalysis';
 import { Button } from '../ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import RichTextEditor from '../RichTextEditor';
 import TemplateSelector from './TemplateSelector';
-import { getWordCount } from '@/utils/wordCount';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
+import EditorHeader from './EditorHeader';
+import MarginControls from './MarginControls';
+import { usePageManagement } from '@/hooks/manuscript/usePageManagement';
 
 interface Chapter {
   id: string;
@@ -43,8 +41,6 @@ const ChapterEditor = ({
   const { toast } = useToast();
   const [selectedTemplate, setSelectedTemplate] = useState(chapter.template || 'classic');
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState<'6x9' | '8.5x11'>('6x9');
   const [showSinglePage, setShowSinglePage] = useState(false);
   const [margins, setMargins] = useState<Margins>({
@@ -55,20 +51,13 @@ const ChapterEditor = ({
   });
   const editorRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (showSinglePage && editorRef.current) {
-      // Calculate total pages based on content height and page size
-      const contentDiv = editorRef.current.querySelector('.ProseMirror');
-      const contentHeight = contentDiv ? contentDiv.scrollHeight : 0;
-      const pageHeight = pageSize === '6x9' ? 9 * 96 : 11 * 96; // Convert inches to pixels (96dpi)
-      const effectivePageHeight = pageHeight - (margins.top + margins.bottom) * 96; // Account for margins
-      const calculatedPages = Math.ceil(contentHeight / effectivePageHeight);
-      setTotalPages(Math.max(1, calculatedPages));
-
-      // Reset to first page when switching view modes or page sizes
-      setCurrentPage(1);
-    }
-  }, [showSinglePage, pageSize, chapter.content, margins]);
+  const { currentPage, totalPages, handleNextPage, handlePrevPage } = usePageManagement(
+    editorRef,
+    showSinglePage,
+    pageSize,
+    margins,
+    chapter.content
+  );
 
   const handleTemplateSelect = async (templateId: string) => {
     try {
@@ -94,97 +83,29 @@ const ChapterEditor = ({
     }
   };
 
-  const toggleTemplateSelector = () => {
-    setShowTemplateSelector(!showTemplateSelector);
-  };
-
-  const handlePageSizeChange = (size: '6x9' | '8.5x11') => {
-    setPageSize(size);
-  };
-
-  const toggleViewMode = () => {
-    setShowSinglePage(!showSinglePage);
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(prev => prev + 1);
-      
-      // Scroll to top of page
-      if (editorRef.current) {
-        editorRef.current.scrollTop = 0;
-      }
-    }
-  };
-
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(prev => prev - 1);
-      
-      // Scroll to top of page
-      if (editorRef.current) {
-        editorRef.current.scrollTop = 0;
-      }
-    }
-  };
-
   const handleMarginChange = (side: keyof Margins, value: string) => {
     const numValue = parseFloat(value) || 0;
     setMargins(prev => ({
       ...prev,
-      [side]: Math.max(0, Math.min(3, numValue)) // Limit margins between 0 and 3 inches
+      [side]: Math.max(0, Math.min(3, numValue))
     }));
   };
 
-  const pageClass = pageSize === '6x9' 
-    ? 'w-[6in] h-[9in]' 
-    : 'w-[8.5in] h-[11in]';
+  const pageClass = pageSize === '6x9' ? 'w-[6in] h-[9in]' : 'w-[8.5in] h-[11in]';
 
   return (
     <ScrollArea className="h-full">
       <div className="p-8 max-w-[11in] mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-serif font-semibold text-primary-800">
-            {chapter.chapter_id}
-          </h2>
-          <div className="flex items-center gap-4">
-            <Badge 
-              variant="secondary" 
-              className="text-sm bg-primary-50 text-primary-700 border-primary-200 cursor-pointer"
-              onClick={toggleTemplateSelector}
-            >
-              Template: {selectedTemplate}
-            </Badge>
-            <Badge variant="secondary" className="text-sm bg-primary-50 text-primary-700 border-primary-200">
-              {getWordCount(chapter.content).toLocaleString()} words
-            </Badge>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageSizeChange('6x9')}
-                className={pageSize === '6x9' ? 'bg-primary-100' : ''}
-              >
-                6" x 9"
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageSizeChange('8.5x11')}
-                className={pageSize === '8.5x11' ? 'bg-primary-100' : ''}
-              >
-                8.5" x 11"
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={toggleViewMode}
-              >
-                {showSinglePage ? 'Full View' : 'Page View'}
-              </Button>
-            </div>
-          </div>
-        </div>
+        <EditorHeader
+          chapterId={chapter.chapter_id}
+          content={chapter.content}
+          selectedTemplate={selectedTemplate}
+          pageSize={pageSize}
+          showSinglePage={showSinglePage}
+          onTemplateClick={() => setShowTemplateSelector(!showTemplateSelector)}
+          onPageSizeChange={setPageSize}
+          onViewModeToggle={() => setShowSinglePage(!showSinglePage)}
+        />
 
         {showTemplateSelector && (
           <div className="mb-8">
@@ -196,56 +117,10 @@ const ChapterEditor = ({
         )}
 
         {showSinglePage && (
-          <div className="grid grid-cols-4 gap-4 mb-4">
-            <div>
-              <Label htmlFor="top-margin">Top Margin (inches)</Label>
-              <Input
-                id="top-margin"
-                type="number"
-                min="0"
-                max="3"
-                step="0.25"
-                value={margins.top}
-                onChange={(e) => handleMarginChange('top', e.target.value)}
-              />
-            </div>
-            <div>
-              <Label htmlFor="right-margin">Right Margin (inches)</Label>
-              <Input
-                id="right-margin"
-                type="number"
-                min="0"
-                max="3"
-                step="0.25"
-                value={margins.right}
-                onChange={(e) => handleMarginChange('right', e.target.value)}
-              />
-            </div>
-            <div>
-              <Label htmlFor="bottom-margin">Bottom Margin (inches)</Label>
-              <Input
-                id="bottom-margin"
-                type="number"
-                min="0"
-                max="3"
-                step="0.25"
-                value={margins.bottom}
-                onChange={(e) => handleMarginChange('bottom', e.target.value)}
-              />
-            </div>
-            <div>
-              <Label htmlFor="left-margin">Left Margin (inches)</Label>
-              <Input
-                id="left-margin"
-                type="number"
-                min="0"
-                max="3"
-                step="0.25"
-                value={margins.left}
-                onChange={(e) => handleMarginChange('left', e.target.value)}
-              />
-            </div>
-          </div>
+          <MarginControls
+            margins={margins}
+            onMarginChange={handleMarginChange}
+          />
         )}
 
         <div className={`relative ${showSinglePage ? 'flex justify-center' : ''}`}>
