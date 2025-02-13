@@ -94,7 +94,7 @@ export default function PaymentDetails() {
 
   if (isLoading) {
     return (
-      <Layout>
+      <Layout title="Payment Details">
         <div className="flex justify-center items-center h-screen">
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
@@ -104,7 +104,7 @@ export default function PaymentDetails() {
 
   if (!payment) {
     return (
-      <Layout>
+      <Layout title="Payment Not Found">
         <div className="container mx-auto px-4 py-8">
           <Card>
             <CardContent className="flex flex-col items-center justify-center h-64">
@@ -120,7 +120,7 @@ export default function PaymentDetails() {
   }
 
   return (
-    <Layout>
+    <Layout title="Payment Details">
       <div className="container mx-auto px-4 py-8">
         <Button
           variant="outline"
