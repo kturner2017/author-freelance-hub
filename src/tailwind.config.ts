@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -87,8 +88,11 @@ export default {
         fadeIn: "fadeIn 0.5s ease-out forwards",
       },
       fontFamily: {
-        serif: ["Merriweather", "serif"],
-        sans: ["Inter", "sans-serif"],
+        serif: ['Times New Roman', 'Georgia', 'Garamond', 'serif'],
+        sans: ['Inter', 'sans-serif'],
+        times: ['Times New Roman', 'serif'],
+        garamond: ['Garamond', 'serif'],
+        georgia: ['Georgia', 'serif'],
       },
     },
   },
