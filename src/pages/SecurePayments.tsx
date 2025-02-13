@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Settings } from 'lucide-react';
+import { Loader2, Settings, Plus } from 'lucide-react';
 import Layout from '@/components/layout/DashboardLayout';
 
 interface Payment {
@@ -78,8 +78,9 @@ export default function SecurePayments() {
               <Settings className="h-4 w-4" />
               Settings
             </Button>
-            <Button onClick={() => navigate('/professional-network/new-payment')}>
-              Create New Payment
+            <Button onClick={() => navigate('/professional-network/initiate-payment')} className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Initiate Payment
             </Button>
           </div>
         </div>
@@ -92,8 +93,8 @@ export default function SecurePayments() {
           <Card>
             <CardContent className="flex flex-col items-center justify-center h-64">
               <p className="text-lg text-gray-500 mb-4">No payments found</p>
-              <Button onClick={() => navigate('/professional-network/new-payment')}>
-                Create Your First Payment
+              <Button onClick={() => navigate('/professional-network/initiate-payment')}>
+                Initiate Your First Payment
               </Button>
             </CardContent>
           </Card>

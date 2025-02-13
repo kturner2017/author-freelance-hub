@@ -592,6 +592,62 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          held_at: string | null
+          id: string
+          payment_id: string | null
+          platform_fee: number
+          receiver_id: string
+          released_at: string | null
+          sender_id: string
+          status:
+            | Database["public"]["Enums"]["payment_transaction_status"]
+            | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          held_at?: string | null
+          id?: string
+          payment_id?: string | null
+          platform_fee?: number
+          receiver_id: string
+          released_at?: string | null
+          sender_id: string
+          status?:
+            | Database["public"]["Enums"]["payment_transaction_status"]
+            | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          held_at?: string | null
+          id?: string
+          payment_id?: string | null
+          platform_fee?: number
+          receiver_id?: string
+          released_at?: string | null
+          sender_id?: string
+          status?:
+            | Database["public"]["Enums"]["payment_transaction_status"]
+            | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
@@ -832,6 +888,12 @@ export type Database = {
         | "formatting"
         | "proofreading"
       payment_status: "pending" | "completed" | "failed" | "refunded"
+      payment_transaction_status:
+        | "pending"
+        | "held"
+        | "released"
+        | "refunded"
+        | "failed"
       payment_type: "milestone" | "full"
       subscription_tier: "free" | "premium"
     }
