@@ -31,30 +31,28 @@ export const usePageManagement = (
   useEffect(() => {
     if (showSinglePage && editorRef.current) {
       const contentDiv = editorRef.current.querySelector('.ProseMirror');
-      const contentHeight = contentDiv ? contentDiv.scrollHeight : 0;
-      const pageHeight = pageDimensions[pageSize].height * 96; // Convert inches to pixels (96dpi)
-      const effectivePageHeight = pageHeight - (margins.top + margins.bottom) * 96;
-      const calculatedPages = Math.ceil(contentHeight / effectivePageHeight);
-      setTotalPages(Math.max(1, calculatedPages));
-      setCurrentPage(1);
+      if (!contentDiv) return;
+
+      // Use requestAnimationFrame to ensure content is rendered
+      requestAnimationFrame(() => {
+        const contentHeight = contentDiv.scrollHeight;
+        const pageHeight = pageDimensions[pageSize].height * 96; // Convert inches to pixels (96dpi)
+        const effectivePageHeight = pageHeight - (margins.top + margins.bottom) * 96;
+        const calculatedPages = Math.ceil(contentHeight / effectivePageHeight) || 1;
+        setTotalPages(calculatedPages);
+      });
     }
-  }, [showSinglePage, pageSize, content, margins]);
+  }, [showSinglePage, pageSize, content, margins, editorRef]);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(prev => prev + 1);
-      if (editorRef.current) {
-        editorRef.current.scrollTop = 0;
-      }
     }
   };
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
       setCurrentPage(prev => prev - 1);
-      if (editorRef.current) {
-        editorRef.current.scrollTop = 0;
-      }
     }
   };
 

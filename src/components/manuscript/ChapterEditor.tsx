@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { ScrollArea } from '../ui/scroll-area';
 import { Button } from '../ui/button';
@@ -138,45 +137,44 @@ const ChapterEditor = ({
           
           <div 
             ref={editorRef}
-            className={`${showSinglePage ? pageClass : ''} bg-white shadow-lg relative mx-auto`}
+            className={`${showSinglePage ? pageClass : ''} bg-white shadow-lg relative mx-auto overflow-hidden`}
             style={{
-              padding: showSinglePage ? `${margins.top}in ${margins.right}in ${margins.bottom}in ${margins.left}in` : undefined,
+              padding: showSinglePage ? `${margins.top}in ${margins.right}in ${margins.bottom}in ${margins.left}in` : '1rem',
               height: showSinglePage ? (pageSize === '6x9' ? '9in' : '11in') : 'auto',
-              position: 'relative',
-              overflow: 'hidden'
             }}
           >
-            <div
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                transform: showSinglePage ? `translateY(-${(currentPage - 1) * (pageSize === '6x9' ? 9 : 11)}in)` : 'none',
-                transition: 'transform 0.3s ease-in-out',
-                height: showSinglePage ? `${totalPages * (pageSize === '6x9' ? 9 : 11)}in` : 'auto',
-                backgroundColor: 'white',
-                padding: 0,
-                margin: 0
-              }}
-            >
+            {showSinglePage ? (
               <div
                 style={{
-                  minHeight: `${(pageSize === '6x9' ? 9 : 11) - margins.top - margins.bottom - 0.25}in`,
-                  maxHeight: `${(pageSize === '6x9' ? 9 : 11) - margins.top - margins.bottom - 0.25}in`,
-                  height: showSinglePage ? `${(pageSize === '6x9' ? 9 : 11) - margins.top - margins.bottom - 0.25}in` : 'auto',
-                  overflow: 'visible',
-                  padding: 0,
-                  margin: 0
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  transform: `translateY(-${(currentPage - 1) * 100}%)`,
+                  transition: 'transform 0.3s ease-in-out'
                 }}
               >
-                <RichTextEditor
-                  key={`editor-${chapter.id}`}
-                  content={chapter.content || ''}
-                  onChange={onContentChange}
-                />
+                <div
+                  style={{
+                    height: `${(pageSize === '6x9' ? 9 : 11) - margins.top - margins.bottom}in`,
+                    overflow: 'hidden'
+                  }}
+                >
+                  <RichTextEditor
+                    key={`editor-${chapter.id}`}
+                    content={chapter.content || ''}
+                    onChange={onContentChange}
+                  />
+                </div>
               </div>
-            </div>
+            ) : (
+              <RichTextEditor
+                key={`editor-${chapter.id}`}
+                content={chapter.content || ''}
+                onChange={onContentChange}
+              />
+            )}
+            
             {showSinglePage && (
               <div className="absolute bottom-2 left-0 right-0 text-center text-gray-500">
                 Page {currentPage} of {totalPages}
