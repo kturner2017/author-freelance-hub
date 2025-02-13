@@ -92,6 +92,19 @@ const ChapterEditor = ({
 
   const pageClass = pageSize === '6x9' ? 'w-[6in] h-[9in]' : 'w-[8.5in] h-[11in]';
 
+  const getTextAreaDimensions = () => {
+    if (pageSize === '6x9') {
+      return {
+        width: '4in',
+        height: '7in'
+      };
+    }
+    return {
+      width: '6.5in',
+      height: '9in'
+    };
+  };
+
   return (
     <ScrollArea className="h-full">
       <div className="p-8 max-w-[11in] mx-auto">
@@ -139,30 +152,46 @@ const ChapterEditor = ({
             ref={editorRef}
             className={`${showSinglePage ? pageClass : ''} bg-white shadow-lg relative mx-auto`}
             style={{
-              padding: showSinglePage ? `${margins.top}in ${margins.right}in ${margins.bottom}in ${margins.left}in` : '1rem',
               height: showSinglePage ? (pageSize === '6x9' ? '9in' : '11in') : 'auto',
               width: showSinglePage ? (pageSize === '6x9' ? '6in' : '8.5in') : 'auto',
-              boxSizing: 'border-box'
+              boxSizing: 'border-box',
+              position: 'relative'
             }}
           >
+            {showSinglePage && (
+              <div
+                className="absolute inset-0"
+                style={{
+                  border: '1px solid rgba(0,0,0,0.1)',
+                  margin: '1in',
+                  pointerEvents: 'none'
+                }}
+              />
+            )}
+            
             {showSinglePage ? (
               <div
                 style={{
                   position: 'absolute',
-                  top: `${margins.top}in`,
-                  left: `${margins.left}in`,
-                  right: `${margins.right}in`,
-                  bottom: `${margins.bottom}in`,
-                  transform: `translateY(-${(currentPage - 1) * 100}%)`,
-                  transition: 'transform 0.3s ease-in-out',
+                  top: '1in',
+                  left: '1in',
+                  width: getTextAreaDimensions().width,
+                  height: getTextAreaDimensions().height,
                   overflow: 'hidden'
                 }}
               >
-                <RichTextEditor
-                  key={`editor-${chapter.id}`}
-                  content={chapter.content || ''}
-                  onChange={onContentChange}
-                />
+                <div
+                  style={{
+                    transform: `translateY(-${(currentPage - 1) * 100}%)`,
+                    transition: 'transform 0.3s ease-in-out',
+                  }}
+                >
+                  <RichTextEditor
+                    key={`editor-${chapter.id}`}
+                    content={chapter.content || ''}
+                    onChange={onContentChange}
+                  />
+                </div>
               </div>
             ) : (
               <RichTextEditor

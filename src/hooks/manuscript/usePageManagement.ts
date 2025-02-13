@@ -23,9 +23,11 @@ export const usePageManagement = (
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const pageDimensions: { [key: string]: PageSize } = {
-    '6x9': { width: 6, height: 9 },
-    '8.5x11': { width: 8.5, height: 11 }
+  const getTextAreaHeight = () => {
+    if (pageSize === '6x9') {
+      return 7; // 9" - 2" (top and bottom margins)
+    }
+    return 9; // 11" - 2" (top and bottom margins)
   };
 
   useEffect(() => {
@@ -33,11 +35,9 @@ export const usePageManagement = (
       const contentDiv = editorRef.current.querySelector('.ProseMirror');
       if (!contentDiv) return;
 
-      // Use requestAnimationFrame to ensure content is rendered
       requestAnimationFrame(() => {
         const contentHeight = contentDiv.scrollHeight;
-        const pageHeight = pageDimensions[pageSize].height;
-        const effectivePageHeight = (pageHeight - margins.top - margins.bottom) * 96; // Convert to pixels
+        const effectivePageHeight = getTextAreaHeight() * 96; // Convert inches to pixels (96dpi)
         const calculatedPages = Math.ceil(contentHeight / effectivePageHeight) || 1;
         setTotalPages(calculatedPages);
       });
