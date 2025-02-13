@@ -11,7 +11,7 @@ import { usePageManagement } from '@/hooks/manuscript/usePageManagement';
 import PageFormatControls from './PageFormatControls';
 import { standardPaperSizes, type MarginSettings } from '@/types/paper';
 import TextAnalysis from '../TextAnalysis';
-import { calculateScores } from '@/utils/readabilityScores';
+import calculateScores from '@/utils/readabilityScores';
 
 interface Chapter {
   id: string;
