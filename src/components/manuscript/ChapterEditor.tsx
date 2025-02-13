@@ -10,6 +10,8 @@ import EditorHeader from './EditorHeader';
 import { usePageManagement } from '@/hooks/manuscript/usePageManagement';
 import PageFormatControls from './PageFormatControls';
 import { standardPaperSizes, type MarginSettings } from '@/types/paper';
+import TextAnalysis from '../TextAnalysis';
+import { calculateScores } from '@/utils/readabilityScores';
 
 interface Chapter {
   id: string;
@@ -131,7 +133,7 @@ const ChapterEditor = ({
 
   return (
     <ScrollArea className="h-full">
-      <div className="p-8 max-w-[11in] mx-auto">
+      <div className="p-8 max-w-[11in] mx-auto space-y-8">
         <EditorHeader
           chapterId={chapter.chapter_id}
           content={chapter.content}
@@ -252,6 +254,18 @@ const ChapterEditor = ({
               </Button>
             )}
           </div>
+        </div>
+
+        <div className="mt-8">
+          <TextAnalysis 
+            scores={calculateScores(chapter.content)}
+            content={chapter.content}
+            aiAnalysis={aiAnalysis}
+            isAnalyzing={isAnalyzing}
+            onAnalyze={() => {
+              console.log('Analyzing content...');
+            }}
+          />
         </div>
       </div>
     </ScrollArea>
