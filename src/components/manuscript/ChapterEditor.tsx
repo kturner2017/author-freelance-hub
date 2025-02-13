@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ScrollArea } from '../ui/scroll-area';
 import { Badge } from '../ui/badge';
 import RichTextEditor from '../RichTextEditor';
@@ -35,8 +35,23 @@ const ChapterEditor = ({
   const [selectedTemplate, setSelectedTemplate] = useState(chapter.template || 'classic');
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState<'6x9' | '8.5x11'>('6x9');
   const [showSinglePage, setShowSinglePage] = useState(false);
+  const editorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (showSinglePage && editorRef.current) {
+      // Calculate total pages based on content height and page size
+      const contentHeight = editorRef.current.scrollHeight;
+      const pageHeight = pageSize === '6x9' ? 9 * 96 : 11 * 96; // Convert inches to pixels (96dpi)
+      const calculatedPages = Math.ceil(contentHeight / (pageHeight - 96)); // Subtract margins
+      setTotalPages(Math.max(1, calculatedPages));
+      
+      // Reset to first page when switching view modes or page sizes
+      setCurrentPage(1);
+    }
+  }, [showSinglePage, pageSize, chapter.content]);
 
   const handleTemplateSelect = async (templateId: string) => {
     try {
@@ -72,6 +87,28 @@ const ChapterEditor = ({
 
   const toggleViewMode = () => {
     setShowSinglePage(!showSinglePage);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(prev => prev + 1);
+      
+      // Scroll to top of page
+      if (editorRef.current) {
+        editorRef.current.scrollTop = 0;
+      }
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(prev => prev - 1);
+      
+      // Scroll to top of page
+      if (editorRef.current) {
+        editorRef.current.scrollTop = 0;
+      }
+    }
   };
 
   const pageClass = pageSize === '6x9' 
@@ -139,14 +176,21 @@ const ChapterEditor = ({
               variant="ghost"
               size="icon"
               className="absolute left-4 top-1/2 -translate-y-1/2"
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              onClick={handlePrevPage}
               disabled={currentPage === 1}
             >
               <ChevronLeft className="h-6 w-6" />
             </Button>
           )}
           
-          <div className={`${showSinglePage ? pageClass : ''} bg-white shadow-lg relative mx-auto`}>
+          <div 
+            ref={editorRef}
+            className={`${showSinglePage ? pageClass : ''} bg-white shadow-lg relative mx-auto overflow-hidden`}
+            style={{
+              transform: showSinglePage ? `translateY(-${(currentPage - 1) * 100}%)` : 'none',
+              transition: 'transform 0.3s ease-in-out'
+            }}
+          >
             <div className={`${showSinglePage ? 'p-8' : ''}`}>
               <RichTextEditor
                 key={`editor-${chapter.id}`}
@@ -156,7 +200,7 @@ const ChapterEditor = ({
             </div>
             {showSinglePage && (
               <div className="absolute bottom-4 w-full text-center text-gray-500">
-                Page {currentPage}
+                Page {currentPage} of {totalPages}
               </div>
             )}
           </div>
@@ -166,7 +210,8 @@ const ChapterEditor = ({
               variant="ghost"
               size="icon"
               className="absolute right-4 top-1/2 -translate-y-1/2"
-              onClick={() => setCurrentPage(currentPage + 1)}
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
             >
               <ChevronRight className="h-6 w-6" />
             </Button>
