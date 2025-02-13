@@ -276,9 +276,9 @@ const ChapterEditor = ({
                 top: 0,
                 left: 0,
                 right: 0,
-                transform: showSinglePage ? `translateY(-${(currentPage - 1) * (pageSize === '6x9' ? 9 : 11)}in)` : 'none',
+                transform: showSinglePage ? `translateY(-${(currentPage - 1) * ((pageSize === '6x9' ? 9 : 11) - margins.top - margins.bottom)}in)` : 'none',
                 transition: 'transform 0.3s ease-in-out',
-                height: showSinglePage ? `${totalPages * 100}%` : 'auto'
+                height: showSinglePage ? `${totalPages * (pageSize === '6x9' ? 9 : 11)}in` : 'auto'
               }}
             >
               <RichTextEditor
