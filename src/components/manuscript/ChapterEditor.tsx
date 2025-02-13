@@ -287,8 +287,9 @@ const ChapterEditor = ({
             >
               <div
                 style={{
-                  minHeight: showSinglePage ? `${(pageSize === '6x9' ? 9 : 11) - margins.top - margins.bottom - 0.25}in` : 'auto',
-                  height: 'auto',
+                  minHeight: `${(pageSize === '6x9' ? 9 : 11) - margins.top - margins.bottom - 0.25}in`,
+                  maxHeight: `${(pageSize === '6x9' ? 9 : 11) - margins.top - margins.bottom - 0.25}in`,
+                  height: showSinglePage ? `${(pageSize === '6x9' ? 9 : 11) - margins.top - margins.bottom - 0.25}in` : 'auto',
                   overflow: 'visible',
                   padding: 0,
                   margin: 0
