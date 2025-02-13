@@ -63,6 +63,9 @@ const ChapterEditor = ({
       const effectivePageHeight = pageHeight - (margins.top + margins.bottom) * 96; // Account for margins
       const calculatedPages = Math.ceil(contentHeight / effectivePageHeight);
       setTotalPages(Math.max(1, calculatedPages));
+
+      // Reset to first page when switching view modes or page sizes
+      setCurrentPage(1);
     }
   }, [showSinglePage, pageSize, chapter.content, margins]);
 
@@ -269,7 +272,11 @@ const ChapterEditor = ({
           >
             <div
               style={{
-                transform: showSinglePage ? `translateY(-${(currentPage - 1) * 100}%)` : 'none',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                transform: showSinglePage ? `translateY(-${(currentPage - 1) * (pageSize === '6x9' ? 9 : 11)}in)` : 'none',
                 transition: 'transform 0.3s ease-in-out',
                 height: showSinglePage ? `${totalPages * 100}%` : 'auto'
               }}
