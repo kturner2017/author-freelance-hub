@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { ScrollArea } from '../ui/scroll-area';
 import { Button } from '../ui/button';
@@ -25,16 +26,6 @@ interface ChapterEditorProps {
   isAnalyzing: boolean;
 }
 
-interface MarginSettings {
-  top: number;
-  right: number;
-  bottom: number;
-  left: number;
-  gutter: number;
-  headerDistance: number;
-  footerDistance: number;
-}
-
 const ChapterEditor = ({ 
   chapter, 
   onContentChange,
@@ -44,7 +35,7 @@ const ChapterEditor = ({
   const { toast } = useToast();
   const [selectedTemplate, setSelectedTemplate] = useState(chapter.template || 'classic');
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
-  const [pageSize, setPageSize] = useState<string>('6x9');
+  const [pageSize, setPageSize] = useState<'6x9' | '8.5x11'>('6x9');
   const [showSinglePage, setShowSinglePage] = useState(false);
   const [margins, setMargins] = useState<MarginSettings>({
     top: 1,
@@ -127,6 +118,12 @@ const ChapterEditor = ({
     };
   };
 
+  const handlePaperSizeChange = (size: string) => {
+    if (size === '6x9' || size === '8.5x11') {
+      setPageSize(size);
+    }
+  };
+
   return (
     <ScrollArea className="h-full">
       <div className="p-8 max-w-[11in] mx-auto">
@@ -137,7 +134,7 @@ const ChapterEditor = ({
           pageSize={pageSize}
           showSinglePage={showSinglePage}
           onTemplateClick={() => setShowTemplateSelector(!showTemplateSelector)}
-          onPageSizeChange={setPageSize}
+          onPageSizeChange={handlePaperSizeChange}
           onViewModeToggle={() => setShowSinglePage(!showSinglePage)}
         />
 
@@ -156,7 +153,7 @@ const ChapterEditor = ({
               margins={margins}
               onMarginChange={handleMarginChange}
               selectedPaperSize={pageSize}
-              onPaperSizeChange={setPageSize}
+              onPaperSizeChange={handlePaperSizeChange}
             />
           </div>
         )}
