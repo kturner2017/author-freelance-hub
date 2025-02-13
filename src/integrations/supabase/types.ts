@@ -707,6 +707,7 @@ export type Database = {
           genre: string
           id: string
           project_name: string
+          template_version: string | null
           type: string
           updated_at: string | null
           user_id: string | null
@@ -718,6 +719,7 @@ export type Database = {
           genre: string
           id?: string
           project_name: string
+          template_version?: string | null
           type: string
           updated_at?: string | null
           user_id?: string | null
@@ -729,6 +731,7 @@ export type Database = {
           genre?: string
           id?: string
           project_name?: string
+          template_version?: string | null
           type?: string
           updated_at?: string | null
           user_id?: string | null
