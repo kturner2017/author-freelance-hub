@@ -147,103 +147,103 @@ const ChapterEditor = ({
           </div>
         )}
 
-        {showSinglePage && (
-          <div className="mb-8">
+        <div className="space-y-8">
+          {showSinglePage && (
             <PageFormatControls
               margins={margins}
               onMarginChange={handleMarginChange}
               selectedPaperSize={pageSize}
               onPaperSizeChange={handlePaperSizeChange}
             />
-          </div>
-        )}
-
-        <div className={`relative ${showSinglePage ? 'flex justify-center' : ''}`}>
-          {showSinglePage && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
-              onClick={handlePrevPage}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </Button>
           )}
-          
-          <div 
-            ref={editorRef}
-            className={`${showSinglePage ? getPageClass() : ''} bg-[#F5F5F5] shadow-lg relative mx-auto`}
-            style={{
-              height: showSinglePage ? undefined : 'auto',
-              boxSizing: 'border-box',
-              position: 'relative',
-              backgroundColor: showSinglePage ? '#E8E8E8' : undefined
-            }}
-          >
-            {/* Margins guide */}
+
+          <div className={`relative ${showSinglePage ? 'flex justify-center' : ''}`}>
             {showSinglePage && (
-              <div
-                className="absolute inset-0"
-                style={{
-                  border: '1px solid rgba(0,0,0,0.2)',
-                  margin: `${margins.top}in ${margins.right}in ${margins.bottom}in ${margins.left}in`,
-                  pointerEvents: 'none',
-                  backgroundColor: 'rgba(0,0,0,0.03)'
-                }}
-              />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
+                onClick={handlePrevPage}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </Button>
             )}
             
-            {showSinglePage ? (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: `${margins.top}in`,
-                  left: `${margins.left}in`,
-                  ...getTextAreaDimensions(),
-                  overflow: 'hidden',
-                  backgroundColor: '#FFFFFF'
-                }}
-              >
+            <div 
+              ref={editorRef}
+              className={`${showSinglePage ? getPageClass() : ''} bg-[#F5F5F5] shadow-lg relative mx-auto`}
+              style={{
+                height: showSinglePage ? undefined : 'auto',
+                boxSizing: 'border-box',
+                position: 'relative',
+                backgroundColor: showSinglePage ? '#E8E8E8' : undefined
+              }}
+            >
+              {/* Margins guide */}
+              {showSinglePage && (
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    border: '1px solid rgba(0,0,0,0.2)',
+                    margin: `${margins.top}in ${margins.right}in ${margins.bottom}in ${margins.left}in`,
+                    pointerEvents: 'none',
+                    backgroundColor: 'rgba(0,0,0,0.03)'
+                  }}
+                />
+              )}
+              
+              {showSinglePage ? (
                 <div
                   style={{
-                    transform: `translateY(-${(currentPage - 1) * 100}%)`,
-                    transition: 'transform 0.3s ease-in-out',
+                    position: 'absolute',
+                    top: `${margins.top}in`,
+                    left: `${margins.left}in`,
+                    ...getTextAreaDimensions(),
+                    overflow: 'hidden',
+                    backgroundColor: '#FFFFFF'
                   }}
                 >
-                  <RichTextEditor
-                    key={`editor-${chapter.id}`}
-                    content={chapter.content || ''}
-                    onChange={onContentChange}
-                  />
+                  <div
+                    style={{
+                      transform: `translateY(-${(currentPage - 1) * 100}%)`,
+                      transition: 'transform 0.3s ease-in-out',
+                    }}
+                  >
+                    <RichTextEditor
+                      key={`editor-${chapter.id}`}
+                      content={chapter.content || ''}
+                      onChange={onContentChange}
+                    />
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <RichTextEditor
-                key={`editor-${chapter.id}`}
-                content={chapter.content || ''}
-                onChange={onContentChange}
-              />
-            )}
-            
+              ) : (
+                <RichTextEditor
+                  key={`editor-${chapter.id}`}
+                  content={chapter.content || ''}
+                  onChange={onContentChange}
+                />
+              )}
+              
+              {showSinglePage && (
+                <div className="absolute bottom-2 left-0 right-0 text-center text-gray-500">
+                  Page {currentPage} of {totalPages}
+                </div>
+              )}
+            </div>
+
             {showSinglePage && (
-              <div className="absolute bottom-2 left-0 right-0 text-center text-gray-500">
-                Page {currentPage} of {totalPages}
-              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-10"
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+              >
+                <ChevronRight className="h-6 w-6" />
+              </Button>
             )}
           </div>
-
-          {showSinglePage && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-10"
-              onClick={handleNextPage}
-              disabled={currentPage === totalPages}
-            >
-              <ChevronRight className="h-6 w-6" />
-            </Button>
-          )}
         </div>
       </div>
     </ScrollArea>
