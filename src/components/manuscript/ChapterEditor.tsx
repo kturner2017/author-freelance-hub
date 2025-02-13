@@ -280,14 +280,18 @@ const ChapterEditor = ({
                 transform: showSinglePage ? `translateY(-${(currentPage - 1) * (pageSize === '6x9' ? 9 : 11)}in)` : 'none',
                 transition: 'transform 0.3s ease-in-out',
                 height: showSinglePage ? `${totalPages * (pageSize === '6x9' ? 9 : 11)}in` : 'auto',
-                backgroundColor: 'white'
+                backgroundColor: 'white',
+                padding: 0,
+                margin: 0
               }}
             >
               <div
                 style={{
                   minHeight: showSinglePage ? `${(pageSize === '6x9' ? 9 : 11) - margins.top - margins.bottom - 0.25}in` : 'auto',
                   height: 'auto',
-                  overflow: 'visible'
+                  overflow: 'visible',
+                  padding: 0,
+                  margin: 0
                 }}
               >
                 <RichTextEditor
