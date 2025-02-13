@@ -277,15 +277,17 @@ const ChapterEditor = ({
                 top: 0,
                 left: 0,
                 right: 0,
-                transform: showSinglePage ? `translateY(-${(currentPage - 1) * ((pageSize === '6x9' ? 9 : 11))}in)` : 'none',
+                transform: showSinglePage ? `translateY(-${(currentPage - 1) * (pageSize === '6x9' ? 9 : 11)}in)` : 'none',
                 transition: 'transform 0.3s ease-in-out',
-                height: showSinglePage ? `${totalPages * (pageSize === '6x9' ? 9 : 11)}in` : 'auto'
+                height: showSinglePage ? `${totalPages * (pageSize === '6x9' ? 9 : 11)}in` : 'auto',
+                backgroundColor: 'white'
               }}
             >
               <div
                 style={{
-                  height: showSinglePage ? `${(pageSize === '6x9' ? 9 : 11) - margins.top - margins.bottom - 0.25}in` : 'auto',
-                  overflow: 'hidden'
+                  minHeight: showSinglePage ? `${(pageSize === '6x9' ? 9 : 11) - margins.top - margins.bottom - 0.25}in` : 'auto',
+                  height: 'auto',
+                  overflow: 'visible'
                 }}
               >
                 <RichTextEditor
