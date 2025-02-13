@@ -58,7 +58,8 @@ const ChapterEditor = ({
   useEffect(() => {
     if (showSinglePage && editorRef.current) {
       // Calculate total pages based on content height and page size
-      const contentHeight = editorRef.current.scrollHeight;
+      const contentDiv = editorRef.current.querySelector('.ProseMirror');
+      const contentHeight = contentDiv ? contentDiv.scrollHeight : 0;
       const pageHeight = pageSize === '6x9' ? 9 * 96 : 11 * 96; // Convert inches to pixels (96dpi)
       const effectivePageHeight = pageHeight - (margins.top + margins.bottom) * 96; // Account for margins
       const calculatedPages = Math.ceil(contentHeight / effectivePageHeight);
@@ -276,19 +277,26 @@ const ChapterEditor = ({
                 top: 0,
                 left: 0,
                 right: 0,
-                transform: showSinglePage ? `translateY(-${(currentPage - 1) * ((pageSize === '6x9' ? 9 : 11) - margins.top - margins.bottom)}in)` : 'none',
+                transform: showSinglePage ? `translateY(-${(currentPage - 1) * ((pageSize === '6x9' ? 9 : 11))}in)` : 'none',
                 transition: 'transform 0.3s ease-in-out',
                 height: showSinglePage ? `${totalPages * (pageSize === '6x9' ? 9 : 11)}in` : 'auto'
               }}
             >
-              <RichTextEditor
-                key={`editor-${chapter.id}`}
-                content={chapter.content || ''}
-                onChange={onContentChange}
-              />
+              <div
+                style={{
+                  height: showSinglePage ? `${(pageSize === '6x9' ? 9 : 11) - margins.top - margins.bottom - 0.5}in` : 'auto',
+                  overflow: 'hidden'
+                }}
+              >
+                <RichTextEditor
+                  key={`editor-${chapter.id}`}
+                  content={chapter.content || ''}
+                  onChange={onContentChange}
+                />
+              </div>
             </div>
             {showSinglePage && (
-              <div className="absolute bottom-4 w-full text-center text-gray-500">
+              <div className="absolute bottom-2 left-0 right-0 text-center text-gray-500">
                 Page {currentPage} of {totalPages}
               </div>
             )}
