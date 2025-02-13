@@ -61,15 +61,21 @@ export default function PaymentSettings() {
       const { data: settings, error } = await supabase
         .from('payment_settings')
         .select('*')
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
       if (settings) {
+        // Parse the notification_preferences JSON if it exists
+        const notificationPreferences = settings.notification_preferences as { email: boolean; push: boolean } || {
+          email: true,
+          push: true,
+        };
+
         form.reset({
-          default_payment_type: settings.default_payment_type,
-          auto_release_payments: settings.auto_release_payments,
-          notification_preferences: settings.notification_preferences,
+          default_payment_type: settings.default_payment_type || 'full',
+          auto_release_payments: settings.auto_release_payments || false,
+          notification_preferences: notificationPreferences,
         });
       }
     } catch (error) {
