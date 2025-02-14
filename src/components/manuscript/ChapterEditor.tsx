@@ -1,17 +1,12 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { ScrollArea } from '../ui/scroll-area';
-import { Badge } from '../ui/badge';
-import RichTextEditor from '../RichTextEditor';
-import TextAnalysis from '../TextAnalysis';
-import { Button } from '../ui/button';
-import { ChevronLeft, ChevronRight, Maximize2, Minimize2 } from 'lucide-react';
-import TemplateSelector from './TemplateSelector';
-import { getWordCount } from '@/utils/wordCount';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import ChapterHeader from './editor/ChapterHeader';
+import MarginControls from './editor/MarginControls';
+import PageEditor from './editor/PageEditor';
+import TemplateSelector from './TemplateSelector';
 
 interface Chapter {
   id: string;
@@ -91,25 +86,12 @@ const ChapterEditor = ({
     }
   };
 
-  const toggleTemplateSelector = () => {
-    setShowTemplateSelector(!showTemplateSelector);
-  };
-
-  const handlePageSizeChange = (size: '6x9' | '8.5x11') => {
-    setPageSize(size);
-  };
-
-  const toggleViewMode = () => {
-    setShowSinglePage(!showSinglePage);
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(prev => prev + 1);
-      if (editorRef.current) {
-        editorRef.current.scrollTop = 0;
-      }
-    }
+  const handleMarginChange = (side: keyof Margins, value: string) => {
+    const numValue = parseFloat(value) || 0;
+    setMargins(prev => ({
+      ...prev,
+      [side]: Math.max(0, Math.min(3, numValue))
+    }));
   };
 
   const handlePrevPage = () => {
@@ -121,80 +103,28 @@ const ChapterEditor = ({
     }
   };
 
-  const handleMarginChange = (side: keyof Margins, value: string) => {
-    const numValue = parseFloat(value) || 0;
-    setMargins(prev => ({
-      ...prev,
-      [side]: Math.max(0, Math.min(3, numValue))
-    }));
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(prev => prev + 1);
+      if (editorRef.current) {
+        editorRef.current.scrollTop = 0;
+      }
+    }
   };
-
-  const pageClass = pageSize === '6x9' 
-    ? 'w-[6in] h-[9in]' 
-    : 'w-[8.5in] h-[11in]';
 
   return (
     <ScrollArea className="h-full">
       <div className="p-8 max-w-[11in] mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-serif font-semibold text-primary-800">
-            {chapter.chapter_id}
-          </h2>
-          <div className="flex items-center gap-4">
-            <Badge 
-              variant="secondary" 
-              className="text-sm bg-primary-50 text-primary-700 border-primary-200 cursor-pointer"
-              onClick={toggleTemplateSelector}
-            >
-              Template: {selectedTemplate}
-            </Badge>
-            <Badge variant="secondary" className="text-sm bg-primary-50 text-primary-700 border-primary-200">
-              {getWordCount(chapter.content).toLocaleString()} words
-            </Badge>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageSizeChange('6x9')}
-                className={cn(
-                  "border-2",
-                  pageSize === '6x9' ? 'border-primary-500 bg-primary-50' : ''
-                )}
-              >
-                6" x 9"
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageSizeChange('8.5x11')}
-                className={cn(
-                  "border-2",
-                  pageSize === '8.5x11' ? 'border-primary-500 bg-primary-50' : ''
-                )}
-              >
-                8.5" x 11"
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={toggleViewMode}
-                className="flex items-center gap-2"
-              >
-                {showSinglePage ? (
-                  <>
-                    <Maximize2 className="h-4 w-4" />
-                    Full View
-                  </>
-                ) : (
-                  <>
-                    <Minimize2 className="h-4 w-4" />
-                    Book View
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </div>
+        <ChapterHeader
+          chapterId={chapter.chapter_id}
+          content={chapter.content}
+          selectedTemplate={selectedTemplate}
+          pageSize={pageSize}
+          showSinglePage={showSinglePage}
+          onTemplateClick={() => setShowTemplateSelector(!showTemplateSelector)}
+          onPageSizeChange={setPageSize}
+          onViewModeToggle={() => setShowSinglePage(!showSinglePage)}
+        />
 
         {showTemplateSelector && (
           <div className="mb-8">
@@ -206,142 +136,24 @@ const ChapterEditor = ({
         )}
 
         {showSinglePage && (
-          <div className="grid grid-cols-4 gap-4 mb-4">
-            <div>
-              <Label htmlFor="top-margin">Top Margin (inches)</Label>
-              <Input
-                id="top-margin"
-                type="number"
-                min="0"
-                max="3"
-                step="0.25"
-                value={margins.top}
-                onChange={(e) => handleMarginChange('top', e.target.value)}
-                className="border-primary-200"
-              />
-            </div>
-            <div>
-              <Label htmlFor="right-margin">Right Margin (inches)</Label>
-              <Input
-                id="right-margin"
-                type="number"
-                min="0"
-                max="3"
-                step="0.25"
-                value={margins.right}
-                onChange={(e) => handleMarginChange('right', e.target.value)}
-                className="border-primary-200"
-              />
-            </div>
-            <div>
-              <Label htmlFor="bottom-margin">Bottom Margin (inches)</Label>
-              <Input
-                id="bottom-margin"
-                type="number"
-                min="0"
-                max="3"
-                step="0.25"
-                value={margins.bottom}
-                onChange={(e) => handleMarginChange('bottom', e.target.value)}
-                className="border-primary-200"
-              />
-            </div>
-            <div>
-              <Label htmlFor="left-margin">Left Margin (inches)</Label>
-              <Input
-                id="left-margin"
-                type="number"
-                min="0"
-                max="3"
-                step="0.25"
-                value={margins.left}
-                onChange={(e) => handleMarginChange('left', e.target.value)}
-                className="border-primary-200"
-              />
-            </div>
-          </div>
+          <MarginControls
+            margins={margins}
+            onMarginChange={handleMarginChange}
+          />
         )}
 
-        <div className={cn(
-          "relative",
-          showSinglePage ? 'flex justify-center bg-gray-100 p-8 rounded-lg' : '',
-        )}>
-          {showSinglePage && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 hover:bg-white/80"
-              onClick={handlePrevPage}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </Button>
-          )}
-          
-          <div 
-            ref={editorRef}
-            className={cn(
-              "bg-white relative mx-auto transition-all duration-300",
-              showSinglePage ? pageClass : '',
-              showSinglePage ? 'shadow-2xl' : 'shadow-lg',
-            )}
-            style={{
-              padding: showSinglePage ? `${margins.top}in ${margins.right}in ${margins.bottom}in ${margins.left}in` : undefined,
-              height: showSinglePage ? (pageSize === '6x9' ? '9in' : '11in') : 'auto',
-              position: 'relative',
-              overflow: 'hidden',
-            }}
-          >
-            <div
-              className={cn(
-                "absolute inset-0",
-                showSinglePage ? 'bg-white' : ''
-              )}
-              style={{
-                transform: showSinglePage ? `translateY(-${(currentPage - 1) * (pageSize === '6x9' ? 9 : 11)}in)` : 'none',
-                transition: 'transform 0.3s ease-in-out',
-                height: showSinglePage ? `${totalPages * (pageSize === '6x9' ? 9 : 11)}in` : 'auto',
-              }}
-            >
-              <div
-                style={{
-                  minHeight: showSinglePage ? `${(pageSize === '6x9' ? 9 : 11) - margins.top - margins.bottom - 0.25}in` : 'auto',
-                  height: 'auto',
-                  overflow: 'visible',
-                }}
-                className={cn(
-                  showSinglePage ? 'bg-white' : '',
-                  'prose max-w-none'
-                )}
-              >
-                <RichTextEditor
-                  key={`editor-${chapter.id}`}
-                  content={chapter.content || ''}
-                  onChange={onContentChange}
-                />
-              </div>
-            </div>
-            {showSinglePage && (
-              <div className="absolute bottom-2 left-0 right-0 text-center">
-                <span className="px-4 py-1 bg-gray-800 text-white text-sm rounded-full">
-                  Page {currentPage} of {totalPages}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {showSinglePage && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 hover:bg-white/80"
-              onClick={handleNextPage}
-              disabled={currentPage === totalPages}
-            >
-              <ChevronRight className="h-6 w-6" />
-            </Button>
-          )}
-        </div>
+        <PageEditor
+          editorRef={editorRef}
+          showSinglePage={showSinglePage}
+          pageSize={pageSize}
+          margins={margins}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          content={chapter.content}
+          onContentChange={onContentChange}
+          onPrevPage={handlePrevPage}
+          onNextPage={handleNextPage}
+        />
       </div>
     </ScrollArea>
   );
