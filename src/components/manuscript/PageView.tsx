@@ -59,8 +59,7 @@ const PageView = ({
           height: showSinglePage ? undefined : 'auto',
           boxSizing: 'border-box',
           position: 'relative',
-          backgroundColor: showSinglePage ? '#E8E8E8' : undefined,
-          overflow: 'hidden'
+          backgroundColor: showSinglePage ? '#E8E8E8' : undefined
         }}
       >
         {showSinglePage && (
@@ -75,33 +74,42 @@ const PageView = ({
           />
         )}
         
-        <div
-          style={{
-            position: showSinglePage ? 'absolute' : 'relative',
-            top: showSinglePage ? `${margins.top}in` : 0,
-            left: showSinglePage ? `${margins.left}in` : 0,
-            right: showSinglePage ? `${margins.right}in` : 0,
-            ...(showSinglePage ? getTextAreaDimensions() : {}),
-            backgroundColor: '#FFFFFF',
-            height: showSinglePage ? getPageHeight() : 'auto',
-            overflow: 'hidden'
-          }}
-        >
+        {showSinglePage ? (
           <div
-            className="ProseMirror-wrapper"
             style={{
-              height: '100%',
-              transform: showSinglePage ? `translateY(-${(currentPage - 1) * 100}%)` : 'none',
-              transition: 'transform 0.3s ease-in-out',
+              position: 'absolute',
+              top: `${margins.top}in`,
+              left: `${margins.left}in`,
+              ...getTextAreaDimensions(),
+              overflow: 'hidden',
+              backgroundColor: '#FFFFFF',
+              height: getPageHeight()
             }}
           >
+            <div
+              className="ProseMirror-wrapper"
+              style={{
+                height: '100%',
+                transform: `translateY(-${(currentPage - 1) * 100}%)`,
+                transition: 'transform 0.3s ease-in-out',
+              }}
+            >
+              <RichTextEditor
+                key={`editor-${chapterId}`}
+                content={content || ''}
+                onChange={onContentChange}
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="p-4">
             <RichTextEditor
               key={`editor-${chapterId}`}
               content={content || ''}
               onChange={onContentChange}
             />
           </div>
-        </div>
+        )}
         
         {showSinglePage && (
           <div className="absolute bottom-2 left-0 right-0 text-center text-gray-500">
