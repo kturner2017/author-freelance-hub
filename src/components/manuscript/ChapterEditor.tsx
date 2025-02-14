@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import FullChapterEditor from './editor/FullChapterEditor';
 import PageViewEditor from './editor/PageViewEditor';
 
@@ -26,11 +26,12 @@ const ChapterEditor = ({
   isAnalyzing 
 }: ChapterEditorProps) => {
   const { toast } = useToast();
+  const { chapterId } = useParams();
 
   return (
     <Routes>
       <Route 
-        path="full-view" 
+        path="/" 
         element={
           <FullChapterEditor 
             content={chapter.content}
@@ -39,17 +40,22 @@ const ChapterEditor = ({
         }
       />
       <Route 
-        path="page-view" 
+        path="/full-view" 
         element={
-          <PageViewEditor 
+          <FullChapterEditor 
             content={chapter.content}
             onContentChange={onContentChange}
           />
         }
       />
       <Route 
-        path="/" 
-        element={<Navigate to="full-view" replace />} 
+        path="/page-view" 
+        element={
+          <PageViewEditor 
+            content={chapter.content}
+            onContentChange={onContentChange}
+          />
+        }
       />
     </Routes>
   );
