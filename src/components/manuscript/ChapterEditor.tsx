@@ -1,17 +1,17 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { ScrollArea } from '../ui/scroll-area';
 import { Badge } from '../ui/badge';
 import RichTextEditor from '../RichTextEditor';
 import TextAnalysis from '../TextAnalysis';
 import { Button } from '../ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Maximize2, Minimize2 } from 'lucide-react';
 import TemplateSelector from './TemplateSelector';
 import { getWordCount } from '@/utils/wordCount';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { cn } from '@/lib/utils';
 
 interface Chapter {
   id: string;
@@ -156,7 +156,10 @@ const ChapterEditor = ({
                 variant="outline"
                 size="sm"
                 onClick={() => handlePageSizeChange('6x9')}
-                className={pageSize === '6x9' ? 'bg-primary-100' : ''}
+                className={cn(
+                  "border-2",
+                  pageSize === '6x9' ? 'border-primary-500 bg-primary-50' : ''
+                )}
               >
                 6" x 9"
               </Button>
@@ -164,7 +167,10 @@ const ChapterEditor = ({
                 variant="outline"
                 size="sm"
                 onClick={() => handlePageSizeChange('8.5x11')}
-                className={pageSize === '8.5x11' ? 'bg-primary-100' : ''}
+                className={cn(
+                  "border-2",
+                  pageSize === '8.5x11' ? 'border-primary-500 bg-primary-50' : ''
+                )}
               >
                 8.5" x 11"
               </Button>
@@ -172,8 +178,19 @@ const ChapterEditor = ({
                 variant="outline"
                 size="sm"
                 onClick={toggleViewMode}
+                className="flex items-center gap-2"
               >
-                {showSinglePage ? 'Full View' : 'Page View'}
+                {showSinglePage ? (
+                  <>
+                    <Maximize2 className="h-4 w-4" />
+                    Full View
+                  </>
+                ) : (
+                  <>
+                    <Minimize2 className="h-4 w-4" />
+                    Book View
+                  </>
+                )}
               </Button>
             </div>
           </div>
@@ -200,6 +217,7 @@ const ChapterEditor = ({
                 step="0.25"
                 value={margins.top}
                 onChange={(e) => handleMarginChange('top', e.target.value)}
+                className="border-primary-200"
               />
             </div>
             <div>
@@ -212,6 +230,7 @@ const ChapterEditor = ({
                 step="0.25"
                 value={margins.right}
                 onChange={(e) => handleMarginChange('right', e.target.value)}
+                className="border-primary-200"
               />
             </div>
             <div>
@@ -224,6 +243,7 @@ const ChapterEditor = ({
                 step="0.25"
                 value={margins.bottom}
                 onChange={(e) => handleMarginChange('bottom', e.target.value)}
+                className="border-primary-200"
               />
             </div>
             <div>
@@ -236,17 +256,21 @@ const ChapterEditor = ({
                 step="0.25"
                 value={margins.left}
                 onChange={(e) => handleMarginChange('left', e.target.value)}
+                className="border-primary-200"
               />
             </div>
           </div>
         )}
 
-        <div className={`relative ${showSinglePage ? 'flex justify-center' : ''}`}>
+        <div className={cn(
+          "relative",
+          showSinglePage ? 'flex justify-center bg-gray-100 p-8 rounded-lg' : '',
+        )}>
           {showSinglePage && (
             <Button
               variant="ghost"
               size="icon"
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 hover:bg-white/80"
               onClick={handlePrevPage}
               disabled={currentPage === 1}
             >
@@ -256,26 +280,27 @@ const ChapterEditor = ({
           
           <div 
             ref={editorRef}
-            className={`${showSinglePage ? pageClass : ''} bg-white shadow-lg relative mx-auto`}
+            className={cn(
+              "bg-white relative mx-auto transition-all duration-300",
+              showSinglePage ? pageClass : '',
+              showSinglePage ? 'shadow-2xl' : 'shadow-lg',
+            )}
             style={{
               padding: showSinglePage ? `${margins.top}in ${margins.right}in ${margins.bottom}in ${margins.left}in` : undefined,
               height: showSinglePage ? (pageSize === '6x9' ? '9in' : '11in') : 'auto',
               position: 'relative',
-              overflow: 'hidden'
+              overflow: 'hidden',
             }}
           >
             <div
+              className={cn(
+                "absolute inset-0",
+                showSinglePage ? 'bg-white' : ''
+              )}
               style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
                 transform: showSinglePage ? `translateY(-${(currentPage - 1) * (pageSize === '6x9' ? 9 : 11)}in)` : 'none',
                 transition: 'transform 0.3s ease-in-out',
                 height: showSinglePage ? `${totalPages * (pageSize === '6x9' ? 9 : 11)}in` : 'auto',
-                backgroundColor: 'white',
-                padding: 0,
-                margin: 0
               }}
             >
               <div
@@ -283,9 +308,11 @@ const ChapterEditor = ({
                   minHeight: showSinglePage ? `${(pageSize === '6x9' ? 9 : 11) - margins.top - margins.bottom - 0.25}in` : 'auto',
                   height: 'auto',
                   overflow: 'visible',
-                  padding: 0,
-                  margin: 0
                 }}
+                className={cn(
+                  showSinglePage ? 'bg-white' : '',
+                  'prose max-w-none'
+                )}
               >
                 <RichTextEditor
                   key={`editor-${chapter.id}`}
@@ -295,8 +322,10 @@ const ChapterEditor = ({
               </div>
             </div>
             {showSinglePage && (
-              <div className="absolute bottom-2 left-0 right-0 text-center text-gray-500">
-                Page {currentPage} of {totalPages}
+              <div className="absolute bottom-2 left-0 right-0 text-center">
+                <span className="px-4 py-1 bg-gray-800 text-white text-sm rounded-full">
+                  Page {currentPage} of {totalPages}
+                </span>
               </div>
             )}
           </div>
@@ -305,7 +334,7 @@ const ChapterEditor = ({
             <Button
               variant="ghost"
               size="icon"
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-10"
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 hover:bg-white/80"
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
             >
