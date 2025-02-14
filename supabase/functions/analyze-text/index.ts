@@ -14,6 +14,7 @@ serve(async (req) => {
 
   try {
     const { text } = await req.json();
+    // Clean HTML tags from text
     const cleanText = text?.replace(/<[^>]*>/g, '')?.trim();
     console.log('Analyzing text:', cleanText?.substring(0, 100) + '...');
 
@@ -79,127 +80,31 @@ serve(async (req) => {
 });
 
 function analyzeShowVsTell(text: string) {
+  // Split into sentences, handling multiple punctuation marks
   const sentences = text.split(/[.!?]+/).filter(sentence => sentence.trim().length > 0);
   
-  const showingWords = {
-    // Sensory Details - Visual
-    'sparkled': 'Indicates light reflecting or shimmering',
-    'gleamed': 'Shows bright reflection of light',
-    'shimmered': 'Describes a wavering light effect',
-    'flickered': 'Shows unsteady or wavering movement of light',
-    'glistened': 'Indicates shining with reflected light, often wet surfaces',
-    
-    // Sensory Details - Auditory
-    'thundered': 'Describes loud, deep sound',
-    'rustled': 'Shows soft sound of movement',
-    'echoed': 'Indicates sound reflecting off surfaces',
-    'whispered': 'Describes soft, hushed speaking',
-    'roared': 'Shows loud, powerful sound',
-    'growled': 'Indicates deep, threatening sound',
-    'howled': 'Shows loud, prolonged crying or wailing sound',
-    'murmured': 'Describes soft, continuous sound',
-    
-    // Sensory Details - Touch
-    'rough': 'Describes uneven or coarse texture',
-    'smooth': 'Shows even, unbroken surface',
-    'sharp': 'Indicates pointed or cutting quality',
-    'soft': 'Describes gentle or yielding texture',
-    'freezing': 'Shows extreme cold sensation',
-    'scorching': 'Indicates intense heat',
-    
-    // Action Verbs
-    'grabbed': 'Shows sudden, forceful taking',
-    'clutched': 'Indicates tight, desperate holding',
-    'sprinted': 'Shows fast running',
-    'slammed': 'Describes forceful closing or hitting',
-    'dashed': 'Shows quick, sudden movement',
-    'lunged': 'Indicates sudden forward movement',
-    'crawled': 'Shows slow movement on hands and knees',
-    'leaped': 'Describes jumping movement',
-    'darted': 'Shows quick, sudden movement',
-    'stomped': 'Indicates forceful stepping',
-    'shuffled': 'Shows slow, dragging movement',
-    'stumbled': 'Describes unsteady movement',
-    'crept': 'Shows slow, stealthy movement',
-    
-    // Descriptive Adjectives
-    'massive': 'Shows great size or bulk',
-    'tiny': 'Indicates very small size',
-    'ancient': 'Shows great age',
-    'fresh': 'Indicates newness or recent origin',
-    'vibrant': 'Shows bright, strong color or energy',
-    'dull': 'Indicates lack of brightness or interest',
-    'brilliant': 'Shows bright, intense quality',
-    
-    // Weather/Environment
-    'misty': 'Shows foggy or unclear conditions',
-    'stormy': 'Indicates violent weather',
-    'humid': 'Shows moisture in air',
-    'crisp': 'Indicates sharp, clear conditions',
-    
-    // Emotional Expression Through Action
-    'trembled': 'Shows physical manifestation of fear/emotion',
-    'beamed': 'Indicates showing happiness through facial expression',
-    'slouched': 'Shows physical manifestation of defeat/tiredness',
-    'fidgeted': 'Indicates nervous movement'
-  };
+  const showingWords = [
+    // Sensory details
+    'sparkled', 'gleamed', 'thundered', 'rustled', 'trembled', 'shimmered', 'flickered',
+    'rumbled', 'echoed', 'whispered', 'roared', 'growled', 'howled',
+    // Descriptive adjectives
+    'bitter', 'sweet', 'rough', 'smooth', 'sharp', 'crisp', 'freezing', 'scorching',
+    'massive', 'tiny', 'ancient', 'fresh', 'vibrant', 'dull', 'brilliant',
+    // Action verbs
+    'grabbed', 'clutched', 'sprinted', 'slammed', 'dashed', 'lunged', 'crawled',
+    'leaped', 'darted', 'stomped', 'shuffled', 'stumbled', 'crept'
+  ];
   
-  const tellingWords = {
-    // State of Being
-    'was': 'Direct statement of existence',
-    'were': 'Direct statement of plural existence',
-    'had': 'Direct statement of possession',
-    'seemed': 'Indirect observation',
-    'appeared': 'Indirect observation',
-    'felt': 'Direct statement of emotion',
-    'feel': 'Direct statement of current emotion',
-    
-    // Direct Emotion Statements
-    'was angry': 'Direct statement of anger',
-    'was sad': 'Direct statement of sadness',
-    'was happy': 'Direct statement of happiness',
-    'was scared': 'Direct statement of fear',
-    'was excited': 'Direct statement of excitement',
-    'was nervous': 'Direct statement of nervousness',
-    
-    // Passive Observations
-    'watched': 'Passive observation',
-    'looked': 'Passive observation',
-    'saw': 'Passive observation',
-    'heard': 'Passive auditory observation',
-    'noticed': 'Passive observation',
-    'realized': 'Internal recognition',
-    'thought': 'Internal processing',
-    'knew': 'Direct statement of knowledge',
-    
+  const tellingWords = [
+    // State of being
+    'felt', 'feel', 'was', 'were', 'had', 'seemed', 'appeared',
+    // Emotions told directly
+    'was angry', 'was sad', 'was happy', 'was scared', 'was excited',
+    // Passive observations
+    'watched', 'looked', 'saw', 'heard', 'noticed', 'realized',
     // Qualifiers
-    'very': 'Intensifier that weakens description',
-    'really': 'Intensifier that weakens description',
-    'quite': 'Modifier that weakens impact',
-    'rather': 'Modifier that weakens impact',
-    'somewhat': 'Modifier that weakens impact',
-    'extremely': 'Intensifier that weakens description',
-    
-    // Mental States
-    'understood': 'Direct statement of comprehension',
-    'believed': 'Direct statement of belief',
-    'wondered': 'Direct statement of curiosity',
-    'decided': 'Direct statement of decision making',
-    
-    // General States
-    'it was': 'Non-specific scene setting',
-    'there was': 'Non-specific scene setting',
-    'there were': 'Non-specific scene setting',
-    'started to': 'Indirect action description',
-    'began to': 'Indirect action description',
-    
-    // Abstract Descriptions
-    'beautiful': 'Non-specific positive description',
-    'ugly': 'Non-specific negative description',
-    'nice': 'Non-specific positive description',
-    'bad': 'Non-specific negative description',
-    'good': 'Non-specific positive description'
-  };
+    'very', 'really', 'quite', 'rather', 'somewhat', 'extremely'
+  ];
 
   const analysis = {
     showingSentences: [] as string[],
@@ -207,9 +112,7 @@ function analyzeShowVsTell(text: string) {
     ratio: 0,
     totalSentences: sentences.length,
     showingCount: 0,
-    tellingCount: 0,
-    showingWordsFound: {} as Record<string, string>,
-    tellingWordsFound: {} as Record<string, string>
+    tellingCount: 0
   };
 
   sentences.forEach(sentence => {
@@ -218,28 +121,22 @@ function analyzeShowVsTell(text: string) {
     let isTelling = false;
     
     // Check for showing words
-    Object.entries(showingWords).forEach(([word, meaning]) => {
-      if (cleanSentence.includes(word)) {
-        analysis.showingCount++;
-        isShowing = true;
-        analysis.showingWordsFound[word] = meaning;
-        if (!analysis.showingSentences.includes(sentence.trim())) {
-          analysis.showingSentences.push(sentence.trim());
-        }
+    if (showingWords.some(word => cleanSentence.includes(word))) {
+      analysis.showingCount++;
+      isShowing = true;
+      if (!analysis.showingSentences.includes(sentence.trim())) {
+        analysis.showingSentences.push(sentence.trim());
       }
-    });
+    }
     
     // Check for telling words
-    Object.entries(tellingWords).forEach(([word, meaning]) => {
-      if (cleanSentence.includes(word)) {
-        analysis.tellingCount++;
-        isTelling = true;
-        analysis.tellingWordsFound[word] = meaning;
-        if (!analysis.tellingSentences.includes(sentence.trim())) {
-          analysis.tellingSentences.push(sentence.trim());
-        }
+    if (tellingWords.some(word => cleanSentence.includes(word))) {
+      analysis.tellingCount++;
+      isTelling = true;
+      if (!analysis.tellingSentences.includes(sentence.trim())) {
+        analysis.tellingSentences.push(sentence.trim());
       }
-    });
+    }
   });
 
   // Calculate ratio (showing / total analyzed sentences)
@@ -259,21 +156,6 @@ function generateSuggestions(analysis: any, grammarScore: number): string[] {
     
     if (analysis.tellingSentences.length > 0) {
       suggestions.push('Look for opportunities to replace passive observations with active descriptions');
-      suggestions.push('Consider converting emotional statements into physical manifestations');
-    }
-
-    // Add specific examples based on telling words found
-    if (Object.keys(analysis.tellingWordsFound).length > 0) {
-      suggestions.push('Try replacing telling words with showing alternatives:');
-      Object.entries(analysis.tellingWordsFound).forEach(([word, meaning]) => {
-        if (word === 'was angry') {
-          suggestions.push('Instead of "was angry", try "fists clenched, face reddening"');
-        } else if (word === 'was sad') {
-          suggestions.push('Instead of "was sad", try "shoulders slumped, eyes welling with tears"');
-        } else if (word === 'was scared') {
-          suggestions.push('Instead of "was scared", try "heart pounding, hands trembling"');
-        }
-      });
     }
   }
 
@@ -285,10 +167,8 @@ function generateSuggestions(analysis: any, grammarScore: number): string[] {
 
   // Balance-based suggestions
   if (analysis.showingCount === 0) {
-    suggestions.push('Add descriptive passages to make your writing more vivid');
-    suggestions.push('Include sensory details to engage readers');
+    suggestions.push('Add some descriptive passages to make your writing more vivid');
   }
 
   return suggestions;
 }
-
