@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { ScrollArea } from '../ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
@@ -97,75 +96,73 @@ const ChapterEditor = ({
   };
 
   return (
-    <ScrollArea className="h-full">
-      <div className="flex flex-col min-h-screen">
-        <div className="flex-grow">
-          <div className="p-8 max-w-[11in] mx-auto space-y-8">
-            <EditorHeader
-              chapterId={chapter.chapter_id}
-              content={chapter.content}
-              selectedTemplate={selectedTemplate}
-              pageSize={pageSize}
-              showSinglePage={showSinglePage}
-              onTemplateClick={() => setShowTemplateSelector(!showTemplateSelector)}
-              onPageSizeChange={handlePaperSizeChange}
-              onViewModeToggle={() => setShowSinglePage(!showSinglePage)}
-            />
+    <div className="h-full flex flex-col">
+      <ScrollArea className="flex-1">
+        <div className="p-8 max-w-[11in] mx-auto space-y-8">
+          <EditorHeader
+            chapterId={chapter.chapter_id}
+            content={chapter.content}
+            selectedTemplate={selectedTemplate}
+            pageSize={pageSize}
+            showSinglePage={showSinglePage}
+            onTemplateClick={() => setShowTemplateSelector(!showTemplateSelector)}
+            onPageSizeChange={handlePaperSizeChange}
+            onViewModeToggle={() => setShowSinglePage(!showSinglePage)}
+          />
 
-            {showTemplateSelector && (
-              <div className="mb-8">
-                <TemplateSelector
-                  selectedTemplate={selectedTemplate}
-                  onTemplateSelect={handleTemplateSelect}
-                />
-              </div>
-            )}
-
-            <div className="space-y-8">
-              {showSinglePage && (
-                <PageFormatControls
-                  margins={margins}
-                  onMarginChange={handleMarginChange}
-                  selectedPaperSize={pageSize}
-                  onPaperSizeChange={handlePaperSizeChange}
-                />
-              )}
-
-              <PageView 
-                editorRef={editorRef}
-                showSinglePage={showSinglePage}
-                pageSize={pageSize}
-                margins={margins}
-                currentPage={currentPage}
-                totalPages={totalPages}
-                content={chapter.content}
-                chapterId={chapter.id}
-                onContentChange={onContentChange}
-                onNextPage={handleNextPage}
-                onPrevPage={handlePrevPage}
-                getPageClass={getPageClass}
-                getTextAreaDimensions={getTextAreaDimensions}
-                getPageHeight={getPageHeight}
+          {showTemplateSelector && (
+            <div className="mb-8">
+              <TemplateSelector
+                selectedTemplate={selectedTemplate}
+                onTemplateSelect={handleTemplateSelect}
               />
             </div>
-          </div>
-        </div>
+          )}
 
-        <div className="mt-8 border-t border-gray-200 bg-gray-50">
-          <div className="max-w-[11in] mx-auto p-8">
-            <TextAnalysis 
-              scores={calculateScores(chapter.content)}
+          <div className="space-y-8">
+            {showSinglePage && (
+              <PageFormatControls
+                margins={margins}
+                onMarginChange={handleMarginChange}
+                selectedPaperSize={pageSize}
+                onPaperSizeChange={handlePaperSizeChange}
+              />
+            )}
+
+            <PageView 
+              editorRef={editorRef}
+              showSinglePage={showSinglePage}
+              pageSize={pageSize}
+              margins={margins}
+              currentPage={currentPage}
+              totalPages={totalPages}
               content={chapter.content}
-              aiAnalysis={aiAnalysis}
-              isAnalyzing={isAnalyzing}
-              onAnalyze={() => {
-                console.log('Analyzing content...');
-              }}
+              chapterId={chapter.id}
+              onContentChange={onContentChange}
+              onNextPage={handleNextPage}
+              onPrevPage={handlePrevPage}
+              getPageClass={getPageClass}
+              getTextAreaDimensions={getTextAreaDimensions}
+              getPageHeight={getPageHeight}
             />
           </div>
         </div>
+      </ScrollArea>
+
+      <div className="sticky bottom-0 w-full border-t border-gray-200 bg-gray-50 shadow-lg">
+        <div className="max-w-[11in] mx-auto p-8">
+          <TextAnalysis 
+            scores={calculateScores(chapter.content)}
+            content={chapter.content}
+            aiAnalysis={aiAnalysis}
+            isAnalyzing={isAnalyzing}
+            onAnalyze={() => {
+              console.log('Analyzing content...');
+            }}
+          />
+        </div>
       </div>
-    </ScrollArea>
+    </div>
   );
 };
 
