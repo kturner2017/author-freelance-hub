@@ -40,7 +40,7 @@ const ChapterEditor = ({
         }
       />
       <Route 
-        path="/full-view" 
+        path="full-view" 
         element={
           <FullChapterEditor 
             content={chapter.content}
@@ -49,7 +49,7 @@ const ChapterEditor = ({
         }
       />
       <Route 
-        path="/page-view" 
+        path="page-view" 
         element={
           <PageViewEditor 
             content={chapter.content}
