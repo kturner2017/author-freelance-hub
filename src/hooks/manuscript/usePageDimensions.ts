@@ -25,9 +25,9 @@ export const usePageDimensions = (pageSize: '6x9' | '8.5x11' | 'epub', margins: 
       };
     }
     
-    // For mm units (ePub)
-    const width = currentSize.width - ((margins.left + margins.right + margins.gutter) * 25.4);
-    const height = currentSize.height - ((margins.top + margins.bottom) * 25.4);
+    // For ePub format (mm)
+    const width = currentSize.width - (margins.left + margins.right + margins.gutter) * 25.4;
+    const height = currentSize.height - (margins.top + margins.bottom) * 25.4;
     return {
       width: `${width}mm`,
       height: `${height}mm`
@@ -41,6 +41,7 @@ export const usePageDimensions = (pageSize: '6x9' | '8.5x11' | 'epub', margins: 
     if (currentSize.unit === 'in') {
       return `${currentSize.height - margins.top - margins.bottom}in`;
     }
+    // For ePub format (mm)
     return `${currentSize.height - (margins.top + margins.bottom) * 25.4}mm`;
   };
 

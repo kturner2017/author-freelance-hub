@@ -18,8 +18,10 @@ export const usePageManagement = (
     } else if (pageSize === '8.5x11') {
       return (11 - margins.top - margins.bottom) * 96;
     } else {
-      // ePub format (200mm)
-      return (200 - (margins.top + margins.bottom) * 25.4) * (96/25.4); // Convert mm to pixels
+      // ePub format - uses millimeters (convert to pixels)
+      // Standard dpi for screens is 96, and 1 inch = 25.4mm
+      const mmToPixels = 96 / 25.4; // pixels per millimeter
+      return (200 - margins.top * 25.4 - margins.bottom * 25.4) * mmToPixels;
     }
   };
 

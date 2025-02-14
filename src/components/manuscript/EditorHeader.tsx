@@ -7,10 +7,10 @@ interface EditorHeaderProps {
   chapterId: string;
   content: string;
   selectedTemplate: string;
-  pageSize: '6x9' | '8.5x11';
+  pageSize: '6x9' | '8.5x11' | 'epub';
   showSinglePage: boolean;
   onTemplateClick: () => void;
-  onPageSizeChange: (size: '6x9' | '8.5x11') => void;
+  onPageSizeChange: (size: string) => void;
   onViewModeToggle: () => void;
 }
 
