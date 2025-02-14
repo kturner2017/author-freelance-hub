@@ -25,7 +25,7 @@ const EditorToolbar = ({
   onToggleRecording 
 }: EditorToolbarProps) => {
   return (
-    <div className="bg-gray-100 p-2 rounded-t-lg border-b flex flex-wrap items-center gap-2">
+    <div className="bg-gray-100 p-2 rounded-b-lg border-t flex flex-wrap items-center gap-2">
       <TextFormatButtons editor={editor} />
       
       <Separator orientation="vertical" className="h-6" />
