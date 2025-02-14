@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { ScrollArea } from '../ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
@@ -36,7 +35,7 @@ const ChapterEditor = ({
   const { toast } = useToast();
   const [selectedTemplate, setSelectedTemplate] = useState(chapter.template || 'classic');
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
-  const [pageSize, setPageSize] = useState<'6x9' | '8.5x11'>('6x9');
+  const [pageSize, setPageSize] = useState<'6x9' | '8.5x11' | 'epub'>('6x9');
   const [showSinglePage, setShowSinglePage] = useState(false);
   const [margins, setMargins] = useState<MarginSettings>({
     top: 1,
@@ -91,7 +90,7 @@ const ChapterEditor = ({
   };
 
   const handlePaperSizeChange = (size: string) => {
-    if (size === '6x9' || size === '8.5x11') {
+    if (size === '6x9' || size === '8.5x11' || size === 'epub') {
       setPageSize(size);
     }
   };

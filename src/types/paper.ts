@@ -1,10 +1,10 @@
 
 export interface PaperSize {
   name: string;
+  displayName: string;
   width: number;
   height: number;
-  displayName: string;
-  unit: 'in' | 'mm'
+  unit: 'in' | 'mm';
 }
 
 export interface MarginSettings {
@@ -17,43 +17,26 @@ export interface MarginSettings {
   footerDistance: number;
 }
 
-export const standardPaperSizes: Record<string, PaperSize> = {
+export const standardPaperSizes: { [key: string]: PaperSize } = {
   '6x9': {
     name: '6x9',
+    displayName: '6 × 9 inches',
     width: 6,
     height: 9,
-    displayName: '6" x 9" (Novel)',
     unit: 'in'
   },
   '8.5x11': {
     name: '8.5x11',
+    displayName: '8.5 × 11 inches',
     width: 8.5,
     height: 11,
-    displayName: '8.5" x 11" (Letter)',
     unit: 'in'
   },
-  'a4': {
-    name: 'a4',
-    width: 210,
-    height: 297,
-    displayName: 'A4',
-    unit: 'mm'
-  },
-  'a5': {
-    name: 'a5',
-    width: 148,
-    height: 210,
-    displayName: 'A5',
+  'epub': {
+    name: 'epub',
+    displayName: 'ePub format',
+    width: 150,
+    height: 200,
     unit: 'mm'
   }
-};
-
-export const defaultMarginSettings: MarginSettings = {
-  top: 1,
-  right: 1,
-  bottom: 1,
-  left: 1,
-  gutter: 0,
-  headerDistance: 0.5,
-  footerDistance: 0.5
 };

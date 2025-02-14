@@ -1,7 +1,7 @@
 
 import { standardPaperSizes, MarginSettings } from '@/types/paper';
 
-export const usePageDimensions = (pageSize: '6x9' | '8.5x11', margins: MarginSettings) => {
+export const usePageDimensions = (pageSize: '6x9' | '8.5x11' | 'epub', margins: MarginSettings) => {
   const getPageClass = () => {
     const currentSize = standardPaperSizes[pageSize];
     if (!currentSize) return '';
@@ -25,6 +25,7 @@ export const usePageDimensions = (pageSize: '6x9' | '8.5x11', margins: MarginSet
       };
     }
     
+    // For mm units (ePub)
     const width = currentSize.width - ((margins.left + margins.right + margins.gutter) * 25.4);
     const height = currentSize.height - ((margins.top + margins.bottom) * 25.4);
     return {
@@ -35,8 +36,12 @@ export const usePageDimensions = (pageSize: '6x9' | '8.5x11', margins: MarginSet
 
   const getPageHeight = () => {
     const currentSize = standardPaperSizes[pageSize];
-    if (!currentSize || currentSize.unit !== 'in') return '7in';
-    return `${currentSize.height - margins.top - margins.bottom}in`;
+    if (!currentSize) return '7in';
+    
+    if (currentSize.unit === 'in') {
+      return `${currentSize.height - margins.top - margins.bottom}in`;
+    }
+    return `${currentSize.height - (margins.top + margins.bottom) * 25.4}mm`;
   };
 
   return {

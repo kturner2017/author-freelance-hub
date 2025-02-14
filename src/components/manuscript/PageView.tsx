@@ -8,7 +8,7 @@ import { MarginSettings } from '@/types/paper';
 interface PageViewProps {
   editorRef: React.RefObject<HTMLDivElement>;
   showSinglePage: boolean;
-  pageSize: '6x9' | '8.5x11';
+  pageSize: '6x9' | '8.5x11' | 'epub';
   margins: MarginSettings;
   currentPage: number;
   totalPages: number;
