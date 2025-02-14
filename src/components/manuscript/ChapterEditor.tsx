@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { ScrollArea } from '../ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
@@ -96,8 +97,8 @@ const ChapterEditor = ({
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <ScrollArea className="flex-1">
+    <div className="h-full flex flex-col relative">
+      <div className="flex-1 overflow-auto">
         <div className="p-8 max-w-[11in] mx-auto space-y-8">
           <EditorHeader
             chapterId={chapter.chapter_id}
@@ -147,9 +148,9 @@ const ChapterEditor = ({
             />
           </div>
         </div>
-      </ScrollArea>
+      </div>
 
-      <div className="sticky bottom-0 w-full border-t border-gray-200 bg-gray-50 shadow-lg">
+      <div className="sticky bottom-0 w-full border-t border-gray-200 bg-gray-50 shadow-lg z-10">
         <div className="max-w-[11in] mx-auto p-8">
           <TextAnalysis 
             scores={calculateScores(chapter.content)}
