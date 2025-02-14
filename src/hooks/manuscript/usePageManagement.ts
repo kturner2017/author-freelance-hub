@@ -1,23 +1,12 @@
 
 import { useState, useEffect, RefObject } from 'react';
-
-interface PageSize {
-  width: number;
-  height: number;
-}
-
-interface Margins {
-  top: number;
-  right: number;
-  bottom: number;
-  left: number;
-}
+import { MarginSettings } from '@/types/paper';
 
 export const usePageManagement = (
   editorRef: RefObject<HTMLDivElement>,
   showSinglePage: boolean,
-  pageSize: '6x9' | '8.5x11',
-  margins: Margins,
+  pageSize: '6x9' | '8.5x11' | 'epub',
+  margins: MarginSettings,
   content: string
 ) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -26,8 +15,12 @@ export const usePageManagement = (
   const getTextAreaHeight = () => {
     if (pageSize === '6x9') {
       return (9 - margins.top - margins.bottom) * 96; // Convert inches to pixels (96dpi)
+    } else if (pageSize === '8.5x11') {
+      return (11 - margins.top - margins.bottom) * 96;
+    } else {
+      // ePub format (200mm)
+      return (200 - (margins.top + margins.bottom) * 25.4) * (96/25.4); // Convert mm to pixels
     }
-    return (11 - margins.top - margins.bottom) * 96; // Convert inches to pixels (96dpi)
   };
 
   useEffect(() => {

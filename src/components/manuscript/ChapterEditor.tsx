@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { ScrollArea } from '../ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
@@ -91,14 +92,14 @@ const ChapterEditor = ({
 
   const handlePaperSizeChange = (size: string) => {
     if (size === '6x9' || size === '8.5x11' || size === 'epub') {
-      setPageSize(size);
+      setPageSize(size as '6x9' | '8.5x11' | 'epub');
     }
   };
 
   return (
     <ScrollArea className="h-full">
       <div className="p-8 space-y-8">
-        <div className="max-w-[11in] mx-auto">
+        <div className="max-w-[11in] mx-auto space-y-8">
           <EditorHeader
             chapterId={chapter.chapter_id}
             content={chapter.content}
@@ -129,35 +130,37 @@ const ChapterEditor = ({
               />
             )}
 
-            <PageView 
-              editorRef={editorRef}
-              showSinglePage={showSinglePage}
-              pageSize={pageSize}
-              margins={margins}
-              currentPage={currentPage}
-              totalPages={totalPages}
+            <div className="relative">
+              <PageView 
+                editorRef={editorRef}
+                showSinglePage={showSinglePage}
+                pageSize={pageSize}
+                margins={margins}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                content={chapter.content}
+                chapterId={chapter.id}
+                onContentChange={onContentChange}
+                onNextPage={handleNextPage}
+                onPrevPage={handlePrevPage}
+                getPageClass={getPageClass}
+                getTextAreaDimensions={getTextAreaDimensions}
+                getPageHeight={getPageHeight}
+              />
+            </div>
+          </div>
+
+          <div className="sticky bottom-0 bg-white border-t pt-8 mt-8">
+            <TextAnalysis 
+              scores={calculateScores(chapter.content)}
               content={chapter.content}
-              chapterId={chapter.id}
-              onContentChange={onContentChange}
-              onNextPage={handleNextPage}
-              onPrevPage={handlePrevPage}
-              getPageClass={getPageClass}
-              getTextAreaDimensions={getTextAreaDimensions}
-              getPageHeight={getPageHeight}
+              aiAnalysis={aiAnalysis}
+              isAnalyzing={isAnalyzing}
+              onAnalyze={() => {
+                console.log('Analyzing content...');
+              }}
             />
           </div>
-        </div>
-
-        <div className="max-w-4xl mx-auto mt-12 border-t pt-8">
-          <TextAnalysis 
-            scores={calculateScores(chapter.content)}
-            content={chapter.content}
-            aiAnalysis={aiAnalysis}
-            isAnalyzing={isAnalyzing}
-            onAnalyze={() => {
-              console.log('Analyzing content...');
-            }}
-          />
         </div>
       </div>
     </ScrollArea>
