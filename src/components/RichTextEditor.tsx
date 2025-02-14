@@ -28,18 +28,24 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
     return null;
   }
 
+  const handleAnalyze = () => {
+    if (editor) {
+      performAnalysis(editor.getText());
+    }
+  };
+
   return (
     <div className="space-y-4">
+      <EditorToolbar 
+        editor={editor}
+        isRecording={isRecording}
+        onToggleRecording={toggleRecording}
+        isModelLoading={isModelLoading}
+      />
       <div className="border rounded-lg">
         <EditorContent 
           editor={editor} 
-          className="min-h-[600px] bg-white rounded-t-lg"
-        />
-        <EditorToolbar 
-          editor={editor}
-          isRecording={isRecording}
-          onToggleRecording={toggleRecording}
-          isModelLoading={isModelLoading}
+          className="min-h-[600px] bg-white rounded-lg p-4"
         />
       </div>
       {editor && (
@@ -48,7 +54,7 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
           content={editor.getText()}
           aiAnalysis={aiAnalysis}
           isAnalyzing={isAnalyzing}
-          onAnalyze={performAnalysis}
+          onAnalyze={handleAnalyze}
         />
       )}
     </div>
