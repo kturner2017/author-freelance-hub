@@ -42,7 +42,7 @@ const PageEditor = ({
   return (
     <div className={cn(
       "relative",
-      showSinglePage ? 'flex justify-center bg-gray-100 p-8 rounded-lg' : '',
+      !showSinglePage ? 'max-w-[8.5in] mx-auto' : 'flex justify-center bg-gray-100 p-8 rounded-lg',
     )}>
       {showSinglePage && (
         <Button
@@ -59,38 +59,35 @@ const PageEditor = ({
       <div 
         ref={editorRef}
         className={cn(
-          "bg-white relative mx-auto transition-all duration-300",
-          showSinglePage ? pageClass : '',
-          showSinglePage ? 'shadow-2xl' : 'shadow-lg',
+          "bg-white relative transition-all duration-300",
+          showSinglePage ? pageClass : 'w-full',
+          showSinglePage ? 'shadow-2xl' : 'shadow-lg rounded-lg',
         )}
         style={{
-          padding: showSinglePage ? `${margins.top}in ${margins.right}in ${margins.bottom}in ${margins.left}in` : undefined,
+          padding: `${showSinglePage ? margins.top : 1}in ${showSinglePage ? margins.right : 1}in ${showSinglePage ? margins.bottom : 1}in ${showSinglePage ? margins.left : 1}in`,
           height: showSinglePage ? (pageSize === '6x9' ? '9in' : '11in') : 'auto',
           position: 'relative',
-          overflow: 'hidden',
+          overflow: showSinglePage ? 'hidden' : 'visible',
         }}
       >
         <div
           className={cn(
-            "absolute inset-0",
-            showSinglePage ? 'bg-white' : ''
+            showSinglePage ? "absolute inset-0" : "relative",
+            "bg-white"
           )}
           style={{
             transform: showSinglePage ? `translateY(-${(currentPage - 1) * (pageSize === '6x9' ? 9 : 11)}in)` : 'none',
             transition: 'transform 0.3s ease-in-out',
             height: showSinglePage ? `${totalPages * (pageSize === '6x9' ? 9 : 11)}in` : 'auto',
+            overflow: showSinglePage ? 'hidden' : 'visible',
           }}
         >
           <div
             style={{
               minHeight: showSinglePage ? `${(pageSize === '6x9' ? 9 : 11) - margins.top - margins.bottom - 0.25}in` : 'auto',
               height: 'auto',
-              overflow: 'visible',
             }}
-            className={cn(
-              showSinglePage ? 'bg-white' : '',
-              'prose max-w-none'
-            )}
+            className="prose max-w-none"
           >
             <RichTextEditor
               content={content || ''}
