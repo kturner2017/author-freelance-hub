@@ -98,8 +98,8 @@ const ChapterEditor = ({
 
   return (
     <ScrollArea className="h-full">
-      <div className="p-8 space-y-8">
-        <div className="max-w-[11in] mx-auto space-y-8">
+      <div className="p-8 flex flex-col min-h-screen">
+        <div className="flex-grow max-w-[11in] mx-auto space-y-8">
           <EditorHeader
             chapterId={chapter.chapter_id}
             content={chapter.content}
@@ -130,37 +130,35 @@ const ChapterEditor = ({
               />
             )}
 
-            <div className="relative">
-              <PageView 
-                editorRef={editorRef}
-                showSinglePage={showSinglePage}
-                pageSize={pageSize}
-                margins={margins}
-                currentPage={currentPage}
-                totalPages={totalPages}
-                content={chapter.content}
-                chapterId={chapter.id}
-                onContentChange={onContentChange}
-                onNextPage={handleNextPage}
-                onPrevPage={handlePrevPage}
-                getPageClass={getPageClass}
-                getTextAreaDimensions={getTextAreaDimensions}
-                getPageHeight={getPageHeight}
-              />
-            </div>
-          </div>
-
-          <div className="sticky bottom-0 bg-white border-t pt-8 mt-8">
-            <TextAnalysis 
-              scores={calculateScores(chapter.content)}
+            <PageView 
+              editorRef={editorRef}
+              showSinglePage={showSinglePage}
+              pageSize={pageSize}
+              margins={margins}
+              currentPage={currentPage}
+              totalPages={totalPages}
               content={chapter.content}
-              aiAnalysis={aiAnalysis}
-              isAnalyzing={isAnalyzing}
-              onAnalyze={() => {
-                console.log('Analyzing content...');
-              }}
+              chapterId={chapter.id}
+              onContentChange={onContentChange}
+              onNextPage={handleNextPage}
+              onPrevPage={handlePrevPage}
+              getPageClass={getPageClass}
+              getTextAreaDimensions={getTextAreaDimensions}
+              getPageHeight={getPageHeight}
             />
           </div>
+        </div>
+
+        <div className="mt-8 border-t pt-8 bg-white">
+          <TextAnalysis 
+            scores={calculateScores(chapter.content)}
+            content={chapter.content}
+            aiAnalysis={aiAnalysis}
+            isAnalyzing={isAnalyzing}
+            onAnalyze={() => {
+              console.log('Analyzing content...');
+            }}
+          />
         </div>
       </div>
     </ScrollArea>
