@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { ScrollArea } from '../ui/scroll-area';
 import { Button } from '../ui/button';
@@ -10,8 +11,6 @@ import EditorHeader from './EditorHeader';
 import { usePageManagement } from '@/hooks/manuscript/usePageManagement';
 import PageFormatControls from './PageFormatControls';
 import { standardPaperSizes, type MarginSettings } from '@/types/paper';
-import TextAnalysis from '../TextAnalysis';
-import calculateScores from '@/utils/readabilityScores';
 
 interface Chapter {
   id: string;
@@ -125,15 +124,9 @@ const ChapterEditor = ({
     }
   };
 
-  const getPageHeight = () => {
-    const currentSize = standardPaperSizes[pageSize];
-    if (!currentSize || currentSize.unit !== 'in') return '7in';
-    return `${currentSize.height - margins.top - margins.bottom}in`;
-  };
-
   return (
     <ScrollArea className="h-full">
-      <div className="p-8 max-w-[11in] mx-auto space-y-8">
+      <div className="p-8 max-w-[11in] mx-auto">
         <EditorHeader
           chapterId={chapter.chapter_id}
           content={chapter.content}
@@ -208,14 +201,11 @@ const ChapterEditor = ({
                     left: `${margins.left}in`,
                     ...getTextAreaDimensions(),
                     overflow: 'hidden',
-                    backgroundColor: '#FFFFFF',
-                    height: getPageHeight()
+                    backgroundColor: '#FFFFFF'
                   }}
                 >
                   <div
-                    className="ProseMirror-wrapper"
                     style={{
-                      height: '100%',
                       transform: `translateY(-${(currentPage - 1) * 100}%)`,
                       transition: 'transform 0.3s ease-in-out',
                     }}
@@ -254,18 +244,6 @@ const ChapterEditor = ({
               </Button>
             )}
           </div>
-        </div>
-
-        <div className="mt-8">
-          <TextAnalysis 
-            scores={calculateScores(chapter.content)}
-            content={chapter.content}
-            aiAnalysis={aiAnalysis}
-            isAnalyzing={isAnalyzing}
-            onAnalyze={() => {
-              console.log('Analyzing content...');
-            }}
-          />
         </div>
       </div>
     </ScrollArea>
