@@ -57,15 +57,12 @@ const ChapterEditor = ({
 
   useEffect(() => {
     if (showSinglePage && editorRef.current) {
-      // Calculate total pages based on content height and page size
       const contentDiv = editorRef.current.querySelector('.ProseMirror');
       const contentHeight = contentDiv ? contentDiv.scrollHeight : 0;
-      const pageHeight = pageSize === '6x9' ? 9 * 96 : 11 * 96; // Convert inches to pixels (96dpi)
-      const effectivePageHeight = pageHeight - (margins.top + margins.bottom) * 96; // Account for margins
+      const pageHeight = pageSize === '6x9' ? 9 * 96 : 11 * 96;
+      const effectivePageHeight = pageHeight - (margins.top + margins.bottom) * 96;
       const calculatedPages = Math.ceil(contentHeight / effectivePageHeight);
       setTotalPages(Math.max(1, calculatedPages));
-
-      // Reset to first page when switching view modes or page sizes
       setCurrentPage(1);
     }
   }, [showSinglePage, pageSize, chapter.content, margins]);
@@ -109,8 +106,6 @@ const ChapterEditor = ({
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(prev => prev + 1);
-      
-      // Scroll to top of page
       if (editorRef.current) {
         editorRef.current.scrollTop = 0;
       }
@@ -120,8 +115,6 @@ const ChapterEditor = ({
   const handlePrevPage = () => {
     if (currentPage > 1) {
       setCurrentPage(prev => prev - 1);
-      
-      // Scroll to top of page
       if (editorRef.current) {
         editorRef.current.scrollTop = 0;
       }
@@ -132,7 +125,7 @@ const ChapterEditor = ({
     const numValue = parseFloat(value) || 0;
     setMargins(prev => ({
       ...prev,
-      [side]: Math.max(0, Math.min(3, numValue)) // Limit margins between 0 and 3 inches
+      [side]: Math.max(0, Math.min(3, numValue))
     }));
   };
 
