@@ -97,8 +97,8 @@ const ChapterEditor = ({
   };
 
   return (
-    <div className="h-full flex flex-col relative">
-      <div className="flex-1 overflow-auto">
+    <div className="h-screen flex flex-col">
+      <div className="flex-1 overflow-y-auto pb-[300px]">
         <div className="p-8 max-w-[11in] mx-auto space-y-8">
           <EditorHeader
             chapterId={chapter.chapter_id}
@@ -150,7 +150,7 @@ const ChapterEditor = ({
         </div>
       </div>
 
-      <div className="sticky bottom-0 w-full border-t border-gray-200 bg-gray-50 shadow-lg z-10">
+      <div className="fixed bottom-0 left-0 right-0 bg-gray-50 border-t border-gray-200 shadow-lg z-50">
         <div className="max-w-[11in] mx-auto p-8">
           <TextAnalysis 
             scores={calculateScores(chapter.content)}
