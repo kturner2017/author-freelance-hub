@@ -1,18 +1,17 @@
 
 import React, { useState, useRef } from 'react';
 import { ScrollArea } from '../ui/scroll-area';
-import { Button } from '../ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import RichTextEditor from '../RichTextEditor';
-import TemplateSelector from './TemplateSelector';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import EditorHeader from './EditorHeader';
 import { usePageManagement } from '@/hooks/manuscript/usePageManagement';
 import PageFormatControls from './PageFormatControls';
-import { standardPaperSizes, type MarginSettings } from '@/types/paper';
+import { MarginSettings } from '@/types/paper';
 import TextAnalysis from '../TextAnalysis';
 import calculateScores from '@/utils/readabilityScores';
+import TemplateSelector from './TemplateSelector';
+import PageView from './PageView';
+import { usePageDimensions } from '@/hooks/manuscript/usePageDimensions';
 
 interface Chapter {
   id: string;
@@ -58,6 +57,8 @@ const ChapterEditor = ({
     chapter.content
   );
 
+  const { getPageClass, getTextAreaDimensions, getPageHeight } = usePageDimensions(pageSize, margins);
+
   const handleTemplateSelect = async (templateId: string) => {
     try {
       const { error } = await supabase
@@ -89,47 +90,10 @@ const ChapterEditor = ({
     }));
   };
 
-  const getPageClass = () => {
-    const currentSize = standardPaperSizes[pageSize];
-    if (!currentSize) return '';
-    
-    if (currentSize.unit === 'in') {
-      return `w-[${currentSize.width}in] h-[${currentSize.height}in]`;
-    }
-    return `w-[${currentSize.width}mm] h-[${currentSize.height}mm]`;
-  };
-
-  const getTextAreaDimensions = () => {
-    const currentSize = standardPaperSizes[pageSize];
-    if (!currentSize) return { width: '4in', height: '7in' };
-    
-    if (currentSize.unit === 'in') {
-      const width = currentSize.width - margins.left - margins.right - margins.gutter;
-      const height = currentSize.height - margins.top - margins.bottom;
-      return {
-        width: `${width}in`,
-        height: `${height}in`
-      };
-    }
-    
-    const width = currentSize.width - ((margins.left + margins.right + margins.gutter) * 25.4);
-    const height = currentSize.height - ((margins.top + margins.bottom) * 25.4);
-    return {
-      width: `${width}mm`,
-      height: `${height}mm`
-    };
-  };
-
   const handlePaperSizeChange = (size: string) => {
     if (size === '6x9' || size === '8.5x11') {
       setPageSize(size);
     }
-  };
-
-  const getPageHeight = () => {
-    const currentSize = standardPaperSizes[pageSize];
-    if (!currentSize || currentSize.unit !== 'in') return '7in';
-    return `${currentSize.height - margins.top - margins.bottom}in`;
   };
 
   return (
@@ -166,100 +130,25 @@ const ChapterEditor = ({
               />
             )}
 
-            <div className={`relative ${showSinglePage ? 'flex justify-center' : ''}`}>
-              {showSinglePage && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
-                  onClick={handlePrevPage}
-                  disabled={currentPage === 1}
-                >
-                  <ChevronLeft className="h-6 w-6" />
-                </Button>
-              )}
-              
-              <div 
-                ref={editorRef}
-                className={`${showSinglePage ? getPageClass() : ''} bg-[#F5F5F5] shadow-lg relative mx-auto`}
-                style={{
-                  height: showSinglePage ? undefined : 'auto',
-                  boxSizing: 'border-box',
-                  position: 'relative',
-                  backgroundColor: showSinglePage ? '#E8E8E8' : undefined
-                }}
-              >
-                {/* Margins guide */}
-                {showSinglePage && (
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      border: '1px solid rgba(0,0,0,0.2)',
-                      margin: `${margins.top}in ${margins.right}in ${margins.bottom}in ${margins.left}in`,
-                      pointerEvents: 'none',
-                      backgroundColor: 'rgba(0,0,0,0.03)'
-                    }}
-                  />
-                )}
-                
-                {showSinglePage ? (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: `${margins.top}in`,
-                      left: `${margins.left}in`,
-                      ...getTextAreaDimensions(),
-                      overflow: 'hidden',
-                      backgroundColor: '#FFFFFF',
-                      height: getPageHeight()
-                    }}
-                  >
-                    <div
-                      className="ProseMirror-wrapper"
-                      style={{
-                        height: '100%',
-                        transform: `translateY(-${(currentPage - 1) * 100}%)`,
-                        transition: 'transform 0.3s ease-in-out',
-                      }}
-                    >
-                      <RichTextEditor
-                        key={`editor-${chapter.id}`}
-                        content={chapter.content || ''}
-                        onChange={onContentChange}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <RichTextEditor
-                    key={`editor-${chapter.id}`}
-                    content={chapter.content || ''}
-                    onChange={onContentChange}
-                  />
-                )}
-                
-                {showSinglePage && (
-                  <div className="absolute bottom-2 left-0 right-0 text-center text-gray-500">
-                    Page {currentPage} of {totalPages}
-                  </div>
-                )}
-              </div>
-
-              {showSinglePage && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-10"
-                  onClick={handleNextPage}
-                  disabled={currentPage === totalPages}
-                >
-                  <ChevronRight className="h-6 w-6" />
-                </Button>
-              )}
-            </div>
+            <PageView 
+              editorRef={editorRef}
+              showSinglePage={showSinglePage}
+              pageSize={pageSize}
+              margins={margins}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              content={chapter.content}
+              chapterId={chapter.id}
+              onContentChange={onContentChange}
+              onNextPage={handleNextPage}
+              onPrevPage={handlePrevPage}
+              getPageClass={getPageClass}
+              getTextAreaDimensions={getTextAreaDimensions}
+              getPageHeight={getPageHeight}
+            />
           </div>
         </div>
 
-        {/* Analysis section in a separate container */}
         <div className="max-w-4xl mx-auto mt-12 border-t pt-8">
           <TextAnalysis 
             scores={calculateScores(chapter.content)}
