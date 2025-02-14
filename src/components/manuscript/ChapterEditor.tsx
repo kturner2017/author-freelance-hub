@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { ScrollArea } from '../ui/scroll-area';
 import { Button } from '../ui/button';
@@ -26,6 +25,16 @@ interface ChapterEditorProps {
   isAnalyzing: boolean;
 }
 
+interface MarginSettings {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+  gutter: number;
+  headerDistance: number;
+  footerDistance: number;
+}
+
 const ChapterEditor = ({ 
   chapter, 
   onContentChange,
@@ -35,7 +44,7 @@ const ChapterEditor = ({
   const { toast } = useToast();
   const [selectedTemplate, setSelectedTemplate] = useState(chapter.template || 'classic');
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
-  const [pageSize, setPageSize] = useState<'6x9' | '8.5x11'>('6x9');
+  const [pageSize, setPageSize] = useState<string>('6x9');
   const [showSinglePage, setShowSinglePage] = useState(false);
   const [margins, setMargins] = useState<MarginSettings>({
     top: 1,
@@ -118,12 +127,6 @@ const ChapterEditor = ({
     };
   };
 
-  const handlePaperSizeChange = (size: string) => {
-    if (size === '6x9' || size === '8.5x11') {
-      setPageSize(size);
-    }
-  };
-
   return (
     <ScrollArea className="h-full">
       <div className="p-8 max-w-[11in] mx-auto">
@@ -134,7 +137,7 @@ const ChapterEditor = ({
           pageSize={pageSize}
           showSinglePage={showSinglePage}
           onTemplateClick={() => setShowTemplateSelector(!showTemplateSelector)}
-          onPageSizeChange={handlePaperSizeChange}
+          onPageSizeChange={setPageSize}
           onViewModeToggle={() => setShowSinglePage(!showSinglePage)}
         />
 
@@ -147,103 +150,100 @@ const ChapterEditor = ({
           </div>
         )}
 
-        <div className="space-y-8">
-          {showSinglePage && (
+        {showSinglePage && (
+          <div className="mb-8">
             <PageFormatControls
               margins={margins}
               onMarginChange={handleMarginChange}
               selectedPaperSize={pageSize}
-              onPaperSizeChange={handlePaperSizeChange}
+              onPaperSizeChange={setPageSize}
             />
-          )}
+          </div>
+        )}
 
-          <div className={`relative ${showSinglePage ? 'flex justify-center' : ''}`}>
+        <div className={`relative ${showSinglePage ? 'flex justify-center' : ''}`}>
+          {showSinglePage && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
+              onClick={handlePrevPage}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </Button>
+          )}
+          
+          <div 
+            ref={editorRef}
+            className={`${showSinglePage ? getPageClass() : ''} bg-white shadow-lg relative mx-auto`}
+            style={{
+              height: showSinglePage ? undefined : 'auto',
+              boxSizing: 'border-box',
+              position: 'relative'
+            }}
+          >
+            {/* Margins guide */}
             {showSinglePage && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
-                onClick={handlePrevPage}
-                disabled={currentPage === 1}
-              >
-                <ChevronLeft className="h-6 w-6" />
-              </Button>
+              <div
+                className="absolute inset-0"
+                style={{
+                  border: '1px solid rgba(0,0,0,0.1)',
+                  margin: `${margins.top}in ${margins.right}in ${margins.bottom}in ${margins.left}in`,
+                  pointerEvents: 'none'
+                }}
+              />
             )}
             
-            <div 
-              ref={editorRef}
-              className={`${showSinglePage ? getPageClass() : ''} bg-[#F5F5F5] shadow-lg relative mx-auto`}
-              style={{
-                height: showSinglePage ? undefined : 'auto',
-                boxSizing: 'border-box',
-                position: 'relative',
-                backgroundColor: showSinglePage ? '#E8E8E8' : undefined
-              }}
-            >
-              {/* Margins guide */}
-              {showSinglePage && (
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    border: '1px solid rgba(0,0,0,0.2)',
-                    margin: `${margins.top}in ${margins.right}in ${margins.bottom}in ${margins.left}in`,
-                    pointerEvents: 'none',
-                    backgroundColor: 'rgba(0,0,0,0.03)'
-                  }}
-                />
-              )}
-              
-              {showSinglePage ? (
+            {showSinglePage ? (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: `${margins.top}in`,
+                  left: `${margins.left}in`,
+                  ...getTextAreaDimensions(),
+                  overflow: 'hidden'
+                }}
+              >
                 <div
                   style={{
-                    position: 'absolute',
-                    top: `${margins.top}in`,
-                    left: `${margins.left}in`,
-                    ...getTextAreaDimensions(),
-                    overflow: 'hidden',
-                    backgroundColor: '#FFFFFF'
+                    transform: `translateY(-${(currentPage - 1) * 100}%)`,
+                    transition: 'transform 0.3s ease-in-out',
                   }}
                 >
-                  <div
-                    style={{
-                      transform: `translateY(-${(currentPage - 1) * 100}%)`,
-                      transition: 'transform 0.3s ease-in-out',
-                    }}
-                  >
-                    <RichTextEditor
-                      key={`editor-${chapter.id}`}
-                      content={chapter.content || ''}
-                      onChange={onContentChange}
-                    />
-                  </div>
+                  <RichTextEditor
+                    key={`editor-${chapter.id}`}
+                    content={chapter.content || ''}
+                    onChange={onContentChange}
+                  />
                 </div>
-              ) : (
-                <RichTextEditor
-                  key={`editor-${chapter.id}`}
-                  content={chapter.content || ''}
-                  onChange={onContentChange}
-                />
-              )}
-              
-              {showSinglePage && (
-                <div className="absolute bottom-2 left-0 right-0 text-center text-gray-500">
-                  Page {currentPage} of {totalPages}
-                </div>
-              )}
-            </div>
-
+              </div>
+            ) : (
+              <RichTextEditor
+                key={`editor-${chapter.id}`}
+                content={chapter.content || ''}
+                onChange={onContentChange}
+              />
+            )}
+            
             {showSinglePage && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-10"
-                onClick={handleNextPage}
-                disabled={currentPage === totalPages}
-              >
-                <ChevronRight className="h-6 w-6" />
-              </Button>
+              <div className="absolute bottom-2 left-0 right-0 text-center text-gray-500">
+                Page {currentPage} of {totalPages}
+              </div>
             )}
           </div>
+
+          {showSinglePage && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-10"
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+            >
+              <ChevronRight className="h-6 w-6" />
+            </Button>
+          )}
         </div>
       </div>
     </ScrollArea>
