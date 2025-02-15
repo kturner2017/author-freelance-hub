@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 import { useNavigate } from 'react-router-dom';
+import { TubelightNavbar } from '../ui/tubelight-navbar';
 import {
   ArrowLeft,
   Save,
@@ -45,15 +46,35 @@ const ManuscriptToolbar = ({
 }: ManuscriptToolbarProps) => {
   const navigate = useNavigate();
 
-  const handleViewChange = (view: 'boxes' | 'document') => {
-    if (view === 'document') {
-      const pathParts = window.location.pathname.split('/');
-      const bookId = pathParts[3];
-      navigate(`/editor/manuscript/${bookId}/chapters`);
-    } else {
-      onViewChange(view);
+  const menuItems = [
+    {
+      name: 'Boxes',
+      url: '#',
+      icon: LayoutDashboard,
+      onClick: () => onViewChange('boxes')
+    },
+    {
+      name: 'Document',
+      url: '#',
+      icon: BookOpen,
+      onClick: () => onViewChange('document')
     }
-  };
+  ];
+
+  const actionItems = [
+    {
+      name: 'Save',
+      url: '#',
+      icon: Save,
+      onClick: onSave
+    },
+    {
+      name: 'Add Act',
+      url: '#',
+      icon: Plus,
+      onClick: onAddAct
+    }
+  ];
 
   return (
     <div className="h-16 border-b flex items-center px-4 justify-between bg-[#0F172A] text-white">
@@ -81,43 +102,8 @@ const ManuscriptToolbar = ({
       </div>
       
       <div className="flex items-center gap-4">
-        <div className="flex items-center border border-white/20 rounded-lg p-1 mr-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`flex items-center gap-2 text-white hover:bg-white/20 ${editorView === 'boxes' ? 'bg-white/10' : ''}`}
-            onClick={() => handleViewChange('boxes')}
-          >
-            <LayoutDashboard className="h-4 w-4" />
-            <span>Boxes</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`flex items-center gap-2 text-white hover:bg-white/20 ${editorView === 'document' ? 'bg-white/10' : ''}`}
-            onClick={() => handleViewChange('document')}
-          >
-            <BookOpen className="h-4 w-4" />
-            <span>Document</span>
-          </Button>
-        </div>
-
-        <Button 
-          variant="default"
-          onClick={onSave}
-          className="bg-white text-[#0F172A] hover:bg-gray-100 transition-colors"
-        >
-          <Save className="h-4 w-4 mr-2" />
-          Save Changes
-        </Button>
-        <Button 
-          variant="default"
-          onClick={onAddAct}
-          className="bg-white text-[#0F172A] hover:bg-gray-100 transition-colors"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Act
-        </Button>
+        <TubelightNavbar items={menuItems} className="static transform-none mx-4 mb-0 sm:pt-0" />
+        <TubelightNavbar items={actionItems} className="static transform-none mx-4 mb-0 sm:pt-0" />
 
         <Separator orientation="vertical" className="h-6 bg-white/20" />
         
