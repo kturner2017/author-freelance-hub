@@ -1,7 +1,6 @@
-
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Briefcase, LogIn, LogOut } from "lucide-react";
+import { Briefcase, LogIn, LogOut, BookOpen, Users } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { TubelightNavbar } from "@/components/ui/tubelight-navbar";
 import useIsMobile from "@/hooks/use-mobile";
