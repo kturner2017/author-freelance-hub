@@ -4,6 +4,7 @@ import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { BookOpen, Home, ArrowLeft, LayoutDashboard, Plus } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { TubelightNavbar } from '../ui/tubelight-navbar';
 
 interface ChapterToolbarProps {
   totalWordCount: number;
@@ -20,6 +21,40 @@ const ChapterToolbar = ({
 }: ChapterToolbarProps) => {
   const navigate = useNavigate();
   const { bookId } = useParams();
+
+  const viewItems = [
+    {
+      name: 'Document',
+      url: `/editor/manuscript/${bookId}/chapters`,
+      icon: BookOpen,
+    },
+    {
+      name: 'Boxes',
+      url: `/editor/manuscript/${bookId}/boxes`,
+      icon: LayoutDashboard,
+    }
+  ];
+
+  const actionItems = [
+    {
+      name: 'Save Changes',
+      url: '#',
+      icon: BookOpen,
+      onClick: onSave
+    },
+    {
+      name: 'Add Chapter',
+      url: '#',
+      icon: Plus,
+      onClick: onAddChapter
+    },
+    {
+      name: 'Add Act',
+      url: '#',
+      icon: Plus,
+      onClick: onAddAct
+    }
+  ];
 
   return (
     <div className="flex items-center gap-4 h-16 border-b px-4 justify-between bg-[#0F172A] text-white">
@@ -52,53 +87,11 @@ const ChapterToolbar = ({
           Total Words: {totalWordCount.toLocaleString()}
         </Badge>
         
-        <div className="flex items-center gap-2 border border-white/20 rounded-lg p-1">
-          <Button 
-            variant="ghost"
-            size="sm"
-            className="text-white bg-white/10 hover:bg-white/20"
-            onClick={() => navigate(`/editor/manuscript/${bookId}/chapters`)}
-          >
-            <BookOpen className="h-4 w-4 mr-2" />
-            Document
-          </Button>
-          <Button 
-            variant="ghost"
-            size="sm"
-            className="text-white hover:bg-white/20"
-            onClick={() => navigate(`/editor/manuscript/${bookId}/boxes`)}
-          >
-            <LayoutDashboard className="h-4 w-4 mr-2" />
-            Boxes
-          </Button>
-        </div>
-
-        <Button 
-          size="sm"
-          onClick={onSave}
-          className="bg-white text-[#0F172A] hover:bg-gray-100 transition-colors"
-        >
-          Save Changes
-        </Button>
-        <Button 
-          size="sm"
-          onClick={onAddChapter}
-          className="bg-white text-[#0F172A] hover:bg-gray-100 transition-colors"
-        >
-          Add Chapter
-        </Button>
-        <Button 
-          size="sm"
-          onClick={onAddAct}
-          className="bg-white text-[#0F172A] hover:bg-gray-100 transition-colors"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Act
-        </Button>
+        <TubelightNavbar items={viewItems} className="static transform-none mx-4 mb-0 sm:pt-0" />
+        <TubelightNavbar items={actionItems} className="static transform-none mx-4 mb-0 sm:pt-0" />
       </div>
     </div>
   );
 };
 
 export default ChapterToolbar;
-
