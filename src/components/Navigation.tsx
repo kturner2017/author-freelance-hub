@@ -1,6 +1,7 @@
+
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Briefcase, LogIn, LogOut, BookOpen, Users } from "lucide-react";
+import { Briefcase, LogIn, LogOut, BookOpen, Users, UserPlus } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { TubelightNavbar } from "@/components/ui/tubelight-navbar";
 import useIsMobile from "@/hooks/use-mobile";
@@ -79,6 +80,18 @@ const Navigation = () => {
                 For Freelancers
               </Link>
             </Button>
+            
+            <Button 
+              asChild
+              variant="secondary"
+              className="text-primary border-primary hover:bg-primary/10 flex items-center gap-2"
+            >
+              <Link to="/professional-network/apply">
+                <UserPlus className="h-4 w-4" />
+                Become a Freelancer
+              </Link>
+            </Button>
+            
             {isAuthenticated ? (
               <Button 
                 onClick={handleLogout} 
