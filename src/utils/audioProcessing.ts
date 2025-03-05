@@ -57,7 +57,9 @@ export const convertBlobToAudioData = async (blob: Blob): Promise<Float32Array |
     });
 
     // Create a new AudioContext for each conversion to avoid stale contexts
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    // Fix for TypeScript error: use a proper type assertion for webkit prefix
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    const audioContext = new AudioContextClass();
     const arrayBuffer = await blob.arrayBuffer();
     console.log('Audio buffer size:', arrayBuffer.byteLength + ' bytes');
     
