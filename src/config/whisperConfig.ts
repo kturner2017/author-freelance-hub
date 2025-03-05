@@ -27,7 +27,8 @@ export const initializeWhisperModel = async (
           onProgress(progress);
         },
         revision: "main",
-        quantized: true // Use quantized model for better performance
+        // The 'quantized' property is not supported in the @huggingface/transformers package
+        // Removing it to fix the error
       }
     );
 
