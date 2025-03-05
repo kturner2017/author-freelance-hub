@@ -29,7 +29,7 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
     // Check again if transcriber is available after potential initialization
     if (!transcriber) {
       console.error('Failed to initialize transcriber');
-      toast({
+      toast.toast({
         title: "Error",
         description: "Could not initialize speech recognition, using fallback API",
         variant: "destructive"
@@ -78,7 +78,7 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
     if (isRecording) {
       console.log('Stopping recording...');
       stopRecording();
-      toast({
+      toast.toast({
         title: "Recording stopped",
         description: "Processing your speech..."
       });
@@ -91,13 +91,13 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
       if (!isModelLoading) {
         console.log('Starting recording...');
         startRecording();
-        toast({
+        toast.toast({
           title: "Recording started",
           description: "Speak clearly into your microphone"
         });
       } else {
         console.log('Cannot start recording - model is still loading');
-        toast({
+        toast.toast({
           title: "Please wait",
           description: "Speech recognition model is still loading"
         });
