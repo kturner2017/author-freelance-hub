@@ -34,6 +34,7 @@ const RecordingButton = ({
             }}
             disabled={isModelLoading}
             className={`h-8 w-8 p-0 relative ${isRecording ? 'bg-red-200 hover:bg-red-300' : ''}`}
+            aria-label={buttonLabel}
           >
             {isModelLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />

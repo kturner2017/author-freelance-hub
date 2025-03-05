@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { validateAudioData, convertBlobToAudioData } from '@/utils/audioProcessing';
 import { initializeWhisperModel } from '@/config/whisperConfig';
@@ -12,22 +12,77 @@ interface UseVoiceTranscriptionProps {
 export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTranscriptionProps) => {
   const [isModelLoading, setIsModelLoading] = useState(false);
   const [transcriber, setTranscriber] = useState<any>(null);
+  const [isTranscriptionInProgress, setIsTranscriptionInProgress] = useState(false);
   const { toast } = useToast();
 
   const handleRecordingComplete = async (chunks: Blob[]) => {
     console.log('Recording complete, processing chunks:', chunks.length);
     
     if (!transcriber) {
-      console.error('Transcriber not initialized');
+      console.error('Transcriber not initialized, initializing now before processing...');
+      await initializeWhisper();
+    }
+
+    // Check again if transcriber is available after potential initialization
+    if (!transcriber) {
+      console.error('Failed to initialize transcriber');
       toast({
         title: "Error",
-        description: "Speech recognition not initialized",
+        description: "Could not initialize speech recognition, using fallback API",
         variant: "destructive"
       });
-      return;
+      
+      try {
+        // Try fallback to the edge function
+        const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+        
+        // Convert blob to base64 for the edge function
+        const reader = new FileReader();
+        const base64Promise = new Promise<string>((resolve, reject) => {
+          reader.onload = () => {
+            const base64 = (reader.result as string).split(',')[1];
+            resolve(base64);
+          };
+          reader.onerror = reject;
+        });
+        
+        reader.readAsDataURL(audioBlob);
+        const base64Audio = await base64Promise;
+        
+        console.log('Audio converted to base64, calling edge function...');
+        const response = await fetch('/api/voice-to-text', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ audio: base64Audio })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Edge function failed: ' + await response.text());
+        }
+        
+        const result = await response.json();
+        if (result.text) {
+          onTranscriptionComplete(result.text);
+          toast({
+            title: "Transcription complete",
+            description: result.text.substring(0, 50) + (result.text.length > 50 ? '...' : '')
+          });
+        }
+        
+        return;
+      } catch (fallbackError) {
+        console.error('Fallback transcription also failed:', fallbackError);
+        toast({
+          title: "Transcription failed",
+          description: "All transcription methods failed. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
     }
 
     try {
+      setIsTranscriptionInProgress(true);
       const audioBlob = new Blob(chunks, { type: 'audio/webm' });
       console.log('Processing audio, size:', audioBlob.size, 'bytes');
       
@@ -67,7 +122,7 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
       onTranscriptionComplete(output.text);
       toast({
         title: "Transcription complete",
-        description: output.text
+        description: output.text.substring(0, 50) + (output.text.length > 50 ? '...' : '')
       });
     } catch (error) {
       console.error('Transcription error:', error);
@@ -76,14 +131,17 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
         description: error.message || 'Error processing audio',
         variant: "destructive"
       });
+    } finally {
+      setIsTranscriptionInProgress(false);
     }
   };
 
   const { isRecording, startRecording, stopRecording } = useMediaRecording(handleRecordingComplete);
 
   const initializeWhisper = useCallback(async () => {
-    if (transcriber) {
-      console.log('Whisper already initialized');
+    // Don't initialize if already initialized or in progress
+    if (transcriber || isModelLoading) {
+      console.log('Whisper already initialized or loading in progress');
       return;
     }
 
@@ -104,10 +162,6 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
           }
         },
         (whisperPipeline) => {
-          if (!whisperPipeline) {
-            console.error('Invalid pipeline initialization');
-            throw new Error('Invalid pipeline initialization');
-          }
           console.log('Whisper model loaded successfully');
           setTranscriber(whisperPipeline);
           toast({
@@ -134,16 +188,23 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
     } finally {
       setIsModelLoading(false);
     }
-  }, [toast, transcriber]);
+  }, [toast, transcriber, isModelLoading]);
+
+  // Initialize the model when the component mounts
+  useEffect(() => {
+    // Try to initialize on mount, but don't block rendering
+    if (!transcriber && !isModelLoading) {
+      initializeWhisper();
+    }
+  }, [initializeWhisper, transcriber, isModelLoading]);
 
   const toggleRecording = useCallback(async () => {
-    console.log('Toggle recording called, current state:', { isRecording, isModelLoading, hasTranscriber: !!transcriber });
+    console.log('Toggle recording called, current state:', { 
+      isRecording, 
+      isModelLoading, 
+      hasTranscriber: !!transcriber 
+    });
     
-    if (!transcriber && !isModelLoading) {
-      console.log('No transcriber initialized, initializing Whisper...');
-      await initializeWhisper();
-    }
-
     if (isRecording) {
       console.log('Stopping recording...');
       stopRecording();
@@ -151,21 +212,33 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
         title: "Recording stopped",
         description: "Processing your speech..."
       });
-    } else if (!isModelLoading) {
-      console.log('Starting recording...');
-      startRecording();
-      toast({
-        title: "Recording started",
-        description: "Speak clearly into your microphone"
-      });
     } else {
-      console.log('Cannot toggle recording - model is still loading');
+      if (!transcriber && !isModelLoading) {
+        console.log('No transcriber initialized, initializing Whisper...');
+        await initializeWhisper();
+      }
+      
+      if (!isModelLoading) {
+        console.log('Starting recording...');
+        startRecording();
+        toast({
+          title: "Recording started",
+          description: "Speak clearly into your microphone"
+        });
+      } else {
+        console.log('Cannot start recording - model is still loading');
+        toast({
+          title: "Please wait",
+          description: "Speech recognition model is still loading"
+        });
+      }
     }
   }, [isRecording, isModelLoading, startRecording, stopRecording, toast, transcriber, initializeWhisper]);
 
   return {
     isRecording,
     isModelLoading,
+    isTranscribing: isTranscriptionInProgress,
     toggleRecording
   };
 };

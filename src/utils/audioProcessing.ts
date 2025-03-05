@@ -10,7 +10,8 @@ export const validateAudioData = (audioData: Float32Array): boolean => {
     return false;
   }
   
-  if (audioData.length < 16000) { // At least 1 second of audio at 16kHz
+  const minSamples = 8000; // At least 0.5 second of audio at 16kHz
+  if (audioData.length < minSamples) {
     console.error('Audio data too short, length:', audioData.length);
     return false;
   }
@@ -33,7 +34,8 @@ export const validateAudioData = (audioData: Float32Array): boolean => {
     duration: audioData.length / 16000 + ' seconds'
   });
   
-  const hasValidSamples = maxAmplitude > 0.01;
+  const minAmplitude = 0.005; // Lower threshold to accept more inputs
+  const hasValidSamples = maxAmplitude > minAmplitude;
   if (!hasValidSamples) {
     console.error('Audio data contains no significant samples, max amplitude:', maxAmplitude);
     return false;
@@ -54,7 +56,8 @@ export const convertBlobToAudioData = async (blob: Blob): Promise<Float32Array |
       size: blob.size + ' bytes'
     });
 
-    const audioContext = new AudioContext();
+    // Create a new AudioContext for each conversion to avoid stale contexts
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const arrayBuffer = await blob.arrayBuffer();
     console.log('Audio buffer size:', arrayBuffer.byteLength + ' bytes');
     
@@ -82,15 +85,10 @@ export const convertBlobToAudioData = async (blob: Blob): Promise<Float32Array |
       const audioData = renderedBuffer.getChannelData(0);
       console.log('Rendered audio data length:', audioData.length + ' samples');
 
-      // Validate the audio data
-      if (!validateAudioData(audioData)) {
-        console.error('Audio validation failed');
-        return null;
-      }
-
       // Normalize audio to improve recognition
       console.log('Normalizing audio...');
       const maxAmplitude = Math.max(...Array.from(audioData).map(Math.abs));
+      
       if (maxAmplitude <= 0.0001) {
         console.error('Audio data has near-zero amplitude:', maxAmplitude);
         return null;
@@ -111,43 +109,11 @@ export const convertBlobToAudioData = async (blob: Blob): Promise<Float32Array |
       return normalizedData;
     } catch (decodeError) {
       console.error('Failed to decode audio:', decodeError);
-      
-      // Fallback to try the edge function if local processing fails
-      console.log('Local audio processing failed, trying edge function fallback...');
-      
-      try {
-        // Convert blob to base64 for the edge function
-        const reader = new FileReader();
-        const base64Promise = new Promise<string>((resolve, reject) => {
-          reader.onload = () => {
-            const base64 = (reader.result as string).split(',')[1];
-            resolve(base64);
-          };
-          reader.onerror = reject;
-        });
-        
-        reader.readAsDataURL(blob);
-        const base64Audio = await base64Promise;
-        
-        console.log('Audio converted to base64, calling edge function...');
-        const response = await fetch('/voice-to-text', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ audio: base64Audio })
-        });
-        
-        if (!response.ok) {
-          throw new Error('Edge function failed: ' + await response.text());
-        }
-        
-        console.log('Edge function response received');
-        
-        // Return dummy audio data since the edge function will handle transcription
-        const dummyData = new Float32Array(16000);
-        return dummyData;
-      } catch (edgeFunctionError) {
-        console.error('Edge function fallback also failed:', edgeFunctionError);
-        throw new Error('All audio processing methods failed');
+      return null;
+    } finally {
+      // Close the audio context when done
+      if (audioContext.state !== 'closed') {
+        await audioContext.close();
       }
     }
   } catch (error) {
