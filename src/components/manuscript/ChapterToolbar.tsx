@@ -38,13 +38,13 @@ const ChapterToolbar = ({
   ];
 
   return (
-    <div className="flex items-center gap-4 h-16 border-b px-4 justify-between bg-[#0F172A] text-white">
+    <div className="flex items-center gap-4 h-16 border-b px-6 justify-between bg-white text-[#0F172A] shadow-sm">
       <div className="flex items-center gap-4">
         <Button 
           variant="ghost" 
           size="icon"
           onClick={() => navigate('/editor')}
-          className="hover:bg-white/10 text-white"
+          className="hover:bg-gray-100 text-[#0F172A]"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -52,18 +52,18 @@ const ChapterToolbar = ({
           variant="ghost" 
           size="icon"
           onClick={() => navigate('/')}
-          className="hover:bg-white/10 text-white"
+          className="hover:bg-gray-100 text-[#0F172A]"
         >
           <Home className="h-5 w-5" />
         </Button>
         <div>
-          <h2 className="text-lg font-semibold leading-tight">Manuscript Editor</h2>
-          <p className="text-sm text-gray-300 leading-tight">Document View</p>
+          <h2 className="text-lg font-serif font-bold leading-tight text-[#0F172A]">Manuscript Editor</h2>
+          <p className="text-sm text-[#1E293B] leading-tight">Document View</p>
         </div>
       </div>
 
       <div className="flex items-center gap-4">
-        <Badge variant="secondary" className="text-sm bg-white/10 text-white border-0">
+        <Badge variant="outline" className="text-sm bg-gray-50 text-[#0F172A] border border-gray-200">
           <BookOpen className="h-4 w-4 mr-1" />
           Total Words: {totalWordCount.toLocaleString()}
         </Badge>
@@ -73,7 +73,7 @@ const ChapterToolbar = ({
         <div className="flex items-center gap-2">
           <Button 
             variant="outline" 
-            className="rounded-full bg-white/10 text-white border-0 hover:bg-white/20"
+            className="bg-white text-[#0F172A] border border-gray-200 hover:bg-gray-50"
             onClick={onSave}
           >
             <Save className="h-4 w-4 mr-2" />
@@ -81,8 +81,8 @@ const ChapterToolbar = ({
           </Button>
           
           <Button 
-            variant="outline" 
-            className="rounded-full bg-white/10 text-white border-0 hover:bg-white/20"
+            variant="default" 
+            className="bg-[#0F172A] hover:bg-[#1E293B] text-white"
             onClick={async () => {
               console.log('Add Chapter clicked');
               await onAddChapter();
@@ -93,8 +93,8 @@ const ChapterToolbar = ({
           </Button>
           
           <Button 
-            variant="outline" 
-            className="rounded-full bg-white/10 text-white border-0 hover:bg-white/20"
+            variant="outline"
+            className="bg-white text-[#0F172A] border border-gray-200 hover:bg-gray-50"
             onClick={onAddAct}
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -102,8 +102,8 @@ const ChapterToolbar = ({
           </Button>
           
           <Button 
-            variant="outline" 
-            className="rounded-full bg-white/10 text-white border-0 hover:bg-white/20"
+            variant="outline"
+            className="bg-white text-[#0F172A] border border-gray-200 hover:bg-gray-50"
             onClick={onGenerateTOC}
           >
             <TableOfContents className="h-4 w-4 mr-2" />
