@@ -86,6 +86,20 @@ const ChaptersEditor = () => {
     setSelectedChapter(null);
   };
 
+  const handleAddNewChapter = async () => {
+    console.log('Handling add new chapter');
+    const newChapter = await handleAddChapter();
+    if (newChapter) {
+      console.log('New chapter created:', newChapter);
+      setSelectedChapter(newChapter);
+      toast({
+        title: "Chapter Added",
+        description: "New chapter has been created successfully"
+      });
+    }
+    return newChapter;
+  };
+
   const totalWordCount = getTotalWordCount(Object.values(chapters));
 
   if (isLoading) {
@@ -105,7 +119,7 @@ const ChaptersEditor = () => {
         <ChapterToolbar 
           totalWordCount={totalWordCount}
           onSave={() => handleSave(selectedChapter)}
-          onAddChapter={handleAddChapter}
+          onAddChapter={handleAddNewChapter}
           onAddAct={handleAddAct}
         />
       }

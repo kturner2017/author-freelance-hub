@@ -9,7 +9,7 @@ import { TubelightNavbar } from '../ui/tubelight-navbar';
 interface ChapterToolbarProps {
   totalWordCount: number;
   onSave: () => void;
-  onAddChapter: () => void;
+  onAddChapter: () => Promise<any>;
   onAddAct: () => void;
 }
 
@@ -46,7 +46,10 @@ const ChapterToolbar = ({
       name: 'Add Chapter',
       url: '#',
       icon: Plus,
-      onClick: onAddChapter
+      onClick: async () => {
+        console.log('Add Chapter clicked');
+        await onAddChapter();
+      }
     },
     {
       name: 'Add Act',
