@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
-import { ChevronRight, ChevronDown, FileText } from 'lucide-react';
+import { ChevronRight, ChevronDown, FileText, TableOfContents } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '../ui/switch';
@@ -17,9 +17,10 @@ interface FrontMatterOption {
 interface ManuscriptSidebarProps {
   bookId: string;
   onFrontMatterSelect: (id: string, title: string) => void;
+  onGenerateTOC: () => void;
 }
 
-const ManuscriptSidebar = ({ bookId, onFrontMatterSelect }: ManuscriptSidebarProps) => {
+const ManuscriptSidebar = ({ bookId, onFrontMatterSelect, onGenerateTOC }: ManuscriptSidebarProps) => {
   const { toast } = useToast();
   const [expandedSections, setExpandedSections] = useState({
     frontMatter: true,
@@ -98,6 +99,17 @@ const ManuscriptSidebar = ({ bookId, onFrontMatterSelect }: ManuscriptSidebarPro
       </div>
       <ScrollArea className="flex-1">
         <div className="p-2">
+          <Button 
+            variant="ghost" 
+            className="w-full flex items-center justify-between p-2 mb-2 hover:bg-white/10 rounded-lg text-white"
+            onClick={onGenerateTOC}
+          >
+            <div className="flex items-center">
+              <TableOfContents className="h-4 w-4 mr-2" />
+              <span>Generate Table of Contents</span>
+            </div>
+          </Button>
+          
           <div className="space-y-1">
             <div>
               <button

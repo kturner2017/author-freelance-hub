@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import { BookOpen, Home, ArrowLeft, LayoutDashboard, Plus } from 'lucide-react';
+import { BookOpen, Home, ArrowLeft, LayoutDashboard, Plus, TableOfContents } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { TubelightNavbar } from '../ui/tubelight-navbar';
 
@@ -11,13 +11,15 @@ interface ChapterToolbarProps {
   onSave: () => void;
   onAddChapter: () => Promise<any>;
   onAddAct: () => void;
+  onGenerateTOC: () => void;
 }
 
 const ChapterToolbar = ({ 
   totalWordCount, 
   onSave, 
   onAddChapter,
-  onAddAct
+  onAddAct,
+  onGenerateTOC
 }: ChapterToolbarProps) => {
   const navigate = useNavigate();
   const { bookId } = useParams();
@@ -56,6 +58,12 @@ const ChapterToolbar = ({
       url: '#',
       icon: Plus,
       onClick: onAddAct
+    },
+    {
+      name: 'Generate TOC',
+      url: '#',
+      icon: TableOfContents,
+      onClick: onGenerateTOC
     }
   ];
 

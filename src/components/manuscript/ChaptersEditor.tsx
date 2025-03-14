@@ -16,12 +16,14 @@ import { useActManagement } from '@/hooks/useActManagement';
 import { supabase } from '@/integrations/supabase/client';
 import FrontMatterEditor from './FrontMatterEditor';
 import FrontMatterPreview from './FrontMatterPreview';
+import TableOfContents from './TableOfContents';
 
 const ChaptersEditor = () => {
   const { bookId } = useParams();
   const { toast } = useToast();
   const [bookData, setBookData] = useState({ title: '', author: '' });
   const [isGoalExpanded, setIsGoalExpanded] = useState(true);
+  const [showTOCGenerator, setShowTOCGenerator] = useState(false);
 
   const {
     selectedChapter,
@@ -84,6 +86,7 @@ const ChaptersEditor = () => {
   const handleFrontMatterSelectWithReset = (frontMatterId: string, title: string) => {
     handleFrontMatterSelect(frontMatterId, title);
     setSelectedChapter(null);
+    setShowTOCGenerator(false);
   };
 
   const handleAddNewChapter = async () => {
@@ -98,6 +101,61 @@ const ChaptersEditor = () => {
       });
     }
     return newChapter;
+  };
+
+  const handleGenerateTOC = async (content: string) => {
+    // Find the Table of Contents front matter if it exists
+    const { data: tocOptions } = await supabase
+      .from('front_matter_options')
+      .select('id')
+      .eq('book_id', bookId)
+      .eq('title', 'Table of Contents')
+      .single();
+    
+    if (tocOptions) {
+      // First enable the Table of Contents option if not already enabled
+      await supabase
+        .from('front_matter_options')
+        .update({ enabled: true })
+        .eq('id', tocOptions.id);
+      
+      // Check if content already exists
+      const { data: existingContent } = await supabase
+        .from('front_matter_content')
+        .select('id')
+        .eq('front_matter_option_id', tocOptions.id)
+        .eq('book_id', bookId);
+      
+      if (existingContent && existingContent.length > 0) {
+        // Update existing content
+        await supabase
+          .from('front_matter_content')
+          .update({ content })
+          .eq('id', existingContent[0].id);
+      } else {
+        // Create new content
+        await supabase
+          .from('front_matter_content')
+          .insert([{
+            front_matter_option_id: tocOptions.id,
+            book_id: bookId,
+            content
+          }]);
+      }
+      
+      // Refresh front matter content
+      await fetchEnabledFrontMatter();
+      
+      // Select the TOC front matter
+      handleFrontMatterSelect(tocOptions.id, 'Table of Contents');
+      setSelectedChapter(null);
+      setShowTOCGenerator(false);
+      
+      toast({
+        title: "Table of Contents Generated",
+        description: "The TOC has been created and saved to your front matter",
+      });
+    }
   };
 
   const totalWordCount = getTotalWordCount(Object.values(chapters));
@@ -121,6 +179,7 @@ const ChaptersEditor = () => {
           onSave={() => handleSave(selectedChapter)}
           onAddChapter={handleAddNewChapter}
           onAddAct={handleAddAct}
+          onGenerateTOC={() => setShowTOCGenerator(true)}
         />
       }
     >
@@ -128,17 +187,27 @@ const ChaptersEditor = () => {
         <ManuscriptSidebar 
           bookId={bookId || ''} 
           onFrontMatterSelect={handleFrontMatterSelectWithReset}
+          onGenerateTOC={() => setShowTOCGenerator(true)}
         />
         <ChapterList
           chapters={chapters}
           selectedChapter={selectedChapter}
-          onChapterSelect={setSelectedChapter}
+          onChapterSelect={(chapter) => {
+            setSelectedChapter(chapter);
+            setShowTOCGenerator(false);
+          }}
           onChapterRename={handleChapterRename}
           onChapterDelete={handleChapterDelete}
           onChapterMove={handleChapterMove}
         />
         <div className="flex-1 bg-white">
-          {selectedFrontMatter ? (
+          {showTOCGenerator ? (
+            <TableOfContents 
+              bookTitle={bookData.title}
+              chapters={chapters}
+              onGenerate={handleGenerateTOC}
+            />
+          ) : selectedFrontMatter ? (
             <FrontMatterEditor
               selectedFrontMatter={selectedFrontMatter}
               handleFrontMatterContentChange={handleFrontMatterContentChange}
