@@ -3,7 +3,6 @@ import React from 'react';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 import { useNavigate } from 'react-router-dom';
-import { TubelightNavbar } from '../ui/tubelight-navbar';
 import {
   ArrowLeft,
   Save,
@@ -46,44 +45,15 @@ const ManuscriptToolbar = ({
 }: ManuscriptToolbarProps) => {
   const navigate = useNavigate();
 
-  const menuItems = [
-    {
-      name: 'Boxes',
-      url: '#',
-      icon: LayoutDashboard,
-      onClick: () => onViewChange('boxes')
-    },
-    {
-      name: 'Document',
-      url: '#',
-      icon: BookOpen,
-      onClick: () => onViewChange('document')
-    }
-  ];
-
-  const actionItems = [
-    {
-      name: 'Save',
-      url: '#',
-      icon: Save,
-      onClick: onSave
-    },
-    {
-      name: 'Add Act',
-      url: '#',
-      icon: Plus,
-      onClick: onAddAct
-    }
-  ];
-
   return (
-    <div className="h-16 border-b flex items-center px-4 justify-between bg-[#0F172A] text-white">
+    <div className="h-16 border-b flex items-center px-6 justify-between bg-white text-[#0F172A] shadow-sm">
       <div className="flex items-center gap-4">
         <Button 
           variant="ghost" 
           size="icon"
           onClick={onBack}
-          className="hover:bg-white/10 text-white"
+          className="hover:bg-gray-100 text-[#0F172A]"
+          aria-label="Back"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -91,53 +61,107 @@ const ManuscriptToolbar = ({
           variant="ghost" 
           size="icon"
           onClick={() => navigate('/')}
-          className="hover:bg-white/10 text-white"
+          className="hover:bg-gray-100 text-[#0F172A]"
+          aria-label="Home"
         >
           <Home className="h-5 w-5" />
         </Button>
         <div>
-          <h2 className="text-lg font-semibold leading-tight">Manuscript Editor</h2>
-          <p className="text-sm text-gray-300 leading-tight">{editorView === 'boxes' ? 'Box View' : 'Document View'}</p>
+          <h2 className="text-lg font-serif font-bold leading-tight text-[#0F172A]">Manuscript Editor</h2>
+          <p className="text-sm text-[#1E293B] font-medium leading-tight">
+            {editorView === 'boxes' ? 'Box View' : 'Document View'}
+          </p>
         </div>
       </div>
       
       <div className="flex items-center gap-4">
-        <TubelightNavbar items={menuItems} className="static transform-none mx-4 mb-0 sm:pt-0" />
-        <TubelightNavbar items={actionItems} className="static transform-none mx-4 mb-0 sm:pt-0" />
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost"
+            size="sm"
+            onClick={() => onViewChange('boxes')}
+            className={`font-medium ${editorView === 'boxes' 
+              ? 'bg-gray-100 text-[#0F172A]' 
+              : 'bg-gray-50 hover:bg-gray-100 text-[#0F172A]'
+            } border border-gray-200`}
+          >
+            <LayoutDashboard className="h-4 w-4 mr-2" />
+            Boxes
+          </Button>
+          
+          <Button 
+            variant="ghost"
+            size="sm"
+            onClick={() => onViewChange('document')}
+            className={`font-medium ${editorView === 'document' 
+              ? 'bg-gray-100 text-[#0F172A]' 
+              : 'bg-gray-50 hover:bg-gray-100 text-[#0F172A]'
+            } border border-gray-200`}
+          >
+            <BookOpen className="h-4 w-4 mr-2" />
+            Document
+          </Button>
+        </div>
 
-        <Separator orientation="vertical" className="h-6 bg-white/20" />
+        <div className="flex items-center gap-2 ml-2">
+          <Button 
+            variant="outline"
+            className="bg-white text-[#0F172A] border border-gray-200 hover:bg-gray-50 font-medium"
+            onClick={onSave}
+          >
+            <Save className="h-4 w-4 mr-2" />
+            Save
+          </Button>
+          
+          <Button 
+            variant="outline"
+            className="bg-white text-[#0F172A] border border-gray-200 hover:bg-gray-50 font-medium"
+            onClick={onAddAct}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Act
+          </Button>
+        </div>
+
+        <Separator orientation="vertical" className="h-6 bg-gray-200" />
         
-        <Button variant="ghost" size="icon" className="hover:bg-white/10 text-white">
-          <Copy className="h-5 w-5" />
-        </Button>
-        <Button variant="ghost" size="icon" className="hover:bg-white/10 text-white">
-          <Trash2 className="h-5 w-5" />
-        </Button>
-        <Button variant="ghost" size="icon" className="hover:bg-white/10 text-white">
-          <CheckSquare className="h-5 w-5" />
-        </Button>
-        <Button variant="ghost" size="icon" className="hover:bg-white/10 text-white">
-          <Settings className="h-5 w-5" />
-        </Button>
+        <div className="flex items-center">
+          <Button variant="ghost" size="icon" className="hover:bg-gray-100 text-[#0F172A]" aria-label="Copy">
+            <Copy className="h-5 w-5" />
+          </Button>
+          <Button variant="ghost" size="icon" className="hover:bg-gray-100 text-[#0F172A]" aria-label="Delete">
+            <Trash2 className="h-5 w-5" />
+          </Button>
+          <Button variant="ghost" size="icon" className="hover:bg-gray-100 text-[#0F172A]" aria-label="Select">
+            <CheckSquare className="h-5 w-5" />
+          </Button>
+          <Button variant="ghost" size="icon" className="hover:bg-gray-100 text-[#0F172A]" aria-label="Settings">
+            <Settings className="h-5 w-5" />
+          </Button>
+        </div>
         
-        <Separator orientation="vertical" className="h-6 bg-white/20" />
+        <Separator orientation="vertical" className="h-6 bg-gray-200" />
         
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={() => onViewModeChange('grid')}
-          className={`hover:bg-white/10 text-white ${viewMode === 'grid' ? 'bg-white/10' : ''}`}
-        >
-          <LayoutGrid className="h-5 w-5" />
-        </Button>
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={() => onViewModeChange('list')}
-          className={`hover:bg-white/10 text-white ${viewMode === 'list' ? 'bg-white/10' : ''}`}
-        >
-          <List className="h-5 w-5" />
-        </Button>
+        <div className="flex items-center">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => onViewModeChange('grid')}
+            className={`hover:bg-gray-100 text-[#0F172A] ${viewMode === 'grid' ? 'bg-gray-100' : ''}`}
+            aria-label="Grid view"
+          >
+            <LayoutGrid className="h-5 w-5" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => onViewModeChange('list')}
+            className={`hover:bg-gray-100 text-[#0F172A] ${viewMode === 'list' ? 'bg-gray-100' : ''}`}
+            aria-label="List view"
+          >
+            <List className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -4,7 +4,6 @@ import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { BookOpen, Home, ArrowLeft, LayoutDashboard, Plus, TableOfContents, Save } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { TubelightNavbar } from '../ui/tubelight-navbar';
 
 interface ChapterToolbarProps {
   totalWordCount: number;
@@ -24,19 +23,6 @@ const ChapterToolbar = ({
   const navigate = useNavigate();
   const { bookId } = useParams();
 
-  const viewItems = [
-    {
-      name: 'Document',
-      url: `/editor/manuscript/${bookId}/chapters`,
-      icon: BookOpen,
-    },
-    {
-      name: 'Boxes',
-      url: `/editor/manuscript/${bookId}/boxes`,
-      icon: LayoutDashboard,
-    }
-  ];
-
   return (
     <div className="flex items-center gap-4 h-16 border-b px-6 justify-between bg-white text-[#0F172A] shadow-sm">
       <div className="flex items-center gap-4">
@@ -45,6 +31,7 @@ const ChapterToolbar = ({
           size="icon"
           onClick={() => navigate('/editor')}
           className="hover:bg-gray-100 text-[#0F172A]"
+          aria-label="Back to editor"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -53,27 +40,48 @@ const ChapterToolbar = ({
           size="icon"
           onClick={() => navigate('/')}
           className="hover:bg-gray-100 text-[#0F172A]"
+          aria-label="Home"
         >
           <Home className="h-5 w-5" />
         </Button>
         <div>
           <h2 className="text-lg font-serif font-bold leading-tight text-[#0F172A]">Manuscript Editor</h2>
-          <p className="text-sm text-[#1E293B] leading-tight">Document View</p>
+          <p className="text-sm text-[#1E293B] font-medium leading-tight">Document View</p>
         </div>
       </div>
 
       <div className="flex items-center gap-4">
-        <Badge variant="outline" className="text-sm bg-gray-50 text-[#0F172A] border border-gray-200">
-          <BookOpen className="h-4 w-4 mr-1" />
+        <Badge variant="outline" className="text-sm bg-gray-50 text-[#0F172A] border border-gray-200 font-medium py-1.5">
+          <BookOpen className="h-4 w-4 mr-1.5" />
           Total Words: {totalWordCount.toLocaleString()}
         </Badge>
         
-        <TubelightNavbar items={viewItems} className="static transform-none mx-4 mb-0 sm:pt-0" />
+        <div className="flex items-center gap-2 ml-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => navigate(`/editor/manuscript/${bookId}/chapters`)}
+            className="bg-gray-50 hover:bg-gray-100 text-[#0F172A] border border-gray-200 font-medium"
+          >
+            <BookOpen className="h-4 w-4 mr-2" />
+            Document
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => navigate(`/editor/manuscript/${bookId}/boxes`)}
+            className="bg-gray-50 hover:bg-gray-100 text-[#0F172A] border border-gray-200 font-medium"
+          >
+            <LayoutDashboard className="h-4 w-4 mr-2" />
+            Boxes
+          </Button>
+        </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 ml-2">
           <Button 
             variant="outline" 
-            className="bg-white text-[#0F172A] border border-gray-200 hover:bg-gray-50"
+            className="bg-white text-[#0F172A] border border-gray-200 hover:bg-gray-50 font-medium"
             onClick={onSave}
           >
             <Save className="h-4 w-4 mr-2" />
@@ -82,7 +90,7 @@ const ChapterToolbar = ({
           
           <Button 
             variant="default" 
-            className="bg-[#0F172A] hover:bg-[#1E293B] text-white"
+            className="bg-[#0F172A] hover:bg-[#1E293B] text-white font-medium"
             onClick={async () => {
               console.log('Add Chapter clicked');
               await onAddChapter();
@@ -94,7 +102,7 @@ const ChapterToolbar = ({
           
           <Button 
             variant="outline"
-            className="bg-white text-[#0F172A] border border-gray-200 hover:bg-gray-50"
+            className="bg-white text-[#0F172A] border border-gray-200 hover:bg-gray-50 font-medium"
             onClick={onAddAct}
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -103,7 +111,7 @@ const ChapterToolbar = ({
           
           <Button 
             variant="outline"
-            className="bg-white text-[#0F172A] border border-gray-200 hover:bg-gray-50"
+            className="bg-white text-[#0F172A] border border-gray-200 hover:bg-gray-50 font-medium"
             onClick={onGenerateTOC}
           >
             <TableOfContents className="h-4 w-4 mr-2" />
