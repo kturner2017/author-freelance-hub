@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import { BookOpen, Home, ArrowLeft, LayoutDashboard, Plus, TableOfContents } from 'lucide-react';
+import { BookOpen, Home, ArrowLeft, LayoutDashboard, Plus, TableOfContents, Save } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { TubelightNavbar } from '../ui/tubelight-navbar';
 
@@ -34,36 +34,6 @@ const ChapterToolbar = ({
       name: 'Boxes',
       url: `/editor/manuscript/${bookId}/boxes`,
       icon: LayoutDashboard,
-    }
-  ];
-
-  const actionItems = [
-    {
-      name: 'Save Changes',
-      url: '#',
-      icon: BookOpen,
-      onClick: onSave
-    },
-    {
-      name: 'Add Chapter',
-      url: '#',
-      icon: Plus,
-      onClick: async () => {
-        console.log('Add Chapter clicked');
-        await onAddChapter();
-      }
-    },
-    {
-      name: 'Add Act',
-      url: '#',
-      icon: Plus,
-      onClick: onAddAct
-    },
-    {
-      name: 'Generate TOC',
-      url: '#',
-      icon: TableOfContents,
-      onClick: onGenerateTOC
     }
   ];
 
@@ -99,7 +69,47 @@ const ChapterToolbar = ({
         </Badge>
         
         <TubelightNavbar items={viewItems} className="static transform-none mx-4 mb-0 sm:pt-0" />
-        <TubelightNavbar items={actionItems} className="static transform-none mx-4 mb-0 sm:pt-0" />
+        
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            className="rounded-full bg-white/10 text-white border-0 hover:bg-white/20"
+            onClick={onSave}
+          >
+            <Save className="h-4 w-4 mr-2" />
+            Save Changes
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            className="rounded-full bg-white/10 text-white border-0 hover:bg-white/20"
+            onClick={async () => {
+              console.log('Add Chapter clicked');
+              await onAddChapter();
+            }}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Chapter
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            className="rounded-full bg-white/10 text-white border-0 hover:bg-white/20"
+            onClick={onAddAct}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Act
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            className="rounded-full bg-white/10 text-white border-0 hover:bg-white/20"
+            onClick={onGenerateTOC}
+          >
+            <TableOfContents className="h-4 w-4 mr-2" />
+            Generate TOC
+          </Button>
+        </div>
       </div>
     </div>
   );
