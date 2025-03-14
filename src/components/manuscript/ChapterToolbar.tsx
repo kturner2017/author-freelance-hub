@@ -5,6 +5,7 @@ import { Badge } from '../ui/badge';
 import { BookOpen, Home, ArrowLeft, LayoutDashboard, Plus, TableOfContents, Save } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import { Separator } from '../ui/separator';
 
 interface ChapterToolbarProps {
   totalWordCount: number;
@@ -33,7 +34,7 @@ const ChapterToolbar = ({
               <Button 
                 variant="ghost" 
                 size="icon"
-                onClick={() => navigate('/editor')}
+                onClick={() => navigate('/editor/books')}
                 className="hover:bg-gray-100 text-[#0F172A]"
                 aria-label="Back to editor"
               >
@@ -41,7 +42,7 @@ const ChapterToolbar = ({
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Back to Editor</p>
+              <p>Back to Books</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -117,7 +118,9 @@ const ChapterToolbar = ({
           </TooltipProvider>
         </div>
         
-        <div className="flex items-center gap-2 ml-2">
+        <Separator orientation="vertical" className="h-6 bg-gray-200" />
+        
+        <div className="flex items-center gap-2">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>

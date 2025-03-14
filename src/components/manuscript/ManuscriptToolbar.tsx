@@ -101,13 +101,12 @@ const ManuscriptToolbar = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button 
-                  variant="ghost"
+                  variant={editorView === 'boxes' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => onViewChange('boxes')}
                   className={`font-medium ${editorView === 'boxes' 
-                    ? 'bg-gray-100 text-[#0F172A]' 
-                    : 'bg-gray-50 hover:bg-gray-100 text-[#0F172A]'
-                  } border border-gray-200`}
+                    ? 'bg-[#0F172A] text-white' 
+                    : 'bg-gray-50 hover:bg-gray-100 text-[#0F172A] border border-gray-200'}`}
                 >
                   <LayoutDashboard className="h-4 w-4 mr-2" />
                   Boxes
@@ -123,13 +122,12 @@ const ManuscriptToolbar = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button 
-                  variant="ghost"
+                  variant={editorView === 'document' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => onViewChange('document')}
                   className={`font-medium ${editorView === 'document' 
-                    ? 'bg-gray-100 text-[#0F172A]' 
-                    : 'bg-gray-50 hover:bg-gray-100 text-[#0F172A]'
-                  } border border-gray-200`}
+                    ? 'bg-[#0F172A] text-white' 
+                    : 'bg-gray-50 hover:bg-gray-100 text-[#0F172A] border border-gray-200'}`}
                 >
                   <BookOpen className="h-4 w-4 mr-2" />
                   Document
