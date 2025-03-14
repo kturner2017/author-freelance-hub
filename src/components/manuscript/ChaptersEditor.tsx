@@ -188,12 +188,14 @@ const ChaptersEditor = () => {
           bookId={bookId || ''} 
           onFrontMatterSelect={handleFrontMatterSelectWithReset}
           onGenerateTOC={() => setShowTOCGenerator(true)}
+          activeFrontMatterId={selectedFrontMatter?.id}
         />
         <ChapterList
           chapters={chapters}
           selectedChapter={selectedChapter}
           onChapterSelect={(chapter) => {
             setSelectedChapter(chapter);
+            setSelectedFrontMatter(null);
             setShowTOCGenerator(false);
           }}
           onChapterRename={handleChapterRename}

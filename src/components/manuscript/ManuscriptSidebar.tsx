@@ -18,9 +18,15 @@ interface ManuscriptSidebarProps {
   bookId: string;
   onFrontMatterSelect: (id: string, title: string) => void;
   onGenerateTOC: () => void;
+  activeFrontMatterId?: string | null;
 }
 
-const ManuscriptSidebar = ({ bookId, onFrontMatterSelect, onGenerateTOC }: ManuscriptSidebarProps) => {
+const ManuscriptSidebar = ({ 
+  bookId, 
+  onFrontMatterSelect, 
+  onGenerateTOC, 
+  activeFrontMatterId 
+}: ManuscriptSidebarProps) => {
   const { toast } = useToast();
   const [expandedSections, setExpandedSections] = useState({
     frontMatter: true,
@@ -145,7 +151,7 @@ const ManuscriptSidebar = ({ bookId, onFrontMatterSelect, onGenerateTOC }: Manus
                         {option.enabled && (
                           <button
                             onClick={() => onFrontMatterSelect(option.id, option.title)}
-                            className="w-full flex items-center px-2 py-1.5 text-sm text-gray-300 hover:bg-white/10 rounded transition-colors"
+                            className={`w-full flex items-center px-2 py-1.5 text-sm ${activeFrontMatterId === option.id ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-white/10'} rounded transition-colors`}
                           >
                             <FileText className="h-4 w-4 mr-2" />
                             {option.title}

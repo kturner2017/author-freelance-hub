@@ -66,6 +66,11 @@ export const useFrontMatterManager = (bookId: string | undefined) => {
     if (!bookId) return;
     
     try {
+      // Check if we already have this front matter selected - if so, just return
+      if (selectedFrontMatter?.id === frontMatterId) {
+        return;
+      }
+      
       const { data, error } = await supabase
         .from('front_matter_content')
         .select('*')
@@ -77,7 +82,8 @@ export const useFrontMatterManager = (bookId: string | undefined) => {
         throw error;
       }
 
-      const selectedOption = frontMatterContents.find(fm => fm.id === frontMatterId) || {
+      // Find the front matter option to get its title and sort order
+      const frontMatterOption = frontMatterContents.find(fm => fm.id === frontMatterId) || {
         id: frontMatterId,
         title,
         content: '',
@@ -86,7 +92,7 @@ export const useFrontMatterManager = (bookId: string | undefined) => {
 
       if (data) {
         setSelectedFrontMatter({
-          ...selectedOption,
+          ...frontMatterOption,
           content: data.content || ''
         });
       } else {
@@ -102,7 +108,7 @@ export const useFrontMatterManager = (bookId: string | undefined) => {
 
         if (insertError) throw insertError;
 
-        setSelectedFrontMatter(selectedOption);
+        setSelectedFrontMatter(frontMatterOption);
       }
     } catch (error) {
       console.error('Error loading front matter content:', error);
