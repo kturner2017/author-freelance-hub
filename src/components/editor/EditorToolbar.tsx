@@ -25,6 +25,10 @@ const EditorToolbar = ({
   isModelLoading,
   onToggleRecording 
 }: EditorToolbarProps) => {
+  if (!editor) {
+    return null;
+  }
+  
   return (
     <div className="bg-gray-100 p-2 rounded-lg border flex flex-wrap items-center gap-2">
       <TextFormatButtons editor={editor} />

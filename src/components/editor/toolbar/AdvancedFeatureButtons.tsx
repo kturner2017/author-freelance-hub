@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Editor } from '@tiptap/react';
-import { Button } from '../../ui/button';
 import { 
   History, 
   Search, 
@@ -10,15 +9,6 @@ import {
   MessageCircle 
 } from 'lucide-react';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  DropdownMenuGroup,
-} from '@/components/ui/dropdown-menu';
-import { 
   Menubar,
   MenubarContent,
   MenubarItem,
@@ -27,6 +17,7 @@ import {
   MenubarTrigger,
 } from '@/components/ui/menubar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { toast } from "sonner";
 
 interface AdvancedFeatureButtonsProps {
   editor: Editor;
@@ -34,28 +25,33 @@ interface AdvancedFeatureButtonsProps {
 
 const AdvancedFeatureButtons = ({ editor }: AdvancedFeatureButtonsProps) => {
   const handleVersionHistory = () => {
-    console.log('Version History clicked');
-    // Placeholder for version history functionality
+    toast.info("Version History feature", {
+      description: "This feature will be available soon"
+    });
   };
 
   const handleFindReplace = () => {
-    console.log('Find and Replace clicked');
-    // Placeholder for find and replace functionality
+    toast.info("Find and Replace feature", {
+      description: "This feature will be available soon"
+    });
   };
 
   const handleFloatingToolbar = () => {
-    console.log('Floating Toolbar clicked');
-    // Placeholder for floating toolbar functionality
+    toast.info("Floating Toolbar feature", {
+      description: "This feature will be available soon"
+    });
   };
 
   const handleTable = () => {
-    console.log('Table clicked');
-    // Placeholder for table insertion functionality
+    toast.info("Table insertion feature", {
+      description: "This feature will be available soon"
+    });
   };
 
   const handleComments = () => {
-    console.log('Comments clicked');
-    // Placeholder for comments functionality
+    toast.info("Comments feature", {
+      description: "This feature will be available soon"
+    });
   };
 
   return (
