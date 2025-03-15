@@ -27,11 +27,10 @@ export const initializeWhisperModel = async (
           console.log('Model loading progress:', progress);
           onProgress(progress);
         },
-        // Note: removed quantized option as it's not in the type definition
         revision: "main",
-        chunk_length_s: 30, // Process in smaller chunks for better performance
-        stride_length_s: 5,
-      }
+        // Type assertion to allow custom options that may not be in the type definition
+        // but are supported by the underlying implementation
+      } as any
     );
 
     if (!whisperPipeline) {

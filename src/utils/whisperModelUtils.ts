@@ -102,7 +102,7 @@ export const initializeWhisperInstance = async (
           setIsModelLoading(false);
         }
         
-        // Log details about the error
+        // Log details about the error without using .cause
         console.error('[initializeWhisperInstance] Error details:', {
           message: error.message,
           name: error.name,
@@ -115,13 +115,12 @@ export const initializeWhisperInstance = async (
   } catch (error) {
     console.error('[initializeWhisperInstance] Error in initializeWhisper:', error);
     
-    // Log more detailed error information
+    // Log more detailed error information without using .cause
     if (error instanceof Error) {
       console.error('[initializeWhisperInstance] Error details:', {
         name: error.name,
         message: error.message,
-        stack: error.stack,
-        cause: error.cause
+        stack: error.stack
       });
     } else {
       console.error('[initializeWhisperInstance] Non-Error object thrown:', error);
