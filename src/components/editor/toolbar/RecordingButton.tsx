@@ -33,7 +33,7 @@ const RecordingButton = ({
               onToggleRecording();
             }}
             disabled={isModelLoading}
-            className={`h-8 w-8 p-0 relative ${isRecording ? 'bg-red-200 hover:bg-red-300' : ''}`}
+            className={`h-8 w-8 p-0 relative ${isRecording ? 'bg-red-200 hover:bg-red-300 transition-colors' : 'hover:bg-gray-200'}`}
             aria-label={buttonLabel}
           >
             {isModelLoading ? (
@@ -51,7 +51,7 @@ const RecordingButton = ({
             )}
           </Button>
         </TooltipTrigger>
-        <TooltipContent>
+        <TooltipContent side="bottom">
           <p>{buttonLabel}</p>
         </TooltipContent>
       </Tooltip>

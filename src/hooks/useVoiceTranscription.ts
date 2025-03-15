@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useMediaRecording } from '@/hooks/useMediaRecording';
 import { initializeWhisperInstance } from '@/utils/whisperModelUtils';
@@ -16,63 +16,114 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
   const [isModelLoading, setIsModelLoading] = useState(false);
   const [transcriber, setTranscriber] = useState<any>(null);
   const [isTranscriptionInProgress, setIsTranscriptionInProgress] = useState(false);
+  const [modelInitialized, setModelInitialized] = useState(false);
+  const modelInitAttempted = useRef(false);
   const toast = useToast();
 
   const handleRecordingComplete = async (chunks: Blob[]) => {
     console.log('Recording complete, processing chunks:', chunks.length);
     
-    if (!transcriber) {
-      console.error('Transcriber not initialized, initializing now before processing...');
-      await initializeWhisper();
-    }
-
-    // Check again if transcriber is available after potential initialization
-    if (!transcriber) {
-      console.error('Failed to initialize transcriber');
+    if (chunks.length === 0) {
+      console.error('No audio chunks recorded');
       toast.toast({
-        title: "Error",
-        description: "Could not initialize speech recognition, using fallback API",
+        title: "Recording failed",
+        description: "No audio was recorded. Please try again.",
         variant: "destructive"
       });
-      
+      return;
+    }
+    
+    // If model initialization failed, go straight to edge function
+    if (!transcriber && modelInitAttempted.current) {
+      console.log('Transcriber not available, using edge function fallback...');
       await processEdgeFunctionTranscription(chunks, toast, onTranscriptionComplete);
       return;
     }
 
-    await processAudioTranscription(
-      chunks, 
-      transcriber, 
-      toast, 
-      onTranscriptionComplete,
-      setIsTranscriptionInProgress
-    );
+    if (!transcriber) {
+      console.log('Transcriber not initialized, initializing now before processing...');
+      try {
+        await initializeWhisper();
+      } catch (error) {
+        console.error('Failed to initialize whisper on demand:', error);
+        await processEdgeFunctionTranscription(chunks, toast, onTranscriptionComplete);
+        return;
+      }
+    }
+
+    // Check again if transcriber is available after potential initialization
+    if (!transcriber) {
+      console.log('Still no transcriber available, using edge function fallback...');
+      await processEdgeFunctionTranscription(chunks, toast, onTranscriptionComplete);
+      return;
+    }
+
+    try {
+      await processAudioTranscription(
+        chunks, 
+        transcriber, 
+        toast, 
+        onTranscriptionComplete,
+        setIsTranscriptionInProgress
+      );
+    } catch (error) {
+      console.error('Error in transcription, falling back to edge function:', error);
+      await processEdgeFunctionTranscription(chunks, toast, onTranscriptionComplete);
+    }
   };
 
   const { isRecording, startRecording, stopRecording } = useMediaRecording(handleRecordingComplete);
 
   const initializeWhisper = useCallback(async () => {
     // Don't initialize if already initialized or in progress
-    if (transcriber || isModelLoading) {
+    if (transcriber || isModelLoading || modelInitialized) {
       console.log('Whisper already initialized or loading in progress');
       return;
     }
+    
+    // Mark that we've attempted initialization
+    modelInitAttempted.current = true;
 
-    await initializeWhisperInstance(toast, setTranscriber, setIsModelLoading);
-  }, [toast, transcriber, isModelLoading]);
-
-  // Initialize the model when the component mounts
-  useEffect(() => {
-    // Try to initialize on mount, but don't block rendering
-    if (!transcriber && !isModelLoading) {
-      initializeWhisper();
+    try {
+      setIsModelLoading(true);
+      await initializeWhisperInstance(
+        toast, 
+        (transcriberInstance) => {
+          console.log('Whisper model initialized successfully');
+          setTranscriber(transcriberInstance);
+          setModelInitialized(true);
+        }, 
+        setIsModelLoading
+      );
+    } catch (error) {
+      console.error('Error initializing Whisper:', error);
+      toast.toast({
+        title: "Model initialization failed",
+        description: "Will use cloud transcription instead",
+        variant: "destructive"
+      });
+      setIsModelLoading(false);
     }
-  }, [initializeWhisper, transcriber, isModelLoading]);
+  }, [toast, transcriber, isModelLoading, modelInitialized]);
+
+  // Initialize the model when the component mounts, but don't block rendering
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!transcriber && !isModelLoading && !modelInitialized && !modelInitAttempted.current) {
+        console.log('Initializing Whisper model after delay...');
+        initializeWhisper();
+      }
+    }, 2000); // Delay initialization to prioritize UI rendering
+    
+    return () => clearTimeout(timer);
+  }, [initializeWhisper, transcriber, isModelLoading, modelInitialized]);
 
   const toggleRecording = useCallback(async () => {
     console.log('Toggle recording called, current state:', { 
       isRecording, 
       isModelLoading, 
-      hasTranscriber: !!transcriber 
+      hasTranscriber: !!transcriber,
+      modelInitAttempted: modelInitAttempted.current
     });
     
     if (isRecording) {
@@ -83,25 +134,31 @@ export const useVoiceTranscription = ({ onTranscriptionComplete }: UseVoiceTrans
         description: "Processing your speech..."
       });
     } else {
-      if (!transcriber && !isModelLoading) {
-        console.log('No transcriber initialized, initializing Whisper...');
-        await initializeWhisper();
+      if (!modelInitAttempted.current) {
+        console.log('First recording attempt, initializing Whisper...');
+        try {
+          await initializeWhisper();
+        } catch (error) {
+          console.error('Error initializing Whisper on first recording:', error);
+          // Continue anyway, we'll use the edge function fallback
+        }
       }
       
-      if (!isModelLoading) {
-        console.log('Starting recording...');
-        startRecording();
-        toast.toast({
-          title: "Recording started",
-          description: "Speak clearly into your microphone"
-        });
-      } else {
-        console.log('Cannot start recording - model is still loading');
+      if (isModelLoading) {
+        console.log('Model is still loading, showing notification');
         toast.toast({
           title: "Please wait",
           description: "Speech recognition model is still loading"
         });
+        return;
       }
+      
+      console.log('Starting recording...');
+      startRecording();
+      toast.toast({
+        title: "Recording started",
+        description: "Speak clearly into your microphone"
+      });
     }
   }, [isRecording, isModelLoading, startRecording, stopRecording, toast, transcriber, initializeWhisper]);
 

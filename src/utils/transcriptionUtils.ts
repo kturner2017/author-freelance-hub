@@ -17,12 +17,13 @@ export const processAudioTranscription = async (
   }
   
   try {
-    const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+    // Combine all audio chunks into a single blob
+    const audioBlob = new Blob(chunks, { type: chunks[0]?.type || 'audio/webm' });
     console.log('Processing audio, size:', audioBlob.size, 'bytes');
     
-    if (audioBlob.size === 0) {
-      console.error('No audio recorded (empty blob)');
-      throw new Error('No audio recorded');
+    if (audioBlob.size === 0 || audioBlob.size < 100) { // Check for minimum size
+      console.error('No audio recorded or file too small (empty blob)');
+      throw new Error('No usable audio recorded');
     }
 
     console.log('Converting blob to audio data...');
@@ -31,7 +32,7 @@ export const processAudioTranscription = async (
     
     if (!audioData || !validateAudioData(audioData)) {
       console.error('Invalid audio data after conversion');
-      throw new Error('Invalid audio data');
+      throw new Error('Invalid audio data. Please try speaking louder or checking your microphone.');
     }
 
     console.log('Audio processed, calling transcriber with data length:', audioData.length);
@@ -40,9 +41,13 @@ export const processAudioTranscription = async (
       description: "Transcribing your audio..."
     });
     
+    // Call Whisper model with specific settings for better transcription
     const output = await transcriber(audioData, {
       task: 'transcribe',
-      language: 'en'
+      language: 'en',
+      chunk_length_s: 30,
+      stride_length_s: 5,
+      return_timestamps: false // Don't need timestamps for simple transcription
     });
 
     console.log('Transcription result:', output);
@@ -52,12 +57,20 @@ export const processAudioTranscription = async (
       throw new Error('Transcription failed - no text output');
     }
 
-    console.log('Transcription successful:', output.text);
-    onTranscriptionComplete(output.text);
+    // Clean up transcription text - remove extra spaces and punctuation issues
+    const cleanedText = output.text
+      .trim()
+      .replace(/\s+/g, ' ')
+      .replace(/\s([.,;!?])/g, '$1');
+      
+    console.log('Transcription successful:', cleanedText);
+    onTranscriptionComplete(cleanedText);
     toast.toast({
       title: "Transcription complete",
-      description: output.text.substring(0, 50) + (output.text.length > 50 ? '...' : '')
+      description: cleanedText.substring(0, 50) + (cleanedText.length > 50 ? '...' : '')
     });
+    
+    return cleanedText;
   } catch (error) {
     console.error('Transcription error:', error);
     toast.toast({
@@ -65,7 +78,10 @@ export const processAudioTranscription = async (
       description: error.message || 'Error processing audio',
       variant: "destructive"
     });
-    return null;
+    
+    // Try using the fallback OpenAI API via edge function
+    console.log('Attempting fallback transcription via OpenAI API...');
+    return processEdgeFunctionTranscription(chunks, toast, onTranscriptionComplete);
   } finally {
     if (setIsTranscriptionInProgress) {
       setIsTranscriptionInProgress(false);
@@ -74,7 +90,7 @@ export const processAudioTranscription = async (
 };
 
 /**
- * Attempts to use the edge function as a fallback for transcription
+ * Uses the edge function as a fallback for transcription
  */
 export const processEdgeFunctionTranscription = async (
   chunks: Blob[],
@@ -82,15 +98,23 @@ export const processEdgeFunctionTranscription = async (
   onTranscriptionComplete: (text: string) => void
 ) => {
   try {
-    // Try fallback to the edge function
-    const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+    // Combine all audio chunks into a single blob
+    const audioBlob = new Blob(chunks, { type: chunks[0]?.type || 'audio/webm' });
+    
+    if (audioBlob.size === 0 || audioBlob.size < 100) {
+      throw new Error('No usable audio recorded');
+    }
     
     // Convert blob to base64 for the edge function
     const reader = new FileReader();
     const base64Promise = new Promise<string>((resolve, reject) => {
       reader.onload = () => {
-        const base64 = (reader.result as string).split(',')[1];
-        resolve(base64);
+        try {
+          const base64 = (reader.result as string).split(',')[1];
+          resolve(base64);
+        } catch (e) {
+          reject(new Error('Failed to process audio data'));
+        }
       };
       reader.onerror = reject;
     });
@@ -99,6 +123,11 @@ export const processEdgeFunctionTranscription = async (
     const base64Audio = await base64Promise;
     
     console.log('Audio converted to base64, calling edge function...');
+    toast.toast({
+      title: "Using cloud transcription",
+      description: "Processing your audio in the cloud..."
+    });
+    
     const response = await fetch('/api/voice-to-text', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -106,20 +135,29 @@ export const processEdgeFunctionTranscription = async (
     });
     
     if (!response.ok) {
-      throw new Error('Edge function failed: ' + await response.text());
+      const errorText = await response.text();
+      console.error('Edge function error response:', errorText);
+      throw new Error('Server transcription failed: ' + (errorText || response.statusText));
     }
     
     const result = await response.json();
     if (result.text) {
-      onTranscriptionComplete(result.text);
+      // Clean up transcription text
+      const cleanedText = result.text
+        .trim()
+        .replace(/\s+/g, ' ')
+        .replace(/\s([.,;!?])/g, '$1');
+        
+      onTranscriptionComplete(cleanedText);
       toast.toast({
         title: "Transcription complete",
-        description: result.text.substring(0, 50) + (result.text.length > 50 ? '...' : '')
+        description: cleanedText.substring(0, 50) + (cleanedText.length > 50 ? '...' : '')
       });
       return true;
+    } else {
+      console.error('No text in edge function response:', result);
+      throw new Error('No transcription returned from server');
     }
-    
-    return false;
   } catch (fallbackError) {
     console.error('Fallback transcription failed:', fallbackError);
     toast.toast({

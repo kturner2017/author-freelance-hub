@@ -14,10 +14,11 @@ export const initializeWhisperModel = async (
   try {
     console.log('Initializing Whisper model...');
     
-    // Using the smaller model for faster loading
+    // Using the smallest model for faster loading and better compatibility
     const modelName = "Xenova/whisper-tiny.en";
     console.log(`Loading model: ${modelName}`);
     
+    // Configure the pipeline with specific options for better performance
     const whisperPipeline = await pipeline(
       "automatic-speech-recognition",
       modelName,
@@ -26,7 +27,10 @@ export const initializeWhisperModel = async (
           console.log('Model loading progress:', progress);
           onProgress(progress);
         },
-        revision: "main"
+        quantized: true, // Use quantized model for smaller size and faster loading
+        revision: "main",
+        chunk_length_s: 30, // Process in smaller chunks for better performance
+        stride_length_s: 5,
       }
     );
 

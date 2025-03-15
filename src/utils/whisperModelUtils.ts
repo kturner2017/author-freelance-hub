@@ -21,16 +21,35 @@ export const initializeWhisperInstance = async (
       description: "This may take a moment on first use",
     });
 
+    // Set a timeout to fallback if loading takes too long
+    const timeoutId = setTimeout(() => {
+      console.warn('Model loading timeout - browser may not be compatible');
+      throw new Error('Model loading timed out - your browser may not be compatible');
+    }, 30000); // 30-second timeout
+
     await initializeWhisperModel(
       (progress) => {
         console.log('Model loading progress:', progress);
         if (progress?.status === 'error') {
           console.error('Model loading error:', progress);
-          throw new Error('Model loading failed');
+          clearTimeout(timeoutId);
+          throw new Error('Model loading failed: ' + progress.message);
+        }
+        
+        // Update loading progress if the progress contains percentage info
+        if (progress?.status === 'progress' && progress?.progress !== undefined) {
+          const percentage = Math.round(progress.progress * 100);
+          if (percentage % 20 === 0) { // Only show toast at 0%, 20%, 40%, 60%, 80%
+            toast.toast({
+              title: "Loading model",
+              description: `${percentage}% complete`,
+            });
+          }
         }
       },
       (whisperPipeline) => {
         console.log('Whisper model loaded successfully');
+        clearTimeout(timeoutId);
         if (onModelLoaded) {
           onModelLoaded(whisperPipeline);
         }
@@ -38,26 +57,34 @@ export const initializeWhisperInstance = async (
           title: "Speech recognition ready",
           description: "You can now use voice dictation",
         });
+        if (setIsModelLoading) {
+          setIsModelLoading(false);
+        }
       },
       (error) => {
         console.error('Error loading Whisper model:', error);
+        clearTimeout(timeoutId);
         toast.toast({
           title: "Failed to load speech recognition",
-          description: "Please try again later",
+          description: "Will use cloud transcription as fallback",
           variant: "destructive"
         });
+        if (setIsModelLoading) {
+          setIsModelLoading(false);
+        }
+        throw error; // Rethrow to handle at the caller level
       }
     );
   } catch (error) {
     console.error('Error in initializeWhisper:', error);
     toast.toast({
-      title: "Initialization failed",
-      description: error.message || "Failed to initialize speech recognition",
+      title: "Using cloud transcription instead",
+      description: error.message || "Local speech recognition unavailable",
       variant: "destructive"
     });
-  } finally {
     if (setIsModelLoading) {
       setIsModelLoading(false);
     }
+    throw error; // Rethrow to handle at the caller level
   }
 };

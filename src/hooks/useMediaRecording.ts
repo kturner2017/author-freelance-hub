@@ -30,35 +30,60 @@ export const useMediaRecording = (onDataAvailable: (chunks: Blob[]) => void) => 
       }
       
       console.log('Requesting microphone access...');
+      // Try different constraints for better compatibility across browsers
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           channelCount: 1,
           sampleRate: { ideal: 16000 },
           echoCancellation: true,
-          noiseSuppression: true
+          noiseSuppression: true,
+          autoGainControl: true
         } 
       });
       
       streamRef.current = stream;
       
-      // Use a supported mime type
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm') 
-        ? 'audio/webm' 
-        : 'audio/ogg';
-        
-      console.log(`Using mime type: ${mimeType}`);
+      // Check supported mime types - try multiple formats
+      const mimeTypes = [
+        'audio/webm',
+        'audio/webm;codecs=opus',
+        'audio/ogg;codecs=opus',
+        'audio/mp4',
+        'audio/mpeg'
+      ];
       
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType,
-        audioBitsPerSecond: 16000
-      });
+      let selectedMimeType = '';
+      for (const type of mimeTypes) {
+        if (MediaRecorder.isTypeSupported(type)) {
+          selectedMimeType = type;
+          break;
+        }
+      }
+      
+      if (!selectedMimeType) {
+        selectedMimeType = ''; // Use browser default
+        console.warn('No supported mime type found, using browser default');
+      }
+      
+      console.log(`Using mime type: ${selectedMimeType || 'browser default'}`);
+      
+      // Create MediaRecorder with appropriate settings
+      const recorderOptions: MediaRecorderOptions = {
+        audioBitsPerSecond: 128000
+      };
+      
+      if (selectedMimeType) {
+        recorderOptions.mimeType = selectedMimeType;
+      }
+      
+      const mediaRecorder = new MediaRecorder(stream, recorderOptions);
       
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
 
       mediaRecorder.ondataavailable = (e) => {
         console.log('Data available:', e.data.size);
-        if (e.data.size > 0) {
+        if (e.data && e.data.size > 0) {
           chunksRef.current.push(e.data);
         }
       };
@@ -86,25 +111,28 @@ export const useMediaRecording = (onDataAvailable: (chunks: Blob[]) => void) => 
         });
       };
 
-      mediaRecorder.start(1000); // Collect data every second
+      // Start recording with timeslice to get more frequent ondataavailable events
+      mediaRecorder.start(500); // Collect data every 500ms
       setIsRecording(true);
       console.log('Recording started');
     } catch (error) {
       console.error('Error starting recording:', error);
       toast({
         title: "Recording failed",
-        description: "Please check your microphone access",
+        description: "Please check your microphone access and browser permissions",
         variant: "destructive"
       });
     }
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       console.log('Stopping MediaRecorder, current state:', mediaRecorderRef.current.state);
       
-      if (mediaRecorderRef.current.state !== 'inactive') {
+      try {
         mediaRecorderRef.current.stop();
+      } catch (e) {
+        console.error('Error stopping media recorder:', e);
       }
       
       if (streamRef.current) {
