@@ -67,6 +67,39 @@ export const useEditorStyles = () => {
           }
         }
 
+        /* Table styling */
+        table {
+          border-collapse: collapse;
+          table-layout: fixed;
+          width: 100%;
+          margin: 1em 0;
+          overflow: hidden;
+        }
+        
+        td, th {
+          border: 1px solid #cbd5e1;
+          padding: 0.5rem;
+          position: relative;
+          vertical-align: top;
+        }
+        
+        th {
+          background-color: #f8fafc;
+          font-weight: bold;
+        }
+        
+        .selectedCell:after {
+          background: rgba(200, 200, 255, 0.4);
+          content: "";
+          left: 0;
+          right: 0;
+          top: 0;
+          bottom: 0;
+          pointer-events: none;
+          position: absolute;
+          z-index: 2;
+        }
+
         &::after {
           content: '';
           display: table;
