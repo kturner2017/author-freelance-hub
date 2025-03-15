@@ -15,6 +15,9 @@ import {
   MenubarMenu,
   MenubarSeparator,
   MenubarTrigger,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
 } from '@/components/ui/menubar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from "sonner";
@@ -42,15 +45,21 @@ const AdvancedFeatureButtons = ({ editor }: AdvancedFeatureButtonsProps) => {
     });
   };
 
-  const handleTable = () => {
-    toast.info("Table insertion feature", {
+  const handleComments = () => {
+    toast.info("Comments feature", {
       description: "This feature will be available soon"
     });
   };
 
-  const handleComments = () => {
-    toast.info("Comments feature", {
-      description: "This feature will be available soon"
+  const insertTable = (rows: number, cols: number) => {
+    editor
+      .chain()
+      .focus()
+      .insertTable({ rows, cols, withHeaderRow: true })
+      .run();
+    
+    toast.success("Table inserted", {
+      description: `${rows}×${cols} table has been inserted`
     });
   };
 
@@ -89,10 +98,28 @@ const AdvancedFeatureButtons = ({ editor }: AdvancedFeatureButtonsProps) => {
           
           <MenubarSeparator />
           
-          <MenubarItem onClick={handleTable} className="flex items-center gap-2 cursor-pointer">
-            <Table className="h-4 w-4" />
-            <span>Insert Table</span>
-          </MenubarItem>
+          <MenubarSub>
+            <MenubarSubTrigger className="flex items-center gap-2 cursor-pointer">
+              <Table className="h-4 w-4" />
+              <span>Insert Table</span>
+            </MenubarSubTrigger>
+            <MenubarSubContent>
+              {[2, 3, 4, 5].map(rows => (
+                <div key={rows} className="flex items-center gap-2">
+                  {[2, 3, 4, 5].map(cols => (
+                    <button
+                      key={`${rows}-${cols}`}
+                      onClick={() => insertTable(rows, cols)}
+                      className="w-6 h-6 border m-1 hover:bg-primary hover:border-primary flex items-center justify-center text-xs"
+                      title={`${rows}×${cols} table`}
+                    >
+                      {rows}×{cols}
+                    </button>
+                  ))}
+                </div>
+              ))}
+            </MenubarSubContent>
+          </MenubarSub>
           
           <MenubarItem onClick={handleComments} className="flex items-center gap-2 cursor-pointer">
             <MessageCircle className="h-4 w-4" />

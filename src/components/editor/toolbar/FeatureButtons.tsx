@@ -95,9 +95,17 @@ export const FloatingToolbarButton = ({ editor }: { editor: Editor }) => {
 
 export const TableButton = ({ editor }: { editor: Editor }) => {
   const handleClick = () => {
-    toast.info("Insert Table feature", {
-      description: "This feature will be available soon"
-    });
+    if (editor) {
+      editor
+        .chain()
+        .focus()
+        .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+        .run();
+        
+      toast.success("Table inserted", {
+        description: "A 3×3 table has been inserted"
+      });
+    }
   };
 
   return (
