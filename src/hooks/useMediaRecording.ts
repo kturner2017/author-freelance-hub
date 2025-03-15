@@ -24,6 +24,62 @@ export const useMediaRecording = (onDataAvailable: (chunks: Blob[]) => void) => 
     };
   }, []);
 
+  // Function to get the best microphone from the list of available devices
+  const getBestMicrophone = async (): Promise<MediaDeviceInfo | null> => {
+    try {
+      console.log('[useMediaRecording] Getting list of audio input devices');
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const audioInputDevices = devices.filter(device => device.kind === 'audioinput');
+      
+      console.log('[useMediaRecording] Available audio input devices:', 
+        audioInputDevices.map(d => ({ deviceId: d.deviceId, label: d.label, groupId: d.groupId })));
+      
+      if (audioInputDevices.length === 0) {
+        console.warn('[useMediaRecording] No audio input devices found');
+        return null;
+      }
+      
+      // Prefer built-in microphone by looking for keywords in the device label
+      const builtInKeywords = ['built-in', 'internal', 'default', 'integrated'];
+      let bestDevice = null;
+      
+      // First try to find a device with built-in keywords
+      for (const keyword of builtInKeywords) {
+        const device = audioInputDevices.find(d => 
+          d.label.toLowerCase().includes(keyword));
+        if (device) {
+          console.log(`[useMediaRecording] Found built-in microphone with keyword "${keyword}":`, device.label);
+          bestDevice = device;
+          break;
+        }
+      }
+      
+      // If no built-in device found, use the first device that doesn't mention "bluetooth" or "airpods"
+      if (!bestDevice) {
+        bestDevice = audioInputDevices.find(d => {
+          const label = d.label.toLowerCase();
+          return !label.includes('bluetooth') && !label.includes('airpods') && !label.includes('headset');
+        });
+      }
+      
+      // If still no device found, use the first available device
+      if (!bestDevice && audioInputDevices.length > 0) {
+        bestDevice = audioInputDevices[0];
+      }
+      
+      if (bestDevice) {
+        console.log('[useMediaRecording] Selected microphone:', bestDevice.label);
+      } else {
+        console.warn('[useMediaRecording] No suitable microphone found');
+      }
+      
+      return bestDevice;
+    } catch (error) {
+      console.error('[useMediaRecording] Error enumerating audio devices:', error);
+      return null;
+    }
+  };
+
   const startRecording = async () => {
     try {
       // Stop any existing recording first
@@ -33,9 +89,17 @@ export const useMediaRecording = (onDataAvailable: (chunks: Blob[]) => void) => 
       }
       
       console.log('[useMediaRecording] Requesting microphone access...');
-      // Try different constraints for better compatibility across browsers
-      const constraints = { 
+      
+      // First get access to any microphone to ensure permission
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      // Then get the best available microphone
+      const bestMicrophone = await getBestMicrophone();
+      
+      // Prepare audio constraints with the selected device if available
+      const constraints: MediaStreamConstraints = { 
         audio: {
+          deviceId: bestMicrophone ? { exact: bestMicrophone.deviceId } : undefined,
           channelCount: 1,
           sampleRate: { ideal: 16000 },
           echoCancellation: true,
