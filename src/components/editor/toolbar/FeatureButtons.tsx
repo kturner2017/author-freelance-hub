@@ -10,22 +10,22 @@ import {
   MessageCircle 
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { toast } from "sonner";
 
 interface FeatureButtonProps {
   editor: Editor;
   icon: React.ReactNode;
   label: string;
   onClick: () => void;
+  isActive?: boolean;
 }
 
-export const FeatureButton = ({ editor, icon, label, onClick }: FeatureButtonProps) => {
+export const FeatureButton = ({ editor, icon, label, onClick, isActive = false }: FeatureButtonProps) => {
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            variant="ghost"
+            variant={isActive ? "default" : "ghost"}
             size="sm"
             onClick={onClick}
             className="h-8 w-8 p-0"
@@ -42,53 +42,62 @@ export const FeatureButton = ({ editor, icon, label, onClick }: FeatureButtonPro
   );
 };
 
-export const VersionHistoryButton = ({ editor }: { editor: Editor }) => {
-  const handleClick = () => {
-    toast.info("Version History feature", {
-      description: "This feature will be available soon"
-    });
-  };
-
+export const VersionHistoryButton = ({ 
+  editor, 
+  isActive, 
+  onClick 
+}: { 
+  editor: Editor; 
+  isActive: boolean;
+  onClick: () => void;
+}) => {
   return (
     <FeatureButton
       editor={editor}
       icon={<History className="h-4 w-4" />}
       label="Version History"
-      onClick={handleClick}
+      onClick={onClick}
+      isActive={isActive}
     />
   );
 };
 
-export const FindReplaceButton = ({ editor }: { editor: Editor }) => {
-  const handleClick = () => {
-    toast.info("Find & Replace feature", {
-      description: "This feature will be available soon"
-    });
-  };
-
+export const FindReplaceButton = ({ 
+  editor, 
+  isActive, 
+  onClick 
+}: { 
+  editor: Editor; 
+  isActive: boolean;
+  onClick: () => void;
+}) => {
   return (
     <FeatureButton
       editor={editor}
       icon={<Search className="h-4 w-4" />}
       label="Find & Replace"
-      onClick={handleClick}
+      onClick={onClick}
+      isActive={isActive}
     />
   );
 };
 
-export const FloatingToolbarButton = ({ editor }: { editor: Editor }) => {
-  const handleClick = () => {
-    toast.info("Floating Toolbar feature", {
-      description: "This feature will be available soon"
-    });
-  };
-
+export const FloatingToolbarButton = ({ 
+  editor, 
+  isActive, 
+  onClick 
+}: { 
+  editor: Editor; 
+  isActive: boolean;
+  onClick: () => void;
+}) => {
   return (
     <FeatureButton
       editor={editor}
       icon={<SlidersHorizontal className="h-4 w-4" />}
       label="Floating Toolbar"
-      onClick={handleClick}
+      onClick={onClick}
+      isActive={isActive}
     />
   );
 };
@@ -101,10 +110,6 @@ export const TableButton = ({ editor }: { editor: Editor }) => {
         .focus()
         .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
         .run();
-        
-      toast.success("Table inserted", {
-        description: "A 3×3 table has been inserted"
-      });
     }
   };
 
@@ -118,19 +123,22 @@ export const TableButton = ({ editor }: { editor: Editor }) => {
   );
 };
 
-export const CommentsButton = ({ editor }: { editor: Editor }) => {
-  const handleClick = () => {
-    toast.info("Comments feature", {
-      description: "This feature will be available soon"
-    });
-  };
-
+export const CommentsButton = ({ 
+  editor, 
+  isActive, 
+  onClick 
+}: { 
+  editor: Editor; 
+  isActive: boolean;
+  onClick: () => void;
+}) => {
   return (
     <FeatureButton
       editor={editor}
       icon={<MessageCircle className="h-4 w-4" />}
       label="Comments"
-      onClick={handleClick}
+      onClick={onClick}
+      isActive={isActive}
     />
   );
 };

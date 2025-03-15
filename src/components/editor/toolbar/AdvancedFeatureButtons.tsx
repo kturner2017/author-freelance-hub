@@ -20,47 +20,30 @@ import {
   MenubarSubTrigger,
 } from '@/components/ui/menubar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { toast } from "sonner";
 
 interface AdvancedFeatureButtonsProps {
   editor: Editor;
+  onToggleVersionHistory: () => void;
+  onToggleFindReplace: () => void;
+  onToggleFloatingToolbar: () => void;
+  onToggleComments: () => void;
+  isFloatingToolbarEnabled: boolean;
 }
 
-const AdvancedFeatureButtons = ({ editor }: AdvancedFeatureButtonsProps) => {
-  const handleVersionHistory = () => {
-    toast.info("Version History feature", {
-      description: "This feature will be available soon"
-    });
-  };
-
-  const handleFindReplace = () => {
-    toast.info("Find and Replace feature", {
-      description: "This feature will be available soon"
-    });
-  };
-
-  const handleFloatingToolbar = () => {
-    toast.info("Floating Toolbar feature", {
-      description: "This feature will be available soon"
-    });
-  };
-
-  const handleComments = () => {
-    toast.info("Comments feature", {
-      description: "This feature will be available soon"
-    });
-  };
-
+const AdvancedFeatureButtons = ({ 
+  editor,
+  onToggleVersionHistory,
+  onToggleFindReplace,
+  onToggleFloatingToolbar,
+  onToggleComments,
+  isFloatingToolbarEnabled
+}: AdvancedFeatureButtonsProps) => {
   const insertTable = (rows: number, cols: number) => {
     editor
       .chain()
       .focus()
       .insertTable({ rows, cols, withHeaderRow: true })
       .run();
-    
-    toast.success("Table inserted", {
-      description: `${rows}×${cols} table has been inserted`
-    });
   };
 
   return (
@@ -81,19 +64,21 @@ const AdvancedFeatureButtons = ({ editor }: AdvancedFeatureButtonsProps) => {
         </TooltipProvider>
 
         <MenubarContent align="start" className="min-w-[200px]">
-          <MenubarItem onClick={handleVersionHistory} className="flex items-center gap-2 cursor-pointer">
+          <MenubarItem onClick={onToggleVersionHistory} className="flex items-center gap-2 cursor-pointer">
             <History className="h-4 w-4" />
             <span>Version History</span>
           </MenubarItem>
           
-          <MenubarItem onClick={handleFindReplace} className="flex items-center gap-2 cursor-pointer">
+          <MenubarItem onClick={onToggleFindReplace} className="flex items-center gap-2 cursor-pointer">
             <Search className="h-4 w-4" />
             <span>Find & Replace</span>
           </MenubarItem>
           
-          <MenubarItem onClick={handleFloatingToolbar} className="flex items-center gap-2 cursor-pointer">
+          <MenubarItem onClick={onToggleFloatingToolbar} className="flex items-center gap-2 cursor-pointer">
             <SlidersHorizontal className="h-4 w-4" />
-            <span>Floating Toolbar</span>
+            <span>
+              {isFloatingToolbarEnabled ? 'Disable' : 'Enable'} Floating Toolbar
+            </span>
           </MenubarItem>
           
           <MenubarSeparator />
@@ -121,7 +106,7 @@ const AdvancedFeatureButtons = ({ editor }: AdvancedFeatureButtonsProps) => {
             </MenubarSubContent>
           </MenubarSub>
           
-          <MenubarItem onClick={handleComments} className="flex items-center gap-2 cursor-pointer">
+          <MenubarItem onClick={onToggleComments} className="flex items-center gap-2 cursor-pointer">
             <MessageCircle className="h-4 w-4" />
             <span>Comments</span>
           </MenubarItem>

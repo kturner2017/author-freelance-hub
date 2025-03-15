@@ -5,6 +5,10 @@ import calculateScores from '@/utils/readabilityScores';
 import { useEditorConfig } from './editor/useEditorConfig';
 import { useEditorStyles } from './editor/useEditorStyles';
 import { useAIAnalysis } from './editor/useAIAnalysis';
+import { useVersionHistory } from './editor/useVersionHistory';
+import { useFindReplace } from './editor/useFindReplace';
+import { useFloatingToolbar } from './editor/useFloatingToolbar';
+import { useCommentsSystem } from './editor/useCommentsSystem';
 
 interface UseRichTextEditorProps {
   content: string;
@@ -30,8 +34,25 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
       const plainText = editor.getText();
       const scores = calculateScores(plainText);
       setReadabilityScores(scores);
+      
+      // Update floating toolbar position when content changes
+      if (floatingToolbarFeature.isFloatingToolbarEnabled) {
+        floatingToolbarFeature.updateFloatingToolbarPosition();
+      }
+    },
+    onSelectionUpdate: ({ editor }) => {
+      // Update floating toolbar position when selection changes
+      if (floatingToolbarFeature.isFloatingToolbarEnabled) {
+        floatingToolbarFeature.updateFloatingToolbarPosition();
+      }
     },
   });
+
+  // Initialize all feature hooks with the editor
+  const versionHistoryFeature = useVersionHistory(editor);
+  const findReplaceFeature = useFindReplace(editor);
+  const floatingToolbarFeature = useFloatingToolbar(editor);
+  const commentsFeature = useCommentsSystem(editor);
 
   useEffect(() => {
     if (editor && content) {
@@ -50,6 +71,14 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
     readabilityScores,
     aiAnalysis,
     isAnalyzing,
-    performAnalysis
+    performAnalysis,
+    // Version history
+    versionHistory: versionHistoryFeature,
+    // Find & Replace
+    findReplace: findReplaceFeature,
+    // Floating toolbar
+    floatingToolbar: floatingToolbarFeature,
+    // Comments
+    comments: commentsFeature
   };
 };
