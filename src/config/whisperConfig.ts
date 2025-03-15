@@ -33,6 +33,9 @@ export const initializeWhisperModel = async (
       } as any
     );
 
+    console.log('Whisper pipeline created:', whisperPipeline);
+    console.log('Pipeline methods:', Object.keys(whisperPipeline).filter(key => typeof whisperPipeline[key] === 'function'));
+    
     if (!whisperPipeline) {
       throw new Error('Failed to initialize Whisper pipeline');
     }
