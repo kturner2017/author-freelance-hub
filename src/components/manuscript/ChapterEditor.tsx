@@ -26,7 +26,11 @@ const ChapterEditor = ({
   isAnalyzing 
 }: ChapterEditorProps) => {
   const { toast } = useToast();
-  const { chapterId } = useParams();
+  const { bookId, chapterId } = useParams();
+
+  if (!bookId || !chapterId) {
+    return <Navigate to="/editor/books" replace />;
+  }
 
   return (
     <Routes>

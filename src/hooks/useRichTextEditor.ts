@@ -35,10 +35,13 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
 
   useEffect(() => {
     if (editor && content) {
-      editor.commands.setContent(content);
-      const plainText = editor.getText();
-      const scores = calculateScores(plainText);
-      setReadabilityScores(scores);
+      // Only update content if it's different to avoid cursor jumping
+      if (editor.getHTML() !== content) {
+        editor.commands.setContent(content);
+        const plainText = editor.getText();
+        const scores = calculateScores(plainText);
+        setReadabilityScores(scores);
+      }
     }
   }, [content, editor]);
 

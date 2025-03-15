@@ -11,11 +11,15 @@ export const useEditorConfig = () => {
   const getExtensions = () => [
     StarterKit.configure({
       codeBlock: false,
+      heading: {
+        levels: [1, 2, 3, 4, 5, 6],
+      },
     }),
     Underline,
     TextAlign.configure({
       types: ['heading', 'paragraph', 'image'],
       alignments: ['left', 'center', 'right'],
+      defaultAlignment: 'left',
     }),
     Highlight,
     CodeBlock,
@@ -23,7 +27,7 @@ export const useEditorConfig = () => {
       inline: true,
       allowBase64: true,
       HTMLAttributes: {
-        class: 'rounded-lg cursor-move transition-transform hover:shadow-lg resize-handle',
+        class: 'rounded-lg cursor-move transition-transform hover:shadow-lg resize-handle max-w-full h-auto',
         draggable: 'true'
       },
     }),
