@@ -1,12 +1,11 @@
 
 import React, { useState } from 'react';
 import { ScrollArea } from '../../ui/scroll-area';
-import { Button } from '../../ui/button';
-import { ArrowLeft, Files } from 'lucide-react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import PageEditor from './PageEditor';
 import MarginControls from './MarginControls';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select';
+import PageViewNavigation from '../toolbar/PageViewNavigation';
 
 interface PageViewEditorProps {
   content: string;
@@ -36,22 +35,7 @@ const PageViewEditor = ({ content, onContentChange }: PageViewEditorProps) => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="border-b bg-white">
-        <div className="flex items-center gap-4 max-w-7xl mx-auto px-4 h-16">
-          <Button variant="ghost" size="icon" asChild>
-            <Link to={`/editor/manuscript/${bookId}/chapters`}>
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-          </Button>
-          <h1 className="text-xl font-semibold">Page View</h1>
-          <div className="ml-auto">
-            <Button variant="outline" asChild>
-              <Link to={`/editor/manuscript/${bookId}/chapters/${chapterId}/full-view`}>
-                <Files className="h-4 w-4 mr-2" />
-                Full View
-              </Link>
-            </Button>
-          </div>
-        </div>
+        <PageViewNavigation title="Page View" viewMode="page" />
       </div>
       <ScrollArea className="flex-1 h-[calc(100vh-4rem)]">
         <div className="max-w-5xl mx-auto py-8 px-4">

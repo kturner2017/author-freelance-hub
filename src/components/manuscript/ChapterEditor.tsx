@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { useToast } from '@/hooks/use-toast';
 import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import FullChapterEditor from './editor/FullChapterEditor';
 import PageViewEditor from './editor/PageViewEditor';
@@ -25,7 +24,6 @@ const ChapterEditor = ({
   aiAnalysis,
   isAnalyzing 
 }: ChapterEditorProps) => {
-  const { toast } = useToast();
   const { bookId, chapterId } = useParams();
 
   if (!bookId || !chapterId) {
