@@ -10,6 +10,7 @@ import FormattingButtons from './toolbar/FormattingButtons';
 import ImageUploadButton from './toolbar/ImageUploadButton';
 import HistoryButtons from './toolbar/HistoryButtons';
 import RecordingButton from './toolbar/RecordingButton';
+import AdvancedFeatureButtons from './toolbar/AdvancedFeatureButtons';
 
 interface EditorToolbarProps {
   editor: Editor;
@@ -47,6 +48,10 @@ const EditorToolbar = ({
       <Separator orientation="vertical" className="h-6" />
 
       <ImageUploadButton editor={editor} />
+
+      <Separator orientation="vertical" className="h-6" />
+
+      <AdvancedFeatureButtons editor={editor} />
 
       <Separator orientation="vertical" className="h-6" />
 
