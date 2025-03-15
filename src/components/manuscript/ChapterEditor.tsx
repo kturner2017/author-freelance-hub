@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import FullChapterEditor from './editor/FullChapterEditor';
 import PageViewEditor from './editor/PageViewEditor';
 
@@ -24,10 +24,25 @@ const ChapterEditor = ({
   aiAnalysis,
   isAnalyzing 
 }: ChapterEditorProps) => {
-  const { bookId, chapterId } = useParams();
+  const { bookId } = useParams();
+  const location = useLocation();
+  
+  // Check if we're on the root path for this chapter
+  const isRootPath = !location.pathname.includes('/full-view') && 
+                     !location.pathname.includes('/page-view');
 
-  if (!bookId || !chapterId) {
+  if (!bookId) {
     return <Navigate to="/editor/books" replace />;
+  }
+
+  // If we're at the root path, render the full view editor directly
+  if (isRootPath) {
+    return (
+      <FullChapterEditor 
+        content={chapter.content}
+        onContentChange={onContentChange}
+      />
+    );
   }
 
   return (

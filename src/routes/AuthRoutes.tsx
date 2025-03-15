@@ -41,7 +41,7 @@ export const authRoutes = [
   
   <Route
     key="editor-chapters"
-    path="/editor/manuscript/:bookId/chapters"
+    path="/editor/manuscript/:bookId/chapters/*"
     element={
       <ProtectedRoute>
         <ChaptersEditor />
