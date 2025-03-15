@@ -61,13 +61,48 @@ export const processAudioTranscription = async (
     try {
       // Call Whisper model with specific settings for better transcription
       console.log('[processAudioTranscription] Starting Whisper transcription...');
-      const output = await transcriber(audioData, {
-        task: 'transcribe',
-        language: 'en',
-        chunk_length_s: 30,
-        stride_length_s: 5,
-        return_timestamps: false // Don't need timestamps for simple transcription
-      });
+      
+      // We need to check if transcriber is a function or an object with a "transcribe" or "generate" method
+      let output;
+      if (typeof transcriber === 'function') {
+        output = await transcriber(audioData, {
+          task: 'transcribe',
+          language: 'en',
+          chunk_length_s: 30,
+          stride_length_s: 5,
+          return_timestamps: false
+        });
+      } else if (transcriber && typeof transcriber === 'object') {
+        // Try to find the appropriate method to call
+        if (typeof transcriber.generate === 'function') {
+          console.log('[processAudioTranscription] Using pipeline.generate method');
+          output = await transcriber.generate(audioData);
+        } else if (typeof transcriber.transcribe === 'function') {
+          console.log('[processAudioTranscription] Using pipeline.transcribe method');
+          output = await transcriber.transcribe(audioData, {
+            task: 'transcribe',
+            language: 'en',
+            chunk_length_s: 30,
+            stride_length_s: 5,
+            return_timestamps: false
+          });
+        } else if (typeof transcriber.call === 'function') {
+          console.log('[processAudioTranscription] Using pipeline.call method');
+          output = await transcriber.call(audioData, {
+            task: 'transcribe',
+            language: 'en',
+            chunk_length_s: 30,
+            stride_length_s: 5,
+            return_timestamps: false
+          });
+        } else {
+          console.error('[processAudioTranscription] Pipeline object does not have expected methods:', Object.keys(transcriber));
+          throw new Error('Whisper pipeline does not provide expected methods');
+        }
+      } else {
+        console.error('[processAudioTranscription] Transcriber is not a function or valid object:', transcriber);
+        throw new Error('Invalid transcriber object');
+      }
 
       console.log('[processAudioTranscription] Transcription result:', output);
 
@@ -76,13 +111,29 @@ export const processAudioTranscription = async (
         throw new Error('Transcription failed - no output received');
       }
 
-      if (!output.text) {
+      // Handle different output formats
+      let text = '';
+      if (typeof output === 'string') {
+        text = output;
+      } else if (output.text) {
+        text = output.text;
+      } else if (output.generated_text) {
+        text = output.generated_text;
+      } else if (Array.isArray(output) && output.length > 0) {
+        // Some models return an array of results
+        text = output[0].text || output[0].generated_text || '';
+      } else {
+        console.error('[processAudioTranscription] Unrecognized output format:', output);
+        throw new Error('Unrecognized transcription output format');
+      }
+
+      if (!text) {
         console.error('[processAudioTranscription] No text in transcription output:', output);
         throw new Error('Transcription failed - no text output');
       }
 
       // Clean up transcription text - remove extra spaces and punctuation issues
-      const cleanedText = output.text
+      const cleanedText = text
         .trim()
         .replace(/\s+/g, ' ')
         .replace(/\s([.,;!?])/g, '$1');
