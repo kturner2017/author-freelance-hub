@@ -1,3 +1,4 @@
+
 import { validateAudioData, convertBlobToAudioData } from '@/utils/audioProcessing';
 import { useToast } from '@/hooks/use-toast';
 
@@ -214,13 +215,27 @@ export const processEdgeFunctionTranscription = async (
       console.log('[processEdgeFunctionTranscription] API response status:', response.status);
       
       if (!response.ok) {
-        const errorText = await response.text();
+        let errorText;
+        try {
+          errorText = await response.text();
+        } catch (e) {
+          errorText = 'Could not read error response';
+        }
         console.error('[processEdgeFunctionTranscription] Edge function error response:', errorText, 'Status:', response.status);
         throw new Error('Server transcription failed: ' + (errorText || response.statusText));
       }
       
       console.log('[processEdgeFunctionTranscription] Parsing API response...');
-      const result = await response.json();
+      let result;
+      try {
+        result = await response.json();
+      } catch (jsonError) {
+        console.error('[processEdgeFunctionTranscription] Error parsing JSON response:', jsonError);
+        const responseText = await response.text();
+        console.error('[processEdgeFunctionTranscription] Raw response:', responseText.substring(0, 200) + '...');
+        throw new Error('Invalid JSON response from server');
+      }
+      
       console.log('[processEdgeFunctionTranscription] API result:', result);
       
       if (result.text) {

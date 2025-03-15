@@ -28,6 +28,7 @@ export const initializeWhisperModel = async (
           onProgress(progress);
         },
         revision: "main",
+        quantized: true,
         // Type assertion to allow custom options that may not be in the type definition
         // but are supported by the underlying implementation
       } as any
