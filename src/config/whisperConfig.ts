@@ -27,7 +27,7 @@ export const initializeWhisperModel = async (
           console.log('Model loading progress:', progress);
           onProgress(progress);
         },
-        quantized: true, // Use quantized model for smaller size and faster loading
+        // Note: removed quantized option as it's not in the type definition
         revision: "main",
         chunk_length_s: 30, // Process in smaller chunks for better performance
         stride_length_s: 5,

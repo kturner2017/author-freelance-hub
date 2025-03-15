@@ -15,7 +15,18 @@ export const initializeWhisperInstance = async (
   }
 
   try {
-    console.log('Starting Whisper model initialization...');
+    console.log('[initializeWhisperInstance] Starting Whisper model initialization...');
+    
+    // Log browser details for debugging
+    console.log('[initializeWhisperInstance] Browser details:', {
+      userAgent: navigator.userAgent,
+      platform: navigator.platform,
+      vendor: navigator.vendor,
+      language: navigator.language,
+      hardwareConcurrency: navigator.hardwareConcurrency || 'unknown',
+      deviceMemory: (navigator as any).deviceMemory || 'unknown'
+    });
+    
     toast.toast({
       title: "Loading speech recognition model",
       description: "This may take a moment on first use",
@@ -23,15 +34,15 @@ export const initializeWhisperInstance = async (
 
     // Set a timeout to fallback if loading takes too long
     const timeoutId = setTimeout(() => {
-      console.warn('Model loading timeout - browser may not be compatible');
+      console.warn('[initializeWhisperInstance] Model loading timeout - browser may not be compatible');
       throw new Error('Model loading timed out - your browser may not be compatible');
     }, 30000); // 30-second timeout
 
     await initializeWhisperModel(
       (progress) => {
-        console.log('Model loading progress:', progress);
+        console.log('[initializeWhisperInstance] Model loading progress:', progress);
         if (progress?.status === 'error') {
-          console.error('Model loading error:', progress);
+          console.error('[initializeWhisperInstance] Model loading error:', progress);
           clearTimeout(timeoutId);
           throw new Error('Model loading failed: ' + progress.message);
         }
@@ -46,45 +57,86 @@ export const initializeWhisperInstance = async (
             });
           }
         }
+        
+        // Log specific stages of loading
+        if (progress?.status === 'ready' || progress?.status === 'done') {
+          console.log('[initializeWhisperInstance] Model loading stage complete:', progress);
+        }
       },
       (whisperPipeline) => {
-        console.log('Whisper model loaded successfully');
+        console.log('[initializeWhisperInstance] Whisper model loaded successfully, pipeline:', !!whisperPipeline);
         clearTimeout(timeoutId);
-        if (onModelLoaded) {
-          onModelLoaded(whisperPipeline);
+        
+        if (!whisperPipeline) {
+          console.error('[initializeWhisperInstance] Pipeline is null or undefined after initialization');
+          throw new Error('Loaded pipeline is null or undefined');
         }
+        
+        if (onModelLoaded) {
+          console.log('[initializeWhisperInstance] Calling onModelLoaded callback with pipeline');
+          onModelLoaded(whisperPipeline);
+        } else {
+          console.warn('[initializeWhisperInstance] onModelLoaded callback is not defined');
+        }
+        
         toast.toast({
           title: "Speech recognition ready",
           description: "You can now use voice dictation",
         });
+        
         if (setIsModelLoading) {
+          console.log('[initializeWhisperInstance] Setting isModelLoading to false');
           setIsModelLoading(false);
         }
       },
       (error) => {
-        console.error('Error loading Whisper model:', error);
+        console.error('[initializeWhisperInstance] Error loading Whisper model:', error);
         clearTimeout(timeoutId);
         toast.toast({
           title: "Failed to load speech recognition",
           description: "Will use cloud transcription as fallback",
           variant: "destructive"
         });
+        
         if (setIsModelLoading) {
           setIsModelLoading(false);
         }
+        
+        // Log details about the error
+        console.error('[initializeWhisperInstance] Error details:', {
+          message: error.message,
+          name: error.name,
+          stack: error.stack
+        });
+        
         throw error; // Rethrow to handle at the caller level
       }
     );
   } catch (error) {
-    console.error('Error in initializeWhisper:', error);
+    console.error('[initializeWhisperInstance] Error in initializeWhisper:', error);
+    
+    // Log more detailed error information
+    if (error instanceof Error) {
+      console.error('[initializeWhisperInstance] Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+        cause: error.cause
+      });
+    } else {
+      console.error('[initializeWhisperInstance] Non-Error object thrown:', error);
+    }
+    
     toast.toast({
       title: "Using cloud transcription instead",
       description: error.message || "Local speech recognition unavailable",
       variant: "destructive"
     });
+    
     if (setIsModelLoading) {
       setIsModelLoading(false);
     }
+    
     throw error; // Rethrow to handle at the caller level
   }
 };
