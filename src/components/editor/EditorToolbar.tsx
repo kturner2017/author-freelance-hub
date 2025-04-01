@@ -7,6 +7,7 @@ import HeadingButtons from './toolbar/HeadingButtons';
 import AlignmentButtons from './toolbar/AlignmentButtons';
 import ListButtons from './toolbar/ListButtons';
 import FormattingButtons from './toolbar/FormattingButtons';
+import AdvancedFormattingButtons from './toolbar/AdvancedFormattingButtons';
 import ImageUploadButton from './toolbar/ImageUploadButton';
 import HistoryButtons from './toolbar/HistoryButtons';
 import RecordingButton from './toolbar/RecordingButton';
@@ -67,6 +68,10 @@ const EditorToolbar = ({
 
       <FormattingButtons editor={editor} />
 
+      <Separator orientation="vertical" className="h-6" />
+      
+      <AdvancedFormattingButtons editor={editor} />
+      
       <Separator orientation="vertical" className="h-6" />
 
       <ImageUploadButton editor={editor} />

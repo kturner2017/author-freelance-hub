@@ -41,6 +41,8 @@ const ChapterEditor = ({
       <FullChapterEditor 
         content={chapter.content}
         onContentChange={onContentChange}
+        aiAnalysis={aiAnalysis}
+        isAnalyzing={isAnalyzing}
       />
     );
   }
@@ -53,6 +55,8 @@ const ChapterEditor = ({
           <FullChapterEditor 
             content={chapter.content}
             onContentChange={onContentChange}
+            aiAnalysis={aiAnalysis}
+            isAnalyzing={isAnalyzing}
           />
         }
       />
@@ -62,6 +66,8 @@ const ChapterEditor = ({
           <FullChapterEditor 
             content={chapter.content}
             onContentChange={onContentChange}
+            aiAnalysis={aiAnalysis}
+            isAnalyzing={isAnalyzing}
           />
         }
       />

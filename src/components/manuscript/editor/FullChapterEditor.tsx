@@ -8,9 +8,16 @@ import PageViewNavigation from '../toolbar/PageViewNavigation';
 interface FullChapterEditorProps {
   content: string;
   onContentChange: (content: string) => void;
+  aiAnalysis?: any;
+  isAnalyzing?: boolean;
 }
 
-const FullChapterEditor = ({ content, onContentChange }: FullChapterEditorProps) => {
+const FullChapterEditor = ({ 
+  content, 
+  onContentChange,
+  aiAnalysis,
+  isAnalyzing 
+}: FullChapterEditorProps) => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="border-b bg-white">
@@ -20,7 +27,9 @@ const FullChapterEditor = ({ content, onContentChange }: FullChapterEditorProps)
         <div className="max-w-4xl mx-auto py-8 px-4">
           <RichTextEditor 
             content={content} 
-            onChange={onContentChange} 
+            onChange={onContentChange}
+            aiAnalysis={aiAnalysis}
+            isAnalyzing={isAnalyzing}
           />
         </div>
       </ScrollArea>

@@ -1,3 +1,4 @@
+
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
@@ -8,6 +9,11 @@ import Table from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
+import Superscript from '@tiptap/extension-superscript';
+import Subscript from '@tiptap/extension-subscript';
+import FontFamily from '@tiptap/extension-font-family';
+import Color from '@tiptap/extension-color';
+import TextStyle from '@tiptap/extension-text-style';
 import { useImageHandling } from './useImageHandling';
 
 export const useEditorConfig = () => {
@@ -21,10 +27,12 @@ export const useEditorConfig = () => {
     Underline,
     TextAlign.configure({
       types: ['heading', 'paragraph', 'image'],
-      alignments: ['left', 'center', 'right'],
+      alignments: ['left', 'center', 'right', 'justify'],
       defaultAlignment: 'left',
     }),
-    Highlight,
+    Highlight.configure({
+      multicolor: true,
+    }),
     CodeBlock,
     Image.configure({
       inline: true,
@@ -40,6 +48,12 @@ export const useEditorConfig = () => {
     TableRow,
     TableCell,
     TableHeader,
+    // New extensions
+    TextStyle,
+    Color,
+    FontFamily,
+    Superscript,
+    Subscript,
   ];
 
   const getEditorProps = () => ({
