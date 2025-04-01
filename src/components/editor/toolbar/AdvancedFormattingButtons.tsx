@@ -83,8 +83,8 @@ const AdvancedFormattingButtons = ({ editor }: AdvancedFormattingButtonsProps) =
 
   const applyTextColor = (color: string) => {
     if (color === 'inherit') {
-      // Use removeAttribute instead of unsetColor
-      editor.chain().focus().removeAttribute('textStyle').run();
+      // Use resetAttributes instead of removeAttribute
+      editor.chain().focus().resetAttributes('textStyle').run();
     } else {
       editor.chain().focus().setColor(color).run();
     }
