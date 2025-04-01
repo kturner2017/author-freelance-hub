@@ -35,6 +35,14 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing, onAnalyze }: T
     wordyPhrases: scores.wordyPhrases || {},
     longSentences: scores.longSentences || [],
     veryLongSentences: scores.veryLongSentences || [],
+    showVsTell: scores.showVsTell || {
+      showingSentences: [],
+      tellingSentences: [],
+      ratio: 0,
+      totalSentences: 0,
+      showingCount: 0,
+      tellingCount: 0
+    },
     stats: scores.stats || {
       wordCount: 0,
       sentenceCount: 0,
@@ -50,7 +58,8 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing, onAnalyze }: T
     adverbs: safeScores.adverbs.length,
     wordy: Object.keys(safeScores.wordyPhrases).length,
     longSentences: safeScores.longSentences.length,
-    veryLongSentences: safeScores.veryLongSentences.length
+    veryLongSentences: safeScores.veryLongSentences.length,
+    telling: safeScores.showVsTell.tellingSentences.length
   };
 
   const totalIssues = Object.values(issueCount).reduce((sum, count) => sum + count, 0);
@@ -109,13 +118,6 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing, onAnalyze }: T
     "the music was loud": "The bass vibrated through the floorboards and rattled the windows",
     "it smelled bad": "A pungent odor assaulted his nostrils, making his eyes water"
   };
-
-  // Safely access aiAnalysis properties with default values
-  const showVsTellScore = aiAnalysis?.scores?.showVsTell || 0;
-  const grammarScore = aiAnalysis?.scores?.grammar || 0;
-  const styleScore = aiAnalysis?.scores?.style || 0;
-  const tellingSentences = aiAnalysis?.details?.showVsTell?.tellingSentences || [];
-  const suggestions = aiAnalysis?.suggestions || [];
 
   return (
     <div className="mt-8 space-y-6">
@@ -189,7 +191,7 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing, onAnalyze }: T
               <TabsList className="grid grid-cols-3 mb-4">
                 <TabsTrigger value="readability">Readability</TabsTrigger>
                 <TabsTrigger value="hemingway">Hemingway</TabsTrigger>
-                <TabsTrigger value="ai">AI Analysis</TabsTrigger>
+                <TabsTrigger value="showVsTell">Show vs Tell</TabsTrigger>
               </TabsList>
               
               <TabsContent value="readability">
@@ -322,85 +324,83 @@ const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing, onAnalyze }: T
                 </div>
               </TabsContent>
               
-              <TabsContent value="ai">
-                {aiAnalysis ? (
-                  <div className="space-y-6">
-                    <div>
-                      <h4 className="font-medium mb-2">Show vs Tell Analysis</h4>
-                      <p className="text-sm text-gray-600 mb-4">Balance between descriptive and narrative writing</p>
-                      
-                      <div className="mb-4">
-                        <h5 className="text-sm font-medium mb-1">Show vs Tell Ratio</h5>
-                        <p className="text-2xl font-bold">
-                          {Math.round(showVsTellScore * 100)}%
-                        </p>
-                      </div>
-
-                      {tellingSentences.length > 0 && (
-                        <div>
-                          <h5 className="text-sm font-medium mb-2">Telling Sentences with Examples:</h5>
-                          <div className="space-y-4">
-                            {tellingSentences.map((sentence: string, index: number) => {
-                              // Find matching example if available
-                              const matchingTellingPhrase = Object.keys(tellingToShowingExamples).find(
-                                phrase => sentence.toLowerCase().includes(phrase.toLowerCase())
-                              );
-                              const showingExample = matchingTellingPhrase 
-                                ? tellingToShowingExamples[matchingTellingPhrase as keyof typeof tellingToShowingExamples]
-                                : null;
-
-                              return (
-                                <div key={index} className="border-l-4 border-gray-200 pl-4">
-                                  <p className="text-sm text-red-600 mb-1">"{sentence}"</p>
-                                  {showingExample && (
-                                    <p className="text-sm text-green-600">
-                                      Try instead: "{showingExample}"
-                                    </p>
-                                  )}
-                                </div>
-                              );
-                            })}
+              <TabsContent value="showVsTell">
+                <div className="space-y-6">
+                  <div>
+                    <h4 className="font-medium mb-2">Show vs Tell Analysis</h4>
+                    <p className="text-sm text-gray-600 mb-4">Balance between descriptive and narrative writing</p>
+                    
+                    <div className="mb-4">
+                      <h5 className="text-sm font-medium mb-1">Show vs Tell Ratio</h5>
+                      <div className="relative pt-1">
+                        <div className="flex mb-2 items-center justify-between">
+                          <div>
+                            <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200">
+                              Showing: {Math.round(safeScores.showVsTell.ratio * 100)}%
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-orange-600 bg-orange-200">
+                              Telling: {Math.round((1 - safeScores.showVsTell.ratio) * 100)}%
+                            </span>
                           </div>
                         </div>
-                      )}
-                    </div>
-
-                    <div>
-                      <h4 className="font-medium mb-2">AI Analysis Scores</h4>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-sm text-gray-600">Grammar Quality</p>
-                          <p className="text-2xl font-bold">
-                            {Math.round(grammarScore * 100)}%
-                          </p>
-                          <p className="text-xs text-gray-500">Measures the grammatical correctness and clarity</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Writing Style</p>
-                          <p className="text-2xl font-bold">
-                            {Math.round(styleScore * 100)}%
-                          </p>
-                          <p className="text-xs text-gray-500">Evaluates sentence variety and writing techniques</p>
+                        <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-200">
+                          <div 
+                            style={{ width: `${Math.round(safeScores.showVsTell.ratio * 100)}%` }} 
+                            className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500"
+                          ></div>
                         </div>
                       </div>
                     </div>
 
-                    {suggestions.length > 0 && (
+                    {safeScores.showVsTell.tellingSentences.length > 0 ? (
                       <div>
-                        <h4 className="font-medium mb-2">Writing Suggestions</h4>
-                        <ul className="list-disc pl-5 space-y-1">
-                          {suggestions.map((suggestion: string, index: number) => (
-                            <li key={index} className="text-sm text-gray-600">{suggestion}</li>
-                          ))}
-                        </ul>
+                        <h5 className="text-sm font-medium mb-2">Telling Sentences with Examples:</h5>
+                        <div className="space-y-4">
+                          {safeScores.showVsTell.tellingSentences.slice(0, 5).map((sentence, index) => {
+                            // Find matching example if available
+                            const matchingTellingPhrase = Object.keys(tellingToShowingExamples).find(
+                              phrase => sentence.toLowerCase().includes(phrase.toLowerCase())
+                            );
+                            const showingExample = matchingTellingPhrase 
+                              ? (tellingToShowingExamples as any)[matchingTellingPhrase]
+                              : null;
+
+                            return (
+                              <div key={index} className="border-l-4 border-orange-300 pl-4">
+                                <p className="text-sm text-orange-600 mb-1">"{sentence}"</p>
+                                {showingExample && (
+                                  <p className="text-sm text-green-600">
+                                    Try instead: "{showingExample}"
+                                  </p>
+                                )}
+                              </div>
+                            );
+                          })}
+                          {safeScores.showVsTell.tellingSentences.length > 5 && (
+                            <p className="text-xs text-gray-500">And {safeScores.showVsTell.tellingSentences.length - 5} more...</p>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-4 italic text-gray-500">
+                        No telling sentences detected
                       </div>
                     )}
+
+                    <div className="mt-6 bg-gray-50 p-4 rounded-lg border">
+                      <h5 className="font-medium mb-2">Tips for "Showing" instead of "Telling"</h5>
+                      <ul className="text-sm space-y-2 list-disc pl-5">
+                        <li>Use sensory details that appeal to sight, sound, touch, taste, and smell</li>
+                        <li>Replace emotion words with physical reactions (e.g., "Her hands trembled" instead of "She was nervous")</li>
+                        <li>Use specific, vivid verbs instead of generic ones</li>
+                        <li>Include concrete details instead of abstract descriptions</li>
+                        <li>Let dialogue and actions reveal character traits and emotions</li>
+                      </ul>
+                    </div>
                   </div>
-                ) : (
-                  <div className="text-center py-6">
-                    <p className="text-gray-600">Click "Analyze Text" to get AI-powered writing suggestions</p>
-                  </div>
-                )}
+                </div>
               </TabsContent>
             </Tabs>
           </>

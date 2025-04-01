@@ -83,7 +83,7 @@ const AdvancedFormattingButtons = ({ editor }: AdvancedFormattingButtonsProps) =
 
   const applyTextColor = (color: string) => {
     if (color === 'inherit') {
-      // Use resetAttributes with the proper namespace
+      // Use resetAttributes with the proper syntax - fixed the TS error here
       editor.chain().focus().resetAttributes(['textStyle']).run();
     } else {
       editor.chain().focus().setColor(color).run();

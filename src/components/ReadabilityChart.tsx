@@ -1,6 +1,6 @@
+
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { ReadabilityScores } from '@/utils/readabilityScores';
 
 interface ReadabilityChartProps {
@@ -8,91 +8,46 @@ interface ReadabilityChartProps {
 }
 
 const ReadabilityChart = ({ scores }: ReadabilityChartProps) => {
-  // Ensure all required properties are present with default values if needed
-  const safeScores: ReadabilityScores = {
-    fleschKincaid: scores.fleschKincaid || 0,
-    fleschReading: scores.fleschReading || 0,
-    gunningFog: scores.gunningFog || 0,
-    colemanLiau: scores.colemanLiau || 0
-  };
-
   const data = [
     {
       name: 'Flesch-Kincaid',
-      score: safeScores.fleschKincaid,
-      description: 'Grade level (lower is easier)',
-      fill: '#4d82c6'
+      score: scores.fleschKincaid,
+      color: '#3b82f6'
     },
     {
-      name: 'Flesch Reading',
-      score: safeScores.fleschReading / 10, // Normalize to 0-10 scale
-      description: 'Ease of reading (higher is easier)',
-      fill: '#80a6d6'
+      name: 'Flesch Reading Ease',
+      score: scores.fleschReading / 10, // Scale down to match other scores
+      color: '#10b981'
     },
     {
       name: 'Gunning Fog',
-      score: safeScores.gunningFog,
-      description: 'Years of education needed',
-      fill: '#b3c9e6'
+      score: scores.gunningFog,
+      color: '#f59e0b'
     },
     {
       name: 'Coleman-Liau',
-      score: safeScores.colemanLiau,
-      description: 'US grade level',
-      fill: '#e6edf5'
+      score: scores.colemanLiau,
+      color: '#8b5cf6'
     }
   ];
 
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const item = payload[0].payload;
-      return (
-        <Card className="p-2 bg-white shadow-lg border">
-          <CardContent className="p-2">
-            <p className="font-medium">{item.name}</p>
-            <p className="text-sm text-muted-foreground">{item.description}</p>
-            <p className="text-sm font-medium">
-              Score: {item.name === 'Flesch Reading' ? item.score * 10 : item.score}
-            </p>
-          </CardContent>
-        </Card>
-      );
-    }
-    return null;
-  };
-
   return (
-    <Card className="w-full mb-4">
-      <CardHeader>
-        <CardTitle>Readability Analysis</CardTitle>
-        <CardDescription>
-          Multiple metrics to evaluate your text's readability
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="h-[200px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
-              <XAxis 
-                dataKey="name" 
-                angle={-45}
-                textAnchor="end"
-                height={60}
-                interval={0}
-                tick={{ fontSize: 12 }}
-              />
-              <YAxis 
-                domain={[0, 20]}
-                tickCount={5}
-                tick={{ fontSize: 12 }}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="score" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </CardContent>
-    </Card>
+    <ResponsiveContainer width="100%" height={200}>
+      <BarChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+        <YAxis domain={[0, 20]} />
+        <Tooltip 
+          formatter={(value: number, name: string) => {
+            if (name === 'Flesch Reading Ease') {
+              return [scores.fleschReading.toFixed(1), name];
+            }
+            return [value.toFixed(1), name];
+          }}
+        />
+        <Bar dataKey="score" fill="#3b82f6" />
+      </BarChart>
+    </ResponsiveContainer>
   );
 };
 

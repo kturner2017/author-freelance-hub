@@ -10,6 +10,14 @@ export interface ReadabilityScores {
   wordyPhrases: { [key: string]: string };
   longSentences: string[];
   veryLongSentences: string[];
+  showVsTell: {
+    showingSentences: string[];
+    tellingSentences: string[];
+    ratio: number;
+    totalSentences: number;
+    showingCount: number;
+    tellingCount: number;
+  };
   stats: {
     wordCount: number;
     sentenceCount: number;
@@ -122,6 +130,71 @@ const categorizeSentencesByLength = (sentences: string[]): { longSentences: stri
   return { longSentences, veryLongSentences };
 };
 
+// Analyze text for showing vs telling patterns
+const analyzeShowVsTell = (sentences: string[]) => {
+  const showingWords = [
+    // Sensory details
+    'sparkled', 'gleamed', 'thundered', 'rustled', 'trembled', 'shimmered', 'flickered',
+    'rumbled', 'echoed', 'whispered', 'roared', 'growled', 'howled',
+    // Descriptive adjectives
+    'bitter', 'sweet', 'rough', 'smooth', 'sharp', 'crisp', 'freezing', 'scorching',
+    'massive', 'tiny', 'ancient', 'fresh', 'vibrant', 'dull', 'brilliant',
+    // Action verbs
+    'grabbed', 'clutched', 'sprinted', 'slammed', 'dashed', 'lunged', 'crawled',
+    'leaped', 'darted', 'stomped', 'shuffled', 'stumbled', 'crept'
+  ];
+  
+  const tellingWords = [
+    // State of being
+    'felt', 'feel', 'was', 'were', 'had', 'seemed', 'appeared',
+    // Emotions told directly
+    'was angry', 'was sad', 'was happy', 'was scared', 'was excited',
+    // Passive observations
+    'watched', 'looked', 'saw', 'heard', 'noticed', 'realized',
+    // Qualifiers
+    'very', 'really', 'quite', 'rather', 'somewhat', 'extremely'
+  ];
+
+  const analysis = {
+    showingSentences: [] as string[],
+    tellingSentences: [] as string[],
+    ratio: 0,
+    totalSentences: sentences.length,
+    showingCount: 0,
+    tellingCount: 0
+  };
+
+  sentences.forEach(sentence => {
+    const cleanSentence = sentence.trim().toLowerCase();
+    let isShowing = false;
+    let isTelling = false;
+    
+    // Check for showing words
+    if (showingWords.some(word => cleanSentence.includes(word))) {
+      analysis.showingCount++;
+      isShowing = true;
+      if (!analysis.showingSentences.includes(sentence.trim())) {
+        analysis.showingSentences.push(sentence.trim());
+      }
+    }
+    
+    // Check for telling words
+    if (tellingWords.some(word => cleanSentence.includes(word))) {
+      analysis.tellingCount++;
+      isTelling = true;
+      if (!analysis.tellingSentences.includes(sentence.trim())) {
+        analysis.tellingSentences.push(sentence.trim());
+      }
+    }
+  });
+
+  // Calculate ratio (showing / total analyzed sentences)
+  const totalAnalyzed = analysis.showingCount + analysis.tellingCount;
+  analysis.ratio = totalAnalyzed > 0 ? analysis.showingCount / totalAnalyzed : 0;
+
+  return analysis;
+};
+
 const calculateScores = (text: string): ReadabilityScores => {
   // Clean the text first
   const cleanText = text.replace(/\s+/g, ' ').trim();
@@ -138,6 +211,14 @@ const calculateScores = (text: string): ReadabilityScores => {
       wordyPhrases: {},
       longSentences: [],
       veryLongSentences: [],
+      showVsTell: {
+        showingSentences: [],
+        tellingSentences: [],
+        ratio: 0,
+        totalSentences: 0,
+        showingCount: 0,
+        tellingCount: 0
+      },
       stats: {
         wordCount: 0,
         sentenceCount: 0,
@@ -164,6 +245,14 @@ const calculateScores = (text: string): ReadabilityScores => {
       wordyPhrases: {},
       longSentences: [],
       veryLongSentences: [],
+      showVsTell: {
+        showingSentences: [],
+        tellingSentences: [],
+        ratio: 0,
+        totalSentences: 0,
+        showingCount: 0,
+        tellingCount: 0
+      },
       stats: {
         wordCount: 0,
         sentenceCount: 0,
@@ -194,6 +283,9 @@ const calculateScores = (text: string): ReadabilityScores => {
   const adverbs = findAdverbs(cleanText);
   const foundWordyPhrases = findWordyPhrases(cleanText);
   const { longSentences, veryLongSentences } = categorizeSentencesByLength(sentences);
+  
+  // Show vs Tell Analysis
+  const showVsTell = analyzeShowVsTell(sentences);
 
   const scores = {
     fleschKincaid: Math.max(0, Math.min(20, Math.round(fleschKincaid * 10) / 10)),
@@ -206,6 +298,7 @@ const calculateScores = (text: string): ReadabilityScores => {
     wordyPhrases: foundWordyPhrases,
     longSentences,
     veryLongSentences,
+    showVsTell,
     stats: {
       wordCount: words.length,
       sentenceCount: sentences.length,
