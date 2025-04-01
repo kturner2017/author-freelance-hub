@@ -13,14 +13,16 @@ import AddCommentPanel from './editor/panels/AddCommentPanel';
 interface RichTextEditorProps {
   content: string;
   onChange: (content: string) => void;
+  aiAnalysis?: any;
+  isAnalyzing?: boolean;
 }
 
-const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
+const RichTextEditor = ({ content, onChange, aiAnalysis, isAnalyzing }: RichTextEditorProps) => {
   const { 
     editor, 
     readabilityScores, 
-    aiAnalysis, 
-    isAnalyzing, 
+    aiAnalysis: editorAiAnalysis, 
+    isAnalyzing: editorIsAnalyzing, 
     performAnalysis,
     versionHistory,
     findReplace,
@@ -42,6 +44,10 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
   if (!editor) {
     return null;
   }
+
+  // Use props values if provided, otherwise use internal state
+  const finalAiAnalysis = aiAnalysis || editorAiAnalysis;
+  const finalIsAnalyzing = isAnalyzing !== undefined ? isAnalyzing : editorIsAnalyzing;
 
   const handleAnalyze = () => {
     if (editor) {
@@ -132,8 +138,8 @@ const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
         <TextAnalysis 
           scores={readabilityScores}
           content={editor.getText()}
-          aiAnalysis={aiAnalysis}
-          isAnalyzing={isAnalyzing}
+          aiAnalysis={finalAiAnalysis}
+          isAnalyzing={finalIsAnalyzing}
           onAnalyze={handleAnalyze}
         />
       )}
