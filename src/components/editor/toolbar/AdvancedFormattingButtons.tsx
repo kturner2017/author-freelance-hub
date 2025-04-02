@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Editor } from '@tiptap/react';
 import { Button } from '../../ui/button';
@@ -83,8 +82,7 @@ const AdvancedFormattingButtons = ({ editor }: AdvancedFormattingButtonsProps) =
 
   const applyTextColor = (color: string) => {
     if (color === 'inherit') {
-      // Fix: resetAttributes expects an array of attributes AND an options object
-      editor.chain().focus().resetAttributes(['textStyle', 'color'], {}).run();
+      editor.chain().focus().unsetColor().run();
     } else {
       editor.chain().focus().setColor(color).run();
     }
