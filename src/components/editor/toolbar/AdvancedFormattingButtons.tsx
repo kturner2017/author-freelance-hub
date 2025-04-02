@@ -83,8 +83,8 @@ const AdvancedFormattingButtons = ({ editor }: AdvancedFormattingButtonsProps) =
 
   const applyTextColor = (color: string) => {
     if (color === 'inherit') {
-      // Fix: resetAttributes expects an array of attributes, not a string
-      editor.chain().focus().resetAttributes(['textStyle', 'color']).run();
+      // Fix: resetAttributes expects an array of attributes AND an options object
+      editor.chain().focus().resetAttributes(['textStyle', 'color'], {}).run();
     } else {
       editor.chain().focus().setColor(color).run();
     }
