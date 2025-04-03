@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useEffect, useState, useRef, useId } from "react";
 import { cn } from "@/lib/utils";
@@ -11,7 +12,7 @@ type MatrixProps = {
   fontSize?: number;
   speed?: number;
   density?: number;
-  quotes?: string[];
+  quotes?: Array<{text: string, author: string}>;
 };
 
 export const SparklesCore = (props: MatrixProps) => {
@@ -24,21 +25,21 @@ export const SparklesCore = (props: MatrixProps) => {
     speed = 1,
     density = 100,
     quotes = [
-      "It was the best of times, it was the worst of times",
-      "All that we see or seem is but a dream within a dream",
-      "Two roads diverged in a wood, and I took the one less traveled by",
-      "Be the change you wish to see in the world",
-      "Not all those who wander are lost",
-      "To be or not to be, that is the question",
-      "I have a dream that one day this nation will rise up",
-      "It is a truth universally acknowledged",
-      "Call me Ishmael",
-      "It was a pleasure to burn",
-      "The only way out of the labyrinth of suffering is to forgive",
-      "We accept the love we think we deserve",
-      "And so we beat on, boats against the current",
-      "It does not do to dwell on dreams and forget to live",
-      "So we beat on, boats against the current",
+      {text: "It was the best of times, it was the worst of times", author: "Charles Dickens"},
+      {text: "All that we see or seem is but a dream within a dream", author: "Edgar Allan Poe"},
+      {text: "Two roads diverged in a wood, and I took the one less traveled by", author: "Robert Frost"},
+      {text: "Be the change you wish to see in the world", author: "Mahatma Gandhi"},
+      {text: "Not all those who wander are lost", author: "J.R.R. Tolkien"},
+      {text: "To be or not to be, that is the question", author: "William Shakespeare"},
+      {text: "I have a dream that one day this nation will rise up", author: "Martin Luther King Jr."},
+      {text: "It is a truth universally acknowledged", author: "Jane Austen"},
+      {text: "Call me Ishmael", author: "Herman Melville"},
+      {text: "It was a pleasure to burn", author: "Ray Bradbury"},
+      {text: "The only way out of the labyrinth of suffering is to forgive", author: "John Green"},
+      {text: "We accept the love we think we deserve", author: "Stephen Chbosky"},
+      {text: "And so we beat on, boats against the current", author: "F. Scott Fitzgerald"},
+      {text: "It does not do to dwell on dreams and forget to live", author: "J.K. Rowling"},
+      {text: "So we beat on, boats against the current", author: "F. Scott Fitzgerald"},
     ],
   } = props;
   
@@ -46,7 +47,7 @@ export const SparklesCore = (props: MatrixProps) => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const controls = useAnimation();
   const generatedId = useId();
-  const [currentQuote, setCurrentQuote] = useState("");
+  const [currentQuote, setCurrentQuote] = useState<{text: string, author: string}>({text: "", author: ""});
   const [displayedQuote, setDisplayedQuote] = useState(false);
   const quoteTimerRef = useRef<number | null>(null);
   const animationRef = useRef<number | null>(null);
@@ -106,7 +107,7 @@ export const SparklesCore = (props: MatrixProps) => {
     const activeQuote = selectQuote();
     
     // Split quotes into words and characters
-    const wordChars: { char: string; x: number; y: number; speed: number; jumble: boolean; finalX: number; finalY: number; opacity: number; }[] = [];
+    const wordChars: { char: string; x: number; y: number; speed: number; jumble: boolean; finalX: number; finalY: number; opacity: number; isAuthor?: boolean }[] = [];
     
     const initializeWordChars = () => {
       wordChars.length = 0; // Clear previous characters
@@ -114,12 +115,13 @@ export const SparklesCore = (props: MatrixProps) => {
       
       // Reduced font size for better fit
       const landedFontSize = Math.max(fontSize * 1.25, 16);
+      const authorFontSize = Math.max(fontSize, 14);
       
       // Set up variables for word wrapping
       const maxWidth = dimensions.width - 40; // Leave margin on both sides
       const lineHeight = landedFontSize * 1.5; // Space between lines
-      const maxLines = 2; // Allow up to 2 lines
-      const bottomY = dimensions.height - 20 - ((maxLines - 1) * lineHeight); // Position for first line
+      const maxLines = 2; // Allow up to 2 lines for the quote
+      const bottomY = dimensions.height - 50 - ((maxLines - 1) * lineHeight); // Position for first line
       
       // Calculate word wrapping
       const wrappedLines: string[] = [];
@@ -130,7 +132,7 @@ export const SparklesCore = (props: MatrixProps) => {
       ctx.font = `bold ${landedFontSize}px monospace`;
       
       // Split the quote into words for wrapping calculation
-      const words = activeQuote.split(' ');
+      const words = activeQuote.text.split(' ');
       
       // Calculate the wrapped lines
       for (let i = 0; i < words.length; i++) {
@@ -198,6 +200,33 @@ export const SparklesCore = (props: MatrixProps) => {
           });
         });
       });
+      
+      // Add author attribution
+      if (activeQuote.author) {
+        const authorText = `— ${activeQuote.author}`;
+        ctx.font = `italic ${authorFontSize}px monospace`;
+        const authorWidth = ctx.measureText(authorText).width;
+        const authorStartOffset = (dimensions.width - authorWidth) / 2;
+        const authorY = bottomY + (wrappedLines.length * lineHeight) + 30; // Position below the quote
+        
+        // Process each character of the author
+        authorText.split('').forEach((char, charIndex) => {
+          const startX = Math.random() * dimensions.width;
+          const finalX = authorStartOffset + ctx.measureText(authorText.substring(0, charIndex)).width;
+          
+          wordChars.push({
+            char,
+            x: startX,
+            y: -100 - (Math.random() * 100), // Stagger the start
+            speed: 0.5 + (Math.random() * speed),
+            jumble: true,
+            finalX,
+            finalY: authorY,
+            opacity: 1,
+            isAuthor: true
+          });
+        });
+      }
     };
     
     // Initialize the animation
@@ -230,7 +259,15 @@ export const SparklesCore = (props: MatrixProps) => {
         if (!charObj.jumble && Math.abs(charObj.y - charObj.finalY) < 5) {
           // Assembled characters are brighter and clearer
           ctx.fillStyle = "#FFFFFF"; // Bright white for assembled characters
-          ctx.font = `bold ${Math.max(fontSize * 1.25, 16)}px monospace`;
+          
+          if (charObj.isAuthor) {
+            // Author text is italic and slightly smaller
+            ctx.font = `italic ${Math.max(fontSize, 14)}px monospace`;
+          } else {
+            // Quote text is bold and larger
+            ctx.font = `bold ${Math.max(fontSize * 1.25, 16)}px monospace`;
+          }
+          
           ctx.shadowColor = characterColor;
           ctx.shadowBlur = 8; // Maintained glow
         } else {
@@ -274,7 +311,7 @@ export const SparklesCore = (props: MatrixProps) => {
       // Draw a semi-transparent background for the final assembled quote
       if (wordChars.some(char => !char.jumble)) {
         ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-        ctx.fillRect(0, dimensions.height - 70, dimensions.width, 70);
+        ctx.fillRect(0, dimensions.height - 100, dimensions.width, 100);
       }
       
       // If all characters have assembled and we haven't set the timer yet
@@ -284,7 +321,15 @@ export const SparklesCore = (props: MatrixProps) => {
         // Redraw all finalized characters with enhanced visibility
         wordChars.forEach(charObj => {
           ctx.fillStyle = "#FFFFFF"; // Bright white for final assembled quote
-          ctx.font = `bold ${Math.max(fontSize * 1.25, 16)}px monospace`;
+          
+          if (charObj.isAuthor) {
+            // Author text is italic and slightly smaller
+            ctx.font = `italic ${Math.max(fontSize, 14)}px monospace`;
+          } else {
+            // Quote text is bold and larger
+            ctx.font = `bold ${Math.max(fontSize * 1.25, 16)}px monospace`;
+          }
+          
           ctx.shadowColor = characterColor;
           ctx.shadowBlur = 8; // Glow effect
           ctx.fillText(charObj.char, charObj.finalX, charObj.finalY);
