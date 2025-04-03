@@ -30,6 +30,8 @@ interface EditorLayoutProps {
   onFrontMatterSelect: (frontMatterId: string, title: string) => void;
   setIsGoalExpanded: (expanded: boolean) => void;
   setSelectedChapter: (chapter: any) => void;
+  setSelectedFrontMatter: (frontMatter: any) => void;
+  setShowTOCGenerator: (show: boolean) => void;
   handleContentChange: (content: string, chapter: any) => void;
   handleFrontMatterContentChange: (content: string) => void;
   handleGenerateTOC: (content: string) => void;
@@ -59,6 +61,8 @@ const EditorLayout = ({
   onFrontMatterSelect,
   setIsGoalExpanded,
   setSelectedChapter,
+  setSelectedFrontMatter,
+  setShowTOCGenerator,
   handleContentChange,
   handleFrontMatterContentChange,
   handleGenerateTOC
@@ -109,6 +113,8 @@ const EditorLayout = ({
           chapters={chapters}
           setIsGoalExpanded={setIsGoalExpanded}
           setSelectedChapter={setSelectedChapter}
+          setSelectedFrontMatter={setSelectedFrontMatter}
+          setShowTOCGenerator={setShowTOCGenerator}
           handleContentChange={handleContentChange}
           handleFrontMatterContentChange={handleFrontMatterContentChange}
           handleGenerateTOC={handleGenerateTOC}

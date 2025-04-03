@@ -137,6 +137,8 @@ const ChaptersEditor = () => {
       onFrontMatterSelect={handleFrontMatterSelectWithReset}
       setIsGoalExpanded={setIsGoalExpanded}
       setSelectedChapter={setSelectedChapter}
+      setSelectedFrontMatter={setSelectedFrontMatter}
+      setShowTOCGenerator={setShowTOCGenerator}
       handleContentChange={handleContentChange}
       handleFrontMatterContentChange={handleFrontMatterContentChange}
       handleGenerateTOC={handleGenerateTOC}
