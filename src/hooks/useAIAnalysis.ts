@@ -1,77 +1,29 @@
 
-import { useEffect, useState } from 'react';
-import { useEditor } from '@tiptap/react';
+import { useState, useCallback } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import calculateScores from '@/utils/readabilityScores';
-import { useEditorConfig } from './editor/useEditorConfig';
-import { useEditorStyles } from './editor/useEditorStyles';
-import { useVersionHistory } from './editor/useVersionHistory';
-import { useFindReplace } from './editor/useFindReplace';
-import { useFloatingToolbar } from './editor/useFloatingToolbar';
-import { useCommentsSystem } from './editor/useCommentsSystem';
 
-interface UseRichTextEditorProps {
-  content: string;
-  onChange: (content: string) => void;
-}
-
-export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps) => {
-  const [readabilityScores, setReadabilityScores] = useState(calculateScores(''));
+export const useAIAnalysis = () => {
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const { getExtensions, getEditorProps } = useEditorConfig();
+  const { toast } = useToast();
 
-  // Add editor styles
-  useEditorStyles();
-
-  const editor = useEditor({
-    extensions: getExtensions(),
-    content: content,
-    editorProps: getEditorProps(),
-    onUpdate: ({ editor }) => {
-      const newContent = editor.getHTML();
-      onChange(newContent);
-      
-      const plainText = editor.getText();
-      const scores = calculateScores(plainText);
-      setReadabilityScores(scores);
-      
-      // Update floating toolbar position when content changes
-      if (floatingToolbarFeature.isFloatingToolbarEnabled) {
-        floatingToolbarFeature.updateFloatingToolbarPosition();
-      }
-    },
-    onSelectionUpdate: ({ editor }) => {
-      // Update floating toolbar position when selection changes
-      if (floatingToolbarFeature.isFloatingToolbarEnabled) {
-        floatingToolbarFeature.updateFloatingToolbarPosition();
-      }
-    },
-  });
-
-  // Initialize all feature hooks with the editor
-  const versionHistoryFeature = useVersionHistory(editor);
-  const findReplaceFeature = useFindReplace(editor);
-  const floatingToolbarFeature = useFloatingToolbar(editor);
-  const commentsFeature = useCommentsSystem(editor);
-
-  useEffect(() => {
-    if (editor && content) {
-      // Only update content if it's different to avoid cursor jumping
-      if (editor.getHTML() !== content) {
-        editor.commands.setContent(content);
-        const plainText = editor.getText();
-        const scores = calculateScores(plainText);
-        setReadabilityScores(scores);
-      }
+  const performAnalysis = useCallback(async (text: string) => {
+    const cleanText = text.trim();
+    if (cleanText.length < 10) {
+      toast({
+        title: 'Text too short',
+        description: 'Please write at least 10 characters before analyzing',
+        variant: 'default',
+      });
+      return;
     }
-  }, [content, editor]);
-
-  // Function to manually perform full analysis
-  const performAnalysis = (text: string) => {
-    setIsAnalyzing(true);
+    
     try {
+      setIsAnalyzing(true);
+      
       // Calculate local analysis
-      const scores = calculateScores(text);
+      const scores = calculateScores(cleanText);
       
       // Transform the data structure with enhanced analysis
       const analysis = {
@@ -94,12 +46,21 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
       };
       
       setAiAnalysis(analysis);
+      toast({
+        title: 'Analysis complete',
+        description: 'Your text has been analyzed successfully',
+      });
     } catch (error) {
       console.error('Error analyzing text:', error);
+      toast({
+        title: 'Analysis failed',
+        description: 'An error occurred while analyzing your text',
+        variant: 'destructive',
+      });
     } finally {
       setIsAnalyzing(false);
     }
-  };
+  }, [toast]);
 
   // Generate enhanced suggestions based on the readability scores
   const generateEnhancedSuggestions = (scores: any): string[] => {
@@ -155,18 +116,8 @@ export const useRichTextEditor = ({ content, onChange }: UseRichTextEditorProps)
   };
 
   return {
-    editor,
-    readabilityScores,
     aiAnalysis,
     isAnalyzing,
-    performAnalysis,
-    // Version history
-    versionHistory: versionHistoryFeature,
-    // Find & Replace
-    findReplace: findReplaceFeature,
-    // Floating toolbar
-    floatingToolbar: floatingToolbarFeature,
-    // Comments
-    comments: commentsFeature
+    performAnalysis
   };
 };

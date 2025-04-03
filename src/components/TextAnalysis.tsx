@@ -1,412 +1,316 @@
 
-import React, { useState } from 'react';
-import { Card } from './ui/card';
+import React from 'react';
+import ReadabilityChart from './ReadabilityChart';
 import { Button } from './ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import ReadabilityChart from './ReadabilityChart';
-import { Loader2, RefreshCw, AlertCircle } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Loader2, BarChart2, Pencil, Eye, BookText } from 'lucide-react';
 import type { ReadabilityScores } from '@/utils/readabilityScores';
-import { Badge } from './ui/badge';
 
 interface TextAnalysisProps {
-  scores: Partial<ReadabilityScores>;
+  scores: ReadabilityScores;
   content: string;
-  aiAnalysis: any;
-  isAnalyzing: boolean;
-  onAnalyze: () => void;
+  aiAnalysis?: any;
+  isAnalyzing?: boolean;
+  onAnalyze?: () => void;
 }
 
-const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing, onAnalyze }: TextAnalysisProps) => {
-  const [activeTab, setActiveTab] = useState('readability');
+const TextAnalysis = ({ scores, content, aiAnalysis, isAnalyzing = false, onAnalyze }: TextAnalysisProps) => {
+  if (!scores) return null;
   
-  if (!content) {
-    return null;
-  }
-
-  // Ensure all required properties are present
-  const safeScores: ReadabilityScores = {
-    fleschKincaid: scores.fleschKincaid || 0,
-    fleschReading: scores.fleschReading || 0,
-    gunningFog: scores.gunningFog || 0,
-    colemanLiau: scores.colemanLiau || 0,
-    complexSentences: scores.complexSentences || [],
-    passiveVoice: scores.passiveVoice || [],
-    adverbs: scores.adverbs || [],
-    wordyPhrases: scores.wordyPhrases || {},
-    longSentences: scores.longSentences || [],
-    veryLongSentences: scores.veryLongSentences || [],
-    showVsTell: scores.showVsTell || {
-      showingSentences: [],
-      tellingSentences: [],
-      ratio: 0,
-      totalSentences: 0,
-      showingCount: 0,
-      tellingCount: 0
-    },
-    stats: scores.stats || {
-      wordCount: 0,
-      sentenceCount: 0,
-      averageWordsPerSentence: 0,
-      paragraphCount: 0
-    }
-  };
-
-  // Count issues for the overview
-  const issueCount = {
-    complex: safeScores.complexSentences.length,
-    passive: safeScores.passiveVoice.length,
-    adverbs: safeScores.adverbs.length,
-    wordy: Object.keys(safeScores.wordyPhrases).length,
-    longSentences: safeScores.longSentences.length,
-    veryLongSentences: safeScores.veryLongSentences.length,
-    telling: safeScores.showVsTell.tellingSentences.length
-  };
-
-  const totalIssues = Object.values(issueCount).reduce((sum, count) => sum + count, 0);
-
-  // Calculate readability grade
-  const getReadabilityGrade = (): { grade: string; color: string } => {
-    const avgScore = (safeScores.fleschKincaid + safeScores.gunningFog + safeScores.colemanLiau) / 3;
-    
-    if (avgScore <= 6) return { grade: 'Easy to read', color: 'bg-green-500' };
-    if (avgScore <= 9) return { grade: 'Fairly easy', color: 'bg-green-400' };
-    if (avgScore <= 12) return { grade: 'Average', color: 'bg-yellow-400' };
-    if (avgScore <= 15) return { grade: 'Fairly difficult', color: 'bg-orange-400' };
-    return { grade: 'Difficult', color: 'bg-red-500' };
-  };
+  const { stats } = scores;
   
-  const readabilityGrade = getReadabilityGrade();
-
-  // Examples of how to rewrite telling sentences
-  const tellingToShowingExamples = {
-    // Emotions
-    "was angry": "His fists clenched and his face reddened",
-    "felt sad": "Tears welled up in her eyes as her shoulders slumped",
-    "was scared": "Her heart pounded against her ribs and her hands trembled",
-    "was happy": "A broad smile lit up her face as she bounced on her toes",
-    "was nervous": "She fidgeted with her sleeve, her eyes darting around the room",
-    "felt excited": "She couldn't stop pacing, her words tumbling out in rapid bursts",
-    
-    // Physical States
-    "was tired": "Dark circles shadowed his eyes, and he dragged his feet with each step",
-    "felt cold": "Her teeth chattered as she wrapped her arms tightly around herself",
-    "was hot": "Sweat beaded on his forehead, his shirt clinging to his back",
-    "looked sick": "Her face had taken on an ashen pallor, and she swayed slightly with each step",
-    
-    // Personality Traits
-    "was intelligent": "She solved the crossword puzzle in record time, barely glancing at the clues",
-    "was rude": "He cut off the speaker mid-sentence and rolled his eyes",
-    "was kind": "She spent her lunch break helping the new intern learn the filing system",
-    
-    // Weather/Environment
-    "it was raining": "Raindrops drummed against the windows, creating rivers down the glass",
-    "it was cold": "Frost crystallized on the windows, and breath came out in visible puffs",
-    "it was noisy": "Car horns blared and construction equipment rumbled, the cacophony echoing off building walls",
-    
-    // Time of Day
-    "it was morning": "Golden sunlight crept across the floor as coffee makers gurgled to life",
-    "it was night": "Street lamps cast pools of yellow light on the empty sidewalks",
-    "it was getting late": "Long shadows stretched across the ground as the sun dipped below the horizon",
-    
-    // Movement
-    "walked slowly": "He shuffled forward, one hesitant step at a time",
-    "ran quickly": "Her feet pounded against the pavement as she sprinted",
-    "moved quietly": "She crept forward on tiptoes, carefully avoiding the creaky floorboards",
-    
-    // Sensory Experiences
-    "the food was delicious": "The chocolate melted on her tongue, releasing waves of rich, sweet flavor",
-    "the music was loud": "The bass vibrated through the floorboards and rattled the windows",
-    "it smelled bad": "A pungent odor assaulted his nostrils, making his eyes water"
-  };
-
   return (
-    <div className="mt-8 space-y-6">
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-lg font-semibold">Writing Analysis</h3>
-            <p className="text-sm text-gray-600">Hemingway-inspired readability analysis</p>
-          </div>
-          <Button 
-            onClick={onAnalyze}
-            disabled={isAnalyzing}
-            variant="outline"
-            className="flex items-center gap-2"
-          >
-            {isAnalyzing ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="h-4 w-4" />
-            )}
-            {isAnalyzing ? 'Analyzing...' : 'Analyze Text'}
-          </Button>
+    <Card className="mt-4">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle>Text Analysis</CardTitle>
+          {onAnalyze && (
+            <Button 
+              onClick={onAnalyze}
+              size="sm"
+              disabled={isAnalyzing || content.length < 10}
+            >
+              {isAnalyzing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <BarChart2 className="mr-2 h-4 w-4" />
+                  Analyze Text
+                </>
+              )}
+            </Button>
+          )}
         </div>
-
-        {isAnalyzing ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        ) : (
-          <>
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className={`w-4 h-4 rounded-full ${readabilityGrade.color}`}></div>
-                  <span className="font-medium">{readabilityGrade.grade}</span>
-                </div>
-                <div className="text-sm">
-                  <span className="font-medium">{totalIssues}</span> potential {totalIssues === 1 ? 'issue' : 'issues'} found
-                </div>
-              </div>
+        <CardDescription>
+          {stats.wordCount} words · {stats.sentenceCount} sentences · {stats.paragraphCount} paragraphs
+        </CardDescription>
+      </CardHeader>
+      
+      <CardContent>
+        <Tabs defaultValue="readability" className="w-full">
+          <TabsList className="mb-4">
+            <TabsTrigger value="readability">
+              <BarChart2 className="h-4 w-4 mr-2" />
+              Readability
+            </TabsTrigger>
+            <TabsTrigger value="hemingway">
+              <Pencil className="h-4 w-4 mr-2" />
+              Hemingway
+            </TabsTrigger>
+            <TabsTrigger value="showvstell">
+              <Eye className="h-4 w-4 mr-2" />
+              Show vs Tell
+            </TabsTrigger>
+            {aiAnalysis && (
+              <TabsTrigger value="suggestions">
+                <BookText className="h-4 w-4 mr-2" />
+                Suggestions
+              </TabsTrigger>
+            )}
+          </TabsList>
+          
+          <TabsContent value="readability">
+            <div className="space-y-4">
+              <ReadabilityChart scores={scores} />
               
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
-                <div className="p-2 border rounded-md bg-gray-50">
-                  <div className="text-xs text-gray-500">Words</div>
-                  <div className="font-medium">{safeScores.stats.wordCount}</div>
+              <div className="mt-4 grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-semibold mb-1">Readability Scores</h3>
+                  <ul className="space-y-1 text-sm">
+                    <li className="flex justify-between">
+                      <span>Flesch-Kincaid Grade:</span> 
+                      <span className="font-semibold">{scores.fleschKincaid.toFixed(1)}</span>
+                    </li>
+                    <li className="flex justify-between">
+                      <span>Flesch Reading Ease:</span> 
+                      <span className="font-semibold">{scores.fleschReading.toFixed(1)}</span>
+                    </li>
+                    <li className="flex justify-between">
+                      <span>Gunning Fog:</span> 
+                      <span className="font-semibold">{scores.gunningFog.toFixed(1)}</span>
+                    </li>
+                    <li className="flex justify-between">
+                      <span>Coleman-Liau:</span> 
+                      <span className="font-semibold">{scores.colemanLiau.toFixed(1)}</span>
+                    </li>
+                  </ul>
                 </div>
-                <div className="p-2 border rounded-md bg-gray-50">
-                  <div className="text-xs text-gray-500">Sentences</div>
-                  <div className="font-medium">{safeScores.stats.sentenceCount}</div>
-                </div>
-                <div className="p-2 border rounded-md bg-gray-50">
-                  <div className="text-xs text-gray-500">Paragraphs</div>
-                  <div className="font-medium">{safeScores.stats.paragraphCount}</div>
-                </div>
-                <div className="p-2 border rounded-md bg-gray-50">
-                  <div className="text-xs text-gray-500">Avg Words/Sentence</div>
-                  <div className="font-medium">{safeScores.stats.averageWordsPerSentence}</div>
-                </div>
-                <div className="p-2 border rounded-md bg-gray-50">
-                  <div className="text-xs text-gray-500">Reading Time</div>
-                  <div className="font-medium">{Math.ceil(safeScores.stats.wordCount / 225)} min</div>
-                </div>
-                <div className="p-2 border rounded-md bg-gray-50">
-                  <div className="text-xs text-gray-500">Reading Grade</div>
-                  <div className="font-medium">{Math.round(safeScores.fleschKincaid)}</div>
+                
+                <div>
+                  <h3 className="text-sm font-semibold mb-1">Sentence Stats</h3>
+                  <ul className="space-y-1 text-sm">
+                    <li className="flex justify-between">
+                      <span>Average Words Per Sentence:</span> 
+                      <span className="font-semibold">{scores.stats.averageWordsPerSentence.toFixed(1)}</span>
+                    </li>
+                    <li className="flex justify-between">
+                      <span>Long Sentences:</span> 
+                      <span className="font-semibold">{scores.longSentences.length}</span>
+                    </li>
+                    <li className="flex justify-between">
+                      <span>Very Long Sentences:</span> 
+                      <span className="font-semibold">{scores.veryLongSentences.length}</span>
+                    </li>
+                  </ul>
                 </div>
               </div>
             </div>
-            
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-3 mb-4">
-                <TabsTrigger value="readability">Readability</TabsTrigger>
-                <TabsTrigger value="hemingway">Hemingway</TabsTrigger>
-                <TabsTrigger value="showVsTell">Show vs Tell</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="readability">
-                <ReadabilityChart scores={safeScores} />
-                <div className="mt-4">
-                  <h4 className="font-medium mb-2">Score Interpretations</h4>
-                  <ul className="text-sm space-y-1">
-                    <li><span className="font-medium">Flesch-Kincaid Grade Level:</span> {safeScores.fleschKincaid} - Indicates the US grade level required to understand the text.</li>
-                    <li><span className="font-medium">Flesch Reading Ease:</span> {safeScores.fleschReading} - Higher scores indicate easier reading (70-80 is ideal for most audiences).</li>
-                    <li><span className="font-medium">Gunning Fog Index:</span> {safeScores.gunningFog} - Estimates years of formal education needed to understand text on first reading.</li>
-                    <li><span className="font-medium">Coleman-Liau Index:</span> {safeScores.colemanLiau} - Approximates US grade level needed to comprehend the text.</li>
-                  </ul>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="hemingway">
-                <div className="space-y-6">
-                  {issueCount.veryLongSentences > 0 && (
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <AlertCircle className="h-4 w-4 text-red-500" />
-                        <h5 className="font-medium">Very Hard to Read Sentences</h5>
-                        <Badge variant="outline" className="ml-auto">{issueCount.veryLongSentences}</Badge>
-                      </div>
-                      <div className="space-y-2">
-                        {safeScores.veryLongSentences.slice(0, 3).map((sentence, index) => (
-                          <div key={index} className="p-2 border-l-4 border-red-500 bg-red-50 text-sm">
-                            {sentence}
-                          </div>
-                        ))}
-                        {issueCount.veryLongSentences > 3 && (
-                          <p className="text-xs text-gray-500">And {issueCount.veryLongSentences - 3} more...</p>
-                        )}
-                      </div>
-                      <p className="text-xs text-gray-600 mt-1">Consider splitting these sentences to improve readability.</p>
+          </TabsContent>
+          
+          <TabsContent value="hemingway">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-semibold mb-2">Complex Writing</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Passive Voice</span>
+                      <span className={`font-semibold text-sm px-2 py-0.5 rounded ${scores.passiveVoice.length > 5 ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}`}>
+                        {scores.passiveVoice.length}
+                      </span>
                     </div>
-                  )}
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Adverbs</span>
+                      <span className={`font-semibold text-sm px-2 py-0.5 rounded ${scores.adverbs.length > 10 ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}`}>
+                        {scores.adverbs.length}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Complex Sentences</span>
+                      <span className={`font-semibold text-sm px-2 py-0.5 rounded ${scores.complexSentences.length > 3 ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}`}>
+                        {scores.complexSentences.length}
+                      </span>
+                    </div>
+                  </div>
                   
-                  {issueCount.complex > 0 && (
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <AlertCircle className="h-4 w-4 text-orange-500" />
-                        <h5 className="font-medium">Complex Sentences</h5>
-                        <Badge variant="outline" className="ml-auto">{issueCount.complex}</Badge>
-                      </div>
-                      <div className="space-y-2">
-                        {safeScores.complexSentences.slice(0, 3).map((sentence, index) => (
-                          <div key={index} className="p-2 border-l-4 border-orange-500 bg-orange-50 text-sm">
-                            {sentence}
-                          </div>
+                  {scores.passiveVoice.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="text-xs font-semibold uppercase text-gray-500 mb-1">Passive Voice Examples</h4>
+                      <ul className="text-sm space-y-1 bg-gray-50 p-2 rounded">
+                        {scores.passiveVoice.slice(0, 3).map((sentence, idx) => (
+                          <li key={idx} className="text-gray-700">{sentence}</li>
                         ))}
-                        {issueCount.complex > 3 && (
-                          <p className="text-xs text-gray-500">And {issueCount.complex - 3} more...</p>
+                        {scores.passiveVoice.length > 3 && (
+                          <li className="text-xs text-gray-500">...and {scores.passiveVoice.length - 3} more</li>
                         )}
-                      </div>
-                      <p className="text-xs text-gray-600 mt-1">Try simplifying these sentences for better readability.</p>
-                    </div>
-                  )}
-                  
-                  {issueCount.passive > 0 && (
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <AlertCircle className="h-4 w-4 text-blue-500" />
-                        <h5 className="font-medium">Passive Voice</h5>
-                        <Badge variant="outline" className="ml-auto">{issueCount.passive}</Badge>
-                      </div>
-                      <div className="space-y-2">
-                        {safeScores.passiveVoice.slice(0, 3).map((sentence, index) => (
-                          <div key={index} className="p-2 border-l-4 border-blue-500 bg-blue-50 text-sm">
-                            {sentence}
-                          </div>
-                        ))}
-                        {issueCount.passive > 3 && (
-                          <p className="text-xs text-gray-500">And {issueCount.passive - 3} more...</p>
-                        )}
-                      </div>
-                      <p className="text-xs text-gray-600 mt-1">Consider using active voice for stronger, clearer writing.</p>
-                    </div>
-                  )}
-                  
-                  {issueCount.adverbs > 0 && (
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <AlertCircle className="h-4 w-4 text-purple-500" />
-                        <h5 className="font-medium">Adverbs</h5>
-                        <Badge variant="outline" className="ml-auto">{issueCount.adverbs}</Badge>
-                      </div>
-                      <div className="flex flex-wrap gap-1 p-2 border rounded bg-gray-50">
-                        {safeScores.adverbs.slice(0, 15).map((adverb, index) => (
-                          <Badge key={index} variant="secondary" className="bg-purple-100">
-                            {adverb}
-                          </Badge>
-                        ))}
-                        {issueCount.adverbs > 15 && (
-                          <span className="text-xs text-gray-500">And {issueCount.adverbs - 15} more...</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-gray-600 mt-1">Use stronger verbs instead of adverbs when possible.</p>
-                    </div>
-                  )}
-                  
-                  {issueCount.wordy > 0 && (
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <AlertCircle className="h-4 w-4 text-green-500" />
-                        <h5 className="font-medium">Wordy Phrases</h5>
-                        <Badge variant="outline" className="ml-auto">{issueCount.wordy}</Badge>
-                      </div>
-                      <div className="space-y-2">
-                        {Object.entries(safeScores.wordyPhrases).slice(0, 5).map(([phrase, alternative], index) => (
-                          <div key={index} className="grid grid-cols-2 gap-2 p-2 border rounded bg-gray-50">
-                            <div className="text-sm font-medium text-red-500">"{phrase}"</div>
-                            <div className="text-sm text-green-600">Use: "{alternative}"</div>
-                          </div>
-                        ))}
-                        {issueCount.wordy > 5 && (
-                          <p className="text-xs text-gray-500">And {issueCount.wordy - 5} more phrases...</p>
-                        )}
-                      </div>
-                      <p className="text-xs text-gray-600 mt-1">Replace these phrases with concise alternatives.</p>
-                    </div>
-                  )}
-                  
-                  {totalIssues === 0 && (
-                    <div className="p-4 text-center">
-                      <p className="text-green-600 font-medium">Great job! No readability issues detected.</p>
-                      <p className="text-sm text-gray-600 mt-1">Your text appears to be clear and easy to read.</p>
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="showVsTell">
-                <div className="space-y-6">
-                  <div>
-                    <h4 className="font-medium mb-2">Show vs Tell Analysis</h4>
-                    <p className="text-sm text-gray-600 mb-4">Balance between descriptive and narrative writing</p>
-                    
-                    <div className="mb-4">
-                      <h5 className="text-sm font-medium mb-1">Show vs Tell Ratio</h5>
-                      <div className="relative pt-1">
-                        <div className="flex mb-2 items-center justify-between">
-                          <div>
-                            <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200">
-                              Showing: {Math.round(safeScores.showVsTell.ratio * 100)}%
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-orange-600 bg-orange-200">
-                              Telling: {Math.round((1 - safeScores.showVsTell.ratio) * 100)}%
-                            </span>
-                          </div>
-                        </div>
-                        <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-200">
-                          <div 
-                            style={{ width: `${Math.round(safeScores.showVsTell.ratio * 100)}%` }} 
-                            className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500"
-                          ></div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {safeScores.showVsTell.tellingSentences.length > 0 ? (
-                      <div>
-                        <h5 className="text-sm font-medium mb-2">Telling Sentences with Examples:</h5>
-                        <div className="space-y-4">
-                          {safeScores.showVsTell.tellingSentences.slice(0, 5).map((sentence, index) => {
-                            // Find matching example if available
-                            const matchingTellingPhrase = Object.keys(tellingToShowingExamples).find(
-                              phrase => sentence.toLowerCase().includes(phrase.toLowerCase())
-                            );
-                            const showingExample = matchingTellingPhrase 
-                              ? (tellingToShowingExamples as any)[matchingTellingPhrase]
-                              : null;
-
-                            return (
-                              <div key={index} className="border-l-4 border-orange-300 pl-4">
-                                <p className="text-sm text-orange-600 mb-1">"{sentence}"</p>
-                                {showingExample && (
-                                  <p className="text-sm text-green-600">
-                                    Try instead: "{showingExample}"
-                                  </p>
-                                )}
-                              </div>
-                            );
-                          })}
-                          {safeScores.showVsTell.tellingSentences.length > 5 && (
-                            <p className="text-xs text-gray-500">And {safeScores.showVsTell.tellingSentences.length - 5} more...</p>
-                          )}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-center py-4 italic text-gray-500">
-                        No telling sentences detected
-                      </div>
-                    )}
-
-                    <div className="mt-6 bg-gray-50 p-4 rounded-lg border">
-                      <h5 className="font-medium mb-2">Tips for "Showing" instead of "Telling"</h5>
-                      <ul className="text-sm space-y-2 list-disc pl-5">
-                        <li>Use sensory details that appeal to sight, sound, touch, taste, and smell</li>
-                        <li>Replace emotion words with physical reactions (e.g., "Her hands trembled" instead of "She was nervous")</li>
-                        <li>Use specific, vivid verbs instead of generic ones</li>
-                        <li>Include concrete details instead of abstract descriptions</li>
-                        <li>Let dialogue and actions reveal character traits and emotions</li>
                       </ul>
+                    </div>
+                  )}
+                </div>
+                
+                <div>
+                  <h3 className="text-sm font-semibold mb-2">Wordy Phrases</h3>
+                  {Object.keys(scores.wordyPhrases).length > 0 ? (
+                    <ul className="text-sm space-y-1 bg-gray-50 p-2 rounded">
+                      {Object.entries(scores.wordyPhrases).map(([phrase, alternative], idx) => (
+                        <li key={idx} className="flex justify-between">
+                          <span className="text-gray-700">"{phrase}"</span>
+                          <span className="text-green-600">→ "{alternative}"</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-gray-600">No wordy phrases detected.</p>
+                  )}
+                  
+                  {scores.longSentences.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="text-xs font-semibold uppercase text-gray-500 mb-1">Long Sentences</h4>
+                      <ul className="text-sm space-y-1 bg-gray-50 p-2 rounded">
+                        {scores.longSentences.slice(0, 2).map((sentence, idx) => (
+                          <li key={idx} className="text-gray-700">{sentence}</li>
+                        ))}
+                        {scores.longSentences.length > 2 && (
+                          <li className="text-xs text-gray-500">...and {scores.longSentences.length - 2} more</li>
+                        )}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="showvstell">
+            <div className="space-y-4">
+              <div className="flex space-x-4 mb-4">
+                <div className="flex-1 bg-gray-50 rounded p-4">
+                  <h3 className="text-sm font-semibold mb-2 flex items-center justify-between">
+                    <span>Show vs Tell Ratio</span>
+                    <span className={`px-2 py-0.5 rounded text-xs ${
+                      scores.showVsTell.ratio >= 0.6 
+                        ? 'bg-green-100 text-green-800' 
+                        : scores.showVsTell.ratio >= 0.4 
+                          ? 'bg-amber-100 text-amber-800' 
+                          : 'bg-red-100 text-red-800'
+                    }`}>
+                      {(scores.showVsTell.ratio * 100).toFixed(0)}%
+                    </span>
+                  </h3>
+                  
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div 
+                      className={`h-2.5 rounded-full ${
+                        scores.showVsTell.ratio >= 0.6 ? 'bg-green-600' : 
+                        scores.showVsTell.ratio >= 0.4 ? 'bg-amber-500' : 'bg-red-500'
+                      }`}
+                      style={{ width: `${scores.showVsTell.ratio * 100}%` }}
+                    ></div>
+                  </div>
+                  
+                  <div className="flex justify-between mt-1 text-xs text-gray-500">
+                    <span>More Telling</span>
+                    <span>More Showing</span>
+                  </div>
+                  
+                  <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="font-medium">Showing: {scores.showVsTell.showingCount}</p>
+                      <p className="text-gray-600 text-xs">
+                        Uses sensory details, specific actions, and vivid descriptions.
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Telling: {scores.showVsTell.tellingCount}</p>
+                      <p className="text-gray-600 text-xs">
+                        States facts, emotions, or observations directly.
+                      </p>
                     </div>
                   </div>
                 </div>
-              </TabsContent>
-            </Tabs>
-          </>
-        )}
-      </Card>
-    </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-semibold mb-2">Showing Examples</h3>
+                  {scores.showVsTell.showingSentences.length > 0 ? (
+                    <ul className="text-sm space-y-2 bg-gray-50 p-3 rounded">
+                      {scores.showVsTell.showingSentences.slice(0, 3).map((sentence, idx) => (
+                        <li key={idx} className="text-gray-700 border-l-2 border-green-400 pl-2">{sentence}</li>
+                      ))}
+                      {scores.showVsTell.showingSentences.length > 3 && (
+                        <li className="text-xs text-gray-500">...and {scores.showVsTell.showingSentences.length - 3} more</li>
+                      )}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-gray-600">No showing sentences detected.</p>
+                  )}
+                </div>
+                
+                <div>
+                  <h3 className="text-sm font-semibold mb-2">Telling Examples</h3>
+                  {scores.showVsTell.tellingSentences.length > 0 ? (
+                    <ul className="text-sm space-y-2 bg-gray-50 p-3 rounded">
+                      {scores.showVsTell.tellingSentences.slice(0, 3).map((sentence, idx) => (
+                        <li key={idx} className="text-gray-700 border-l-2 border-amber-400 pl-2">{sentence}</li>
+                      ))}
+                      {scores.showVsTell.tellingSentences.length > 3 && (
+                        <li className="text-xs text-gray-500">...and {scores.showVsTell.tellingSentences.length - 3} more</li>
+                      )}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-gray-600">No telling sentences detected.</p>
+                  )}
+                </div>
+              </div>
+              
+              <div className="mt-4 bg-gray-50 p-3 rounded">
+                <h3 className="text-sm font-semibold mb-2">How to improve your show vs tell ratio:</h3>
+                <ul className="text-sm space-y-1 list-disc pl-5">
+                  <li>Replace emotion statements with physical descriptions of how emotions feel</li>
+                  <li>Use specific, concrete details instead of abstract concepts</li>
+                  <li>Include sensory details (sight, sound, smell, taste, touch)</li>
+                  <li>Replace passive observations with active descriptions</li>
+                  <li>Show character reactions through dialogue and body language</li>
+                </ul>
+              </div>
+            </div>
+          </TabsContent>
+          
+          {aiAnalysis && (
+            <TabsContent value="suggestions">
+              <div className="space-y-4">
+                {aiAnalysis.suggestions && aiAnalysis.suggestions.length > 0 ? (
+                  <ul className="space-y-2">
+                    {aiAnalysis.suggestions.map((suggestion: string, idx: number) => (
+                      <li key={idx} className="bg-gray-50 p-3 rounded border-l-4 border-blue-400">
+                        {suggestion}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-600">No AI suggestions available. Click "Analyze Text" to generate suggestions.</p>
+                )}
+              </div>
+            </TabsContent>
+          )}
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 };
 
