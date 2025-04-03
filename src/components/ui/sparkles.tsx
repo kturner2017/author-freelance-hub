@@ -1,7 +1,7 @@
 
 "use client";
-import React, { useId } from "react";
-import { useEffect, useState } from "react";
+import React from "react";
+import { useEffect, useState, useId } from "react";
 import Particles, { initParticlesEngine } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
 import { cn } from "@/lib/utils";
@@ -34,11 +34,14 @@ export const SparklesCore = (props: ParticlesProps) => {
   const [init, setInit] = useState(false);
   
   useEffect(() => {
-    initParticlesEngine(async (engine) => {
-      await loadSlim(engine);
-    }).then(() => {
+    const initEngine = async () => {
+      await initParticlesEngine(async (engine) => {
+        await loadSlim(engine);
+      });
       setInit(true);
-    });
+    };
+    
+    initEngine();
   }, []);
   
   const controls = useAnimation();
