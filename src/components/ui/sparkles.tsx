@@ -113,30 +113,89 @@ export const SparklesCore = (props: MatrixProps) => {
       wordChars.length = 0; // Clear previous characters
       setDisplayedQuote(false);
       
-      // Reduced font size by half - from 2.5x to 1.25x multiplier
-      const landedFontSize = Math.max(fontSize * 1.25, 16); // Reduced from 2.5x to 1.25x
-      const bottomY = dimensions.height - 20; // Position higher from the bottom
-      const centerX = dimensions.width / 2;
+      // Reduced font size for better fit
+      const landedFontSize = Math.max(fontSize * 1.25, 16);
       
-      // Create characters for the quote
-      activeQuote.split('').forEach((char, index) => {
-        // Random starting position at the top
-        const startX = Math.random() * dimensions.width;
+      // Set up variables for word wrapping
+      const maxWidth = dimensions.width - 40; // Leave margin on both sides
+      const lineHeight = landedFontSize * 1.5; // Space between lines
+      const maxLines = 2; // Allow up to 2 lines
+      const bottomY = dimensions.height - 20 - ((maxLines - 1) * lineHeight); // Position for first line
+      
+      // Calculate word wrapping
+      const wrappedLines: string[] = [];
+      let currentLine = "";
+      let testLine = "";
+      
+      // Setup font for measurements
+      ctx.font = `bold ${landedFontSize}px monospace`;
+      
+      // Split the quote into words for wrapping calculation
+      const words = activeQuote.split(' ');
+      
+      // Calculate the wrapped lines
+      for (let i = 0; i < words.length; i++) {
+        testLine = currentLine + (currentLine ? ' ' : '') + words[i];
+        const metrics = ctx.measureText(testLine);
         
-        // Calculate final position (assembled quote at bottom)
-        const totalWidth = activeQuote.length * (landedFontSize * 0.6);
-        const startOffset = centerX - (totalWidth / 2);
-        const finalX = startOffset + (index * landedFontSize * 0.6);
+        if (metrics.width > maxWidth && i > 0) {
+          wrappedLines.push(currentLine);
+          currentLine = words[i];
+          
+          // Limit to max lines
+          if (wrappedLines.length >= maxLines - 1) {
+            // If we're at the last allowed line, collect remaining words with ellipsis if needed
+            for (let j = i + 1; j < words.length; j++) {
+              const testWithNextWord = currentLine + ' ' + words[j];
+              const nextMetrics = ctx.measureText(testWithNextWord + "...");
+              
+              if (nextMetrics.width <= maxWidth) {
+                currentLine = testWithNextWord;
+              } else {
+                // Add ellipsis if we can't fit all remaining words
+                if (j < words.length - 1) {
+                  const ellipsisTest = currentLine + "...";
+                  if (ctx.measureText(ellipsisTest).width <= maxWidth) {
+                    currentLine += "...";
+                  }
+                }
+                break;
+              }
+            }
+            break;
+          }
+        } else {
+          currentLine = testLine;
+        }
+      }
+      
+      // Add the last line
+      if (currentLine) {
+        wrappedLines.push(currentLine);
+      }
+      
+      // Create characters for each line of the wrapped quote
+      wrappedLines.forEach((line, lineIndex) => {
+        const totalWidth = ctx.measureText(line).width;
+        const startOffset = (dimensions.width - totalWidth) / 2;
+        const lineY = bottomY + (lineIndex * lineHeight);
         
-        wordChars.push({
-          char,
-          x: startX,
-          y: -100 - (Math.random() * 100), // Stagger the start
-          speed: 0.5 + (Math.random() * speed),
-          jumble: true,
-          finalX,
-          finalY: bottomY,
-          opacity: 1 // Full opacity
+        line.split('').forEach((char, charIndex) => {
+          // Random starting position at the top
+          const startX = Math.random() * dimensions.width;
+          // Calculate final position for this character in this line
+          const finalX = startOffset + ctx.measureText(line.substring(0, charIndex)).width;
+          
+          wordChars.push({
+            char,
+            x: startX,
+            y: -100 - (Math.random() * 100), // Stagger the start
+            speed: 0.5 + (Math.random() * speed),
+            jumble: true,
+            finalX,
+            finalY: lineY,
+            opacity: 1
+          });
         });
       });
     };
@@ -171,7 +230,7 @@ export const SparklesCore = (props: MatrixProps) => {
         if (!charObj.jumble && Math.abs(charObj.y - charObj.finalY) < 5) {
           // Assembled characters are brighter and clearer
           ctx.fillStyle = "#FFFFFF"; // Bright white for assembled characters
-          ctx.font = `bold ${Math.max(fontSize * 1.25, 16)}px monospace`; // Reduced from 2.5x to 1.25x
+          ctx.font = `bold ${Math.max(fontSize * 1.25, 16)}px monospace`;
           ctx.shadowColor = characterColor;
           ctx.shadowBlur = 8; // Maintained glow
         } else {
@@ -218,22 +277,19 @@ export const SparklesCore = (props: MatrixProps) => {
         // Clear the entire bottom area to remove any overlapping elements
         ctx.clearRect(0, dimensions.height - 60, dimensions.width, 60);
         
-        // Reduced font size by half for landed quote
-        const landedFontSize = Math.max(fontSize * 1.25, 16); // Reduced from 2.5x to 1.25x
-        
         // Add a more visible background behind the quote
         ctx.fillStyle = "rgba(0, 0, 0, 1)"; // Fully opaque black
         ctx.fillRect(
           0,  // Start at the left edge
-          dimensions.height - 50, 
+          dimensions.height - 60, // Positioned higher to accommodate multiple lines
           dimensions.width,  // Cover full width
-          50  // Taller background
+          60  // Taller background to fit multiple lines
         );
         
         // Redraw the characters with enhanced visibility
         wordChars.forEach(charObj => {
           ctx.fillStyle = "#FFFFFF"; // Bright white for final assembled quote
-          ctx.font = `bold ${landedFontSize}px monospace`; // Reduced font size 
+          ctx.font = `bold ${Math.max(fontSize * 1.25, 16)}px monospace`;
           ctx.shadowColor = "#00ff00"; // Green glow
           ctx.shadowBlur = 8; // Maintained glow effect
           ctx.fillText(charObj.char, charObj.finalX, charObj.finalY);
