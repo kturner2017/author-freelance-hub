@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { SparklesCore } from "@/components/ui/sparkles";
@@ -40,15 +39,15 @@ export const Hero = () => {
               <SparklesCore
                 background="transparent"
                 characterColor="#0CFF0C"
-                fontSize={16}
+                fontSize={20}
                 speed={1.2}
                 density={100}
                 quotes={famousQuotes}
                 className="w-full h-full"
               />
 
-              {/* Radial Gradient to prevent sharp edges */}
-              <div className="absolute inset-0 w-full h-full bg-black [mask-image:radial-gradient(350px_200px_at_top,transparent_20%,white)]"></div>
+              {/* Adjusted radial gradient to keep the bottom area clearer */}
+              <div className="absolute inset-0 w-full h-full bg-black [mask-image:radial-gradient(350px_150px_at_top,transparent_30%,white)]"></div>
             </div>
           </div>
           <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8 animate-fade-in animate-fade-in-delay-2">

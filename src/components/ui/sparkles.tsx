@@ -110,7 +110,6 @@ export const SparklesCore = (props: MatrixProps) => {
       setDisplayedQuote(false);
       
       let startY = -100;
-      const charsPerRow = Math.floor(dimensions.width / (fontSize * 0.7));
       const centerX = dimensions.width / 2;
       const bottomY = dimensions.height - 50;
       
@@ -152,10 +151,6 @@ export const SparklesCore = (props: MatrixProps) => {
       ctx.fillStyle = `rgba(0, 0, 0, ${0.1 / speed})`;
       ctx.fillRect(0, 0, dimensions.width, dimensions.height);
       
-      // Text color and font
-      ctx.fillStyle = characterColor;
-      ctx.font = `${fontSize}px monospace`;
-      
       let allAssembled = true;
       
       // Loop through all characters
@@ -165,11 +160,26 @@ export const SparklesCore = (props: MatrixProps) => {
           "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz?!.,"[Math.floor(Math.random() * 56)] : 
           charObj.char;
         
+        // Set text properties - using a brighter color and bold font when assembled
+        if (!charObj.jumble && Math.abs(charObj.y - charObj.finalY) < 5) {
+          // Assembled characters are brighter and clearer
+          ctx.fillStyle = "#FFFFFF"; // Bright white for assembled characters
+          ctx.font = `bold ${fontSize}px monospace`;
+          ctx.shadowColor = characterColor;
+          ctx.shadowBlur = 4;
+        } else {
+          // Falling characters use the specified character color
+          ctx.fillStyle = characterColor;
+          ctx.font = `${fontSize}px monospace`;
+          ctx.shadowBlur = 0;
+        }
+        
         // Draw the character
         ctx.fillText(displayChar, charObj.x, charObj.y);
+        ctx.shadowBlur = 0; // Reset shadow for next character
         
         // If character is not at final position, update position
-        if (charObj.y < charObj.finalY || charObj.x !== charObj.finalX) {
+        if (charObj.y < charObj.finalY || Math.abs(charObj.x - charObj.finalX) > 2) {
           allAssembled = false;
           
           // Move toward final position
@@ -195,6 +205,31 @@ export const SparklesCore = (props: MatrixProps) => {
       // If all characters have assembled and we haven't set the timer yet
       if (allAssembled && !displayedQuote) {
         setDisplayedQuote(true);
+        
+        // Add an overlay behind the final quote to make it more visible
+        const totalWidth = activeQuote.length * (fontSize * 0.7);
+        const centerX = dimensions.width / 2;
+        const startOffset = centerX - (totalWidth / 2);
+        const lineHeight = fontSize * 1.2;
+        
+        // Semi-transparent background behind the quote
+        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+        ctx.fillRect(
+          startOffset - 10, 
+          dimensions.height - 50 - lineHeight + 5, 
+          totalWidth + 20, 
+          lineHeight
+        );
+        
+        // Redraw the characters with enhanced visibility
+        wordChars.forEach(charObj => {
+          ctx.fillStyle = "#FFFFFF"; // Bright white for final assembled quote
+          ctx.font = `bold ${fontSize}px monospace`;
+          ctx.shadowColor = "#00ff00"; // Green glow
+          ctx.shadowBlur = 3;
+          ctx.fillText(charObj.char, charObj.finalX, charObj.finalY);
+        });
+        ctx.shadowBlur = 0;
         
         // Set timer to restart animation after 5 seconds of displaying the quote
         quoteTimerRef.current = window.setTimeout(() => {
