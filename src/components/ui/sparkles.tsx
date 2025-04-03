@@ -113,8 +113,8 @@ export const SparklesCore = (props: MatrixProps) => {
       wordChars.length = 0; // Clear previous characters
       setDisplayedQuote(false);
       
-      // Use a significantly larger font size for much better readability
-      const largerFontSize = Math.max(fontSize * 2.5, 32); // Increased from 1.5x to 2.5x, min 32px
+      // Reduced font size by half - from 2.5x to 1.25x multiplier
+      const landedFontSize = Math.max(fontSize * 1.25, 16); // Reduced from 2.5x to 1.25x
       const bottomY = dimensions.height - 20; // Position higher from the bottom
       const centerX = dimensions.width / 2;
       
@@ -124,9 +124,9 @@ export const SparklesCore = (props: MatrixProps) => {
         const startX = Math.random() * dimensions.width;
         
         // Calculate final position (assembled quote at bottom)
-        const totalWidth = activeQuote.length * (largerFontSize * 0.6);
+        const totalWidth = activeQuote.length * (landedFontSize * 0.6);
         const startOffset = centerX - (totalWidth / 2);
-        const finalX = startOffset + (index * largerFontSize * 0.6);
+        const finalX = startOffset + (index * landedFontSize * 0.6);
         
         wordChars.push({
           char,
@@ -171,9 +171,9 @@ export const SparklesCore = (props: MatrixProps) => {
         if (!charObj.jumble && Math.abs(charObj.y - charObj.finalY) < 5) {
           // Assembled characters are brighter and clearer
           ctx.fillStyle = "#FFFFFF"; // Bright white for assembled characters
-          ctx.font = `bold ${Math.max(fontSize * 2.5, 32)}px monospace`; // Larger font for assembled quote
+          ctx.font = `bold ${Math.max(fontSize * 1.25, 16)}px monospace`; // Reduced from 2.5x to 1.25x
           ctx.shadowColor = characterColor;
-          ctx.shadowBlur = 8; // Increased glow
+          ctx.shadowBlur = 8; // Maintained glow
         } else {
           // Falling characters use the specified character color
           ctx.fillStyle = characterColor;
@@ -218,8 +218,8 @@ export const SparklesCore = (props: MatrixProps) => {
         // Clear the entire bottom area to remove any overlapping elements
         ctx.clearRect(0, dimensions.height - 60, dimensions.width, 60);
         
-        // Use a significantly larger font size
-        const largerFontSize = Math.max(fontSize * 2.5, 32);
+        // Reduced font size by half for landed quote
+        const landedFontSize = Math.max(fontSize * 1.25, 16); // Reduced from 2.5x to 1.25x
         
         // Add a more visible background behind the quote
         ctx.fillStyle = "rgba(0, 0, 0, 1)"; // Fully opaque black
@@ -233,9 +233,9 @@ export const SparklesCore = (props: MatrixProps) => {
         // Redraw the characters with enhanced visibility
         wordChars.forEach(charObj => {
           ctx.fillStyle = "#FFFFFF"; // Bright white for final assembled quote
-          ctx.font = `bold ${largerFontSize}px monospace`; // Larger font for better visibility
+          ctx.font = `bold ${landedFontSize}px monospace`; // Reduced font size 
           ctx.shadowColor = "#00ff00"; // Green glow
-          ctx.shadowBlur = 8; // Stronger glow effect
+          ctx.shadowBlur = 8; // Maintained glow effect
           ctx.fillText(charObj.char, charObj.finalX, charObj.finalY);
         });
         ctx.shadowBlur = 0;
