@@ -18,6 +18,8 @@ interface RichTextEditorProps {
 }
 
 const RichTextEditor = ({ content, onChange, aiAnalysis, isAnalyzing }: RichTextEditorProps) => {
+  console.log('RichTextEditor rendering with content length:', content?.length || 0);
+  
   const { 
     editor, 
     readabilityScores, 
@@ -29,7 +31,7 @@ const RichTextEditor = ({ content, onChange, aiAnalysis, isAnalyzing }: RichText
     floatingToolbar,
     comments 
   } = useRichTextEditor({
-    content,
+    content: content || '',
     onChange
   });
 
@@ -42,7 +44,8 @@ const RichTextEditor = ({ content, onChange, aiAnalysis, isAnalyzing }: RichText
   });
 
   if (!editor) {
-    return null;
+    console.log('Editor not initialized yet');
+    return <div className="p-4">Initializing editor...</div>;
   }
 
   // Use props values if provided, otherwise use internal state
@@ -51,6 +54,7 @@ const RichTextEditor = ({ content, onChange, aiAnalysis, isAnalyzing }: RichText
 
   const handleAnalyze = () => {
     if (editor) {
+      console.log('Performing text analysis');
       performAnalysis(editor.getText());
     }
   };

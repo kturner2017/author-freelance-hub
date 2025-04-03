@@ -4,6 +4,7 @@ import DashboardLayout from '../../layout/DashboardLayout';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const LoadingEditor = () => {
+  console.log('Rendering LoadingEditor component');
   return (
     <DashboardLayout title="Chapters Editor">
       <div className="flex h-full">

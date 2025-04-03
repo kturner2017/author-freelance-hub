@@ -19,7 +19,6 @@ interface EditorLayoutProps {
   aiAnalysis: any;
   isAnalyzing: boolean;
   title: string;
-  toolbarActions: React.ReactNode;
   onSave: () => void;
   onAddChapter: () => Promise<any>;
   onAddAct: () => void;
@@ -64,6 +63,10 @@ const EditorLayout = ({
   handleFrontMatterContentChange,
   handleGenerateTOC
 }: EditorLayoutProps) => {
+  console.log('Rendering EditorLayout with bookId:', bookId);
+  console.log('Selected chapter:', selectedChapter?.id);
+  console.log('AI analysis status:', isAnalyzing);
+  
   return (
     <DashboardLayout 
       title={title}

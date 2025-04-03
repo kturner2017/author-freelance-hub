@@ -27,19 +27,29 @@ const ChapterEditor = ({
   const { bookId } = useParams();
   const location = useLocation();
   
+  console.log('ChapterEditor rendering with chapter ID:', chapter?.id);
+  console.log('Current location:', location.pathname);
+  
   // Check if we're on the root path for this chapter
   const isRootPath = !location.pathname.includes('/full-view') && 
                      !location.pathname.includes('/page-view');
 
   if (!bookId) {
+    console.warn('No bookId found in params, redirecting to books');
     return <Navigate to="/editor/books" replace />;
+  }
+
+  if (!chapter || !chapter.id) {
+    console.warn('No chapter provided to ChapterEditor');
+    return <div className="p-4">Loading chapter content...</div>;
   }
 
   // If we're at the root path, render the full view editor directly
   if (isRootPath) {
+    console.log('Rendering FullChapterEditor directly (root path)');
     return (
       <FullChapterEditor 
-        content={chapter.content}
+        content={chapter.content || ''}
         onContentChange={onContentChange}
         aiAnalysis={aiAnalysis}
         isAnalyzing={isAnalyzing}
@@ -47,13 +57,14 @@ const ChapterEditor = ({
     );
   }
 
+  console.log('Rendering ChapterEditor Routes');
   return (
     <Routes>
       <Route 
         path="/" 
         element={
           <FullChapterEditor 
-            content={chapter.content}
+            content={chapter.content || ''}
             onContentChange={onContentChange}
             aiAnalysis={aiAnalysis}
             isAnalyzing={isAnalyzing}
@@ -64,7 +75,7 @@ const ChapterEditor = ({
         path="full-view" 
         element={
           <FullChapterEditor 
-            content={chapter.content}
+            content={chapter.content || ''}
             onContentChange={onContentChange}
             aiAnalysis={aiAnalysis}
             isAnalyzing={isAnalyzing}
@@ -75,7 +86,7 @@ const ChapterEditor = ({
         path="page-view" 
         element={
           <PageViewEditor 
-            content={chapter.content}
+            content={chapter.content || ''}
             onContentChange={onContentChange}
           />
         }
