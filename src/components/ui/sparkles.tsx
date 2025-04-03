@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useEffect, useState, useRef, useId } from "react";
 import { cn } from "@/lib/utils";
@@ -107,7 +106,18 @@ export const SparklesCore = (props: MatrixProps) => {
     const activeQuote = selectQuote();
     
     // Split quotes into words and characters
-    const wordChars: { char: string; x: number; y: number; speed: number; jumble: boolean; finalX: number; finalY: number; opacity: number; isAuthor?: boolean }[] = [];
+    const wordChars: { 
+      char: string; 
+      x: number; 
+      y: number; 
+      speed: number; 
+      jumble: boolean; 
+      finalX: number; 
+      finalY: number; 
+      opacity: number; 
+      isAuthor?: boolean;
+      arrivalTime: number;
+    }[] = [];
     
     const initializeWordChars = () => {
       wordChars.length = 0; // Clear previous characters
@@ -121,7 +131,7 @@ export const SparklesCore = (props: MatrixProps) => {
       const maxWidth = dimensions.width - 40; // Leave margin on both sides
       const lineHeight = landedFontSize * 1.5; // Space between lines
       const maxLines = 2; // Allow up to 2 lines for the quote
-      const bottomY = dimensions.height - 50 - ((maxLines - 1) * lineHeight); // Position for first line
+      const bottomY = dimensions.height - 80; // Position for first line
       
       // Calculate word wrapping
       const wrappedLines: string[] = [];
@@ -179,7 +189,7 @@ export const SparklesCore = (props: MatrixProps) => {
       wrappedLines.forEach((line, lineIndex) => {
         const totalWidth = ctx.measureText(line).width;
         const startOffset = (dimensions.width - totalWidth) / 2;
-        const lineY = bottomY + (lineIndex * lineHeight);
+        const lineY = bottomY - ((wrappedLines.length - 1 - lineIndex) * lineHeight);
         
         // Process each character
         line.split('').forEach((char, charIndex) => {
@@ -192,11 +202,12 @@ export const SparklesCore = (props: MatrixProps) => {
             char,
             x: startX,
             y: -100 - (Math.random() * 100), // Stagger the start
-            speed: 0.5 + (Math.random() * speed),
+            speed: 1.5 + (Math.random() * speed),
             jumble: true,
             finalX,
             finalY: lineY,
-            opacity: 1
+            opacity: 1,
+            arrivalTime: 0 // Will be set when nearing final position
           });
         });
       });
@@ -207,7 +218,7 @@ export const SparklesCore = (props: MatrixProps) => {
         ctx.font = `italic ${authorFontSize}px monospace`;
         const authorWidth = ctx.measureText(authorText).width;
         const authorStartOffset = (dimensions.width - authorWidth) / 2;
-        const authorY = bottomY + (wrappedLines.length * lineHeight) + 30; // Position below the quote
+        const authorY = bottomY + 30; // Position below the quote
         
         // Process each character of the author
         authorText.split('').forEach((char, charIndex) => {
@@ -218,12 +229,13 @@ export const SparklesCore = (props: MatrixProps) => {
             char,
             x: startX,
             y: -100 - (Math.random() * 100), // Stagger the start
-            speed: 0.5 + (Math.random() * speed),
+            speed: 1.5 + (Math.random() * speed),
             jumble: true,
             finalX,
             finalY: authorY,
             opacity: 1,
-            isAuthor: true
+            isAuthor: true,
+            arrivalTime: 0
           });
         });
       }
@@ -241,12 +253,24 @@ export const SparklesCore = (props: MatrixProps) => {
       initializeWordChars();
     };
     
-    const draw = () => {
+    // Current timestamp for animation timing
+    let lastTime = 0;
+    
+    const draw = (timestamp: number) => {
+      const deltaTime = timestamp - lastTime;
+      lastTime = timestamp;
+      
       // Semi-transparent black to create fade effect without completely erasing characters
       ctx.fillStyle = `rgba(0, 0, 0, ${0.05 / speed})`;
       ctx.fillRect(0, 0, dimensions.width, dimensions.height);
       
       let allAssembled = true;
+      
+      // Draw background rectangle for quote
+      if (wordChars.some(char => !char.jumble)) {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+        ctx.fillRect(0, bottomY - 60, dimensions.width, 100);
+      }
       
       // Loop through all characters
       wordChars.forEach(charObj => {
@@ -256,7 +280,7 @@ export const SparklesCore = (props: MatrixProps) => {
           charObj.char;
         
         // Set text properties - using a brighter color and bold font when assembled
-        if (!charObj.jumble && Math.abs(charObj.y - charObj.finalY) < 5) {
+        if (!charObj.jumble) {
           // Assembled characters are brighter and clearer
           ctx.fillStyle = "#FFFFFF"; // Bright white for assembled characters
           
@@ -284,57 +308,49 @@ export const SparklesCore = (props: MatrixProps) => {
         ctx.shadowBlur = 0; // Reset shadow for next character
         
         // If character is not at final position, update position
-        if (charObj.y < charObj.finalY || Math.abs(charObj.x - charObj.finalX) > 2) {
+        const distToFinalY = charObj.finalY - charObj.y;
+        const distToFinalX = charObj.finalX - charObj.x;
+        
+        if (distToFinalY > 1 || Math.abs(distToFinalX) > 1) {
           allAssembled = false;
           
           // Move toward final position
-          if (charObj.y < charObj.finalY) {
-            charObj.y += charObj.speed;
+          if (distToFinalY > 0) {
+            charObj.y += Math.min(charObj.speed, distToFinalY);
           }
           
-          // When near the bottom, start moving horizontally to final position
-          if (charObj.y > dimensions.height * 0.65) { // Changed from 0.7 to 0.65 to start horizontal movement earlier
-            const distX = charObj.finalX - charObj.x;
-            charObj.x += distX * 0.05; // Gradual horizontal movement
+          // When nearing the bottom, start moving horizontally to final position and stop jumbling
+          if (distToFinalY < 100) {
+            // Record arrival time if not set
+            if (charObj.arrivalTime === 0) {
+              charObj.arrivalTime = timestamp;
+            }
             
-            // When close enough to final position, stop jumbling
-            if (Math.abs(distX) < 10 && Math.abs(charObj.finalY - charObj.y) < 30) {
+            // Calculate how long since arrival (for easing)
+            const timeSinceArrival = timestamp - charObj.arrivalTime;
+            const easeFactor = Math.min(0.1, 0.02 + (timeSinceArrival / 2000));
+            
+            // Update X position with easing
+            charObj.x += distToFinalX * easeFactor;
+            
+            // Stop jumbling after a short delay when close to final position
+            if (timeSinceArrival > 300 && Math.abs(distToFinalX) < 10 && distToFinalY < 15) {
               charObj.jumble = false;
             }
           }
         } else {
           // Make sure it stops jumbling when reached final position
           charObj.jumble = false;
+          
+          // Set exact final position
+          charObj.x = charObj.finalX;
+          charObj.y = charObj.finalY;
         }
       });
-      
-      // Draw a semi-transparent background for the final assembled quote
-      if (wordChars.some(char => !char.jumble)) {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-        ctx.fillRect(0, dimensions.height - 100, dimensions.width, 100);
-      }
       
       // If all characters have assembled and we haven't set the timer yet
       if (allAssembled && !displayedQuote) {
         setDisplayedQuote(true);
-        
-        // Redraw all finalized characters with enhanced visibility
-        wordChars.forEach(charObj => {
-          ctx.fillStyle = "#FFFFFF"; // Bright white for final assembled quote
-          
-          if (charObj.isAuthor) {
-            // Author text is italic and slightly smaller
-            ctx.font = `italic ${Math.max(fontSize, 14)}px monospace`;
-          } else {
-            // Quote text is bold and larger
-            ctx.font = `bold ${Math.max(fontSize * 1.25, 16)}px monospace`;
-          }
-          
-          ctx.shadowColor = characterColor;
-          ctx.shadowBlur = 8; // Glow effect
-          ctx.fillText(charObj.char, charObj.finalX, charObj.finalY);
-        });
-        ctx.shadowBlur = 0;
         
         // Set timer to restart animation after 5 seconds of displaying the quote
         quoteTimerRef.current = window.setTimeout(() => {

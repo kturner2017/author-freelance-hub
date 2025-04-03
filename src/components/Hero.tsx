@@ -72,18 +72,18 @@ export const Hero = () => {
     <div className="bg-gradient-to-b from-secondary to-white">
       <div className="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="text-center -mt-24">
-          {/* Make the black box 30% bigger */}
-          <div className="h-[33rem] w-full bg-black flex flex-col items-center justify-center overflow-hidden rounded-md">
-            <h1 className="md:text-5xl text-2xl lg:text-7xl font-bold text-center text-white relative z-20">
+          {/* Make the black box larger */}
+          <div className="h-[38rem] w-full bg-black flex flex-col items-center justify-center overflow-hidden rounded-md">
+            <h1 className="md:text-5xl text-2xl lg:text-7xl font-bold text-center text-white relative z-20 mb-4">
               Write and Publish Your Book
             </h1>
-            {/* Increase the height of the sparkles container to match */}
-            <div className="w-full h-80 relative">
+            {/* Increase the height of the sparkles container */}
+            <div className="w-full h-96 relative">
               <SparklesCore
                 background="transparent"
                 characterColor="#0CFF0C"
                 fontSize={30}
-                speed={1.2}
+                speed={1.5}
                 density={100}
                 quotes={famousQuotes}
                 className="w-full h-full"
