@@ -21,11 +21,12 @@ export default defineConfig(({ mode }) => ({
     },
   },
   optimizeDeps: {
+    include: ['@tanstack/react-query'],
     exclude: ['@huggingface/transformers'],
   },
   build: {
     commonjsOptions: {
-      include: [],
+      include: [/node_modules/],
     },
   }
 }));
