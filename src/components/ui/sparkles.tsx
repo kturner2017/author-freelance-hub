@@ -50,6 +50,7 @@ export const SparklesCore = (props: MatrixProps) => {
   const [currentQuote, setCurrentQuote] = useState("");
   const [displayedQuote, setDisplayedQuote] = useState(false);
   const quoteTimerRef = useRef<number | null>(null);
+  const animationRef = useRef<number | null>(null);
 
   // Set up the canvas when component mounts
   useEffect(() => {
@@ -81,6 +82,9 @@ export const SparklesCore = (props: MatrixProps) => {
       if (quoteTimerRef.current) {
         clearTimeout(quoteTimerRef.current);
       }
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
     };
   }, [controls]);
 
@@ -103,7 +107,7 @@ export const SparklesCore = (props: MatrixProps) => {
     const activeQuote = selectQuote();
     
     // Split quotes into words and characters
-    const wordChars: { char: string; x: number; y: number; speed: number; jumble: boolean; finalX: number; finalY: number; }[] = [];
+    const wordChars: { char: string; x: number; y: number; speed: number; jumble: boolean; finalX: number; finalY: number; opacity: number; }[] = [];
     
     const initializeWordChars = () => {
       wordChars.length = 0; // Clear previous characters
@@ -111,7 +115,7 @@ export const SparklesCore = (props: MatrixProps) => {
       
       let startY = -100;
       const centerX = dimensions.width / 2;
-      const bottomY = dimensions.height - 50;
+      const bottomY = dimensions.height - fontSize;
       
       // Create characters for the quote
       activeQuote.split('').forEach((char, index) => {
@@ -119,9 +123,9 @@ export const SparklesCore = (props: MatrixProps) => {
         const startX = Math.random() * dimensions.width;
         
         // Calculate final position (assembled quote at bottom)
-        const totalWidth = activeQuote.length * (fontSize * 0.7);
+        const totalWidth = activeQuote.length * (fontSize * 0.6);
         const startOffset = centerX - (totalWidth / 2);
-        const finalX = startOffset + (index * fontSize * 0.7);
+        const finalX = startOffset + (index * fontSize * 0.6);
         
         wordChars.push({
           char,
@@ -130,7 +134,8 @@ export const SparklesCore = (props: MatrixProps) => {
           speed: 0.5 + (Math.random() * speed),
           jumble: true,
           finalX,
-          finalY: bottomY
+          finalY: bottomY,
+          opacity: 1 // Full opacity
         });
       });
     };
@@ -143,12 +148,13 @@ export const SparklesCore = (props: MatrixProps) => {
       if (quoteTimerRef.current) {
         clearTimeout(quoteTimerRef.current);
       }
+      ctx.clearRect(0, 0, dimensions.width, dimensions.height);
       initializeWordChars();
     };
     
     const draw = () => {
-      // Semi-transparent black to create fade effect
-      ctx.fillStyle = `rgba(0, 0, 0, ${0.1 / speed})`;
+      // Semi-transparent black to create fade effect without completely erasing characters
+      ctx.fillStyle = `rgba(0, 0, 0, ${0.05 / speed})`;
       ctx.fillRect(0, 0, dimensions.width, dimensions.height);
       
       let allAssembled = true;
@@ -174,8 +180,10 @@ export const SparklesCore = (props: MatrixProps) => {
           ctx.shadowBlur = 0;
         }
         
-        // Draw the character
+        // Draw the character with full opacity
+        ctx.globalAlpha = charObj.opacity;
         ctx.fillText(displayChar, charObj.x, charObj.y);
+        ctx.globalAlpha = 1;
         ctx.shadowBlur = 0; // Reset shadow for next character
         
         // If character is not at final position, update position
@@ -207,16 +215,17 @@ export const SparklesCore = (props: MatrixProps) => {
         setDisplayedQuote(true);
         
         // Add an overlay behind the final quote to make it more visible
-        const totalWidth = activeQuote.length * (fontSize * 0.7);
+        const totalWidth = activeQuote.length * (fontSize * 0.6);
         const centerX = dimensions.width / 2;
         const startOffset = centerX - (totalWidth / 2);
         const lineHeight = fontSize * 1.2;
+        const bottomY = dimensions.height - fontSize;
         
         // Semi-transparent background behind the quote
         ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
         ctx.fillRect(
           startOffset - 10, 
-          dimensions.height - 50 - lineHeight + 5, 
+          bottomY - lineHeight + 5, 
           totalWidth + 20, 
           lineHeight
         );
@@ -237,13 +246,18 @@ export const SparklesCore = (props: MatrixProps) => {
           restartAnimation();
         }, 5000);
       }
+      
+      // Continue animation loop
+      animationRef.current = requestAnimationFrame(draw);
     };
     
-    // Set up animation loop
-    const interval = setInterval(draw, 33); // ~30 fps
+    // Start animation loop
+    animationRef.current = requestAnimationFrame(draw);
     
     return () => {
-      clearInterval(interval);
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
       if (quoteTimerRef.current) {
         clearTimeout(quoteTimerRef.current);
       }
