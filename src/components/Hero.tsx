@@ -39,15 +39,15 @@ export const Hero = () => {
               <SparklesCore
                 background="transparent"
                 characterColor="#0CFF0C"
-                fontSize={20}
+                fontSize={30}
                 speed={1.2}
                 density={100}
                 quotes={famousQuotes}
                 className="w-full h-full"
               />
 
-              {/* Adjusted radial gradient to keep the bottom area clearer */}
-              <div className="absolute inset-0 w-full h-full bg-black [mask-image:radial-gradient(350px_150px_at_top,transparent_30%,white)]"></div>
+              {/* Adjusted radial gradient to keep the bottom area visible */}
+              <div className="absolute inset-0 w-full h-full bg-black [mask-image:radial-gradient(350px_100px_at_top,transparent_40%,white)]"></div>
             </div>
           </div>
           <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8 animate-fade-in animate-fade-in-delay-2">
