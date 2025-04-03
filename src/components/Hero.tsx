@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { SparklesCore } from "@/components/ui/sparkles";
@@ -11,21 +12,15 @@ export const Hero = () => {
             <h1 className="md:text-5xl text-2xl lg:text-7xl font-bold text-center text-white relative z-20">
               Write and Publish Your Book
             </h1>
-            <div className="w-full h-20 relative">
-              {/* Gradients */}
-              <div className="absolute inset-x-0 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-[2px] w-full blur-sm" />
-              <div className="absolute inset-x-0 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-px w-full" />
-              <div className="absolute inset-x-0 top-0 bg-gradient-to-r from-transparent via-sky-500 to-transparent h-[5px] w-full blur-sm" />
-              <div className="absolute inset-x-0 top-0 bg-gradient-to-r from-transparent via-sky-500 to-transparent h-px w-full" />
-
-              {/* Core component */}
+            <div className="w-full h-40 relative">
+              {/* Matrix digital rain effect */}
               <SparklesCore
                 background="transparent"
-                minSize={0.4}
-                maxSize={1}
-                particleDensity={1200}
+                characterColor="#0CFF0C"
+                fontSize={16}
+                speed={1.5}
+                density={120}
                 className="w-full h-full"
-                particleColor="#FFFFFF"
               />
 
               {/* Radial Gradient to prevent sharp edges */}
