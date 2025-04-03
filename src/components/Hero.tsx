@@ -73,12 +73,12 @@ export const Hero = () => {
       <div className="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="text-center -mt-24">
           {/* Make the black box larger */}
-          <div className="h-[38rem] w-full bg-black flex flex-col items-center justify-center overflow-hidden rounded-md">
+          <div className="h-[42rem] w-full bg-black flex flex-col items-center justify-center overflow-hidden rounded-md">
             <h1 className="md:text-5xl text-2xl lg:text-7xl font-bold text-center text-white relative z-20 mb-4">
               Write and Publish Your Book
             </h1>
             {/* Increase the height of the sparkles container */}
-            <div className="w-full h-96 relative">
+            <div className="w-full h-[32rem] relative">
               <SparklesCore
                 background="transparent"
                 characterColor="#0CFF0C"

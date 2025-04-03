@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useEffect, useState, useRef, useId } from "react";
 import { cn } from "@/lib/utils";
@@ -119,6 +120,9 @@ export const SparklesCore = (props: MatrixProps) => {
       arrivalTime: number;
     }[] = [];
     
+    // Define bottomY here so it's accessible throughout the effect scope
+    const bottomY = dimensions.height - 80; // Position for first line
+    
     const initializeWordChars = () => {
       wordChars.length = 0; // Clear previous characters
       setDisplayedQuote(false);
@@ -131,7 +135,6 @@ export const SparklesCore = (props: MatrixProps) => {
       const maxWidth = dimensions.width - 40; // Leave margin on both sides
       const lineHeight = landedFontSize * 1.5; // Space between lines
       const maxLines = 2; // Allow up to 2 lines for the quote
-      const bottomY = dimensions.height - 80; // Position for first line
       
       // Calculate word wrapping
       const wrappedLines: string[] = [];
