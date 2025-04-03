@@ -47,6 +47,9 @@ export const SparklesCore = (props: MatrixProps) => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const controls = useAnimation();
   const generatedId = useId();
+  const [currentQuote, setCurrentQuote] = useState("");
+  const [displayedQuote, setDisplayedQuote] = useState(false);
+  const quoteTimerRef = useRef<number | null>(null);
 
   // Set up the canvas when component mounts
   useEffect(() => {
@@ -75,6 +78,9 @@ export const SparklesCore = (props: MatrixProps) => {
     
     return () => {
       window.removeEventListener('resize', updateDimensions);
+      if (quoteTimerRef.current) {
+        clearTimeout(quoteTimerRef.current);
+      }
     };
   }, [controls]);
 
@@ -86,66 +92,128 @@ export const SparklesCore = (props: MatrixProps) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    // Split quotes into words
-    const words: string[] = [];
-    quotes.forEach(quote => {
-      quote.split(' ').forEach(word => {
-        if (word.trim()) words.push(word.trim());
+    // Choose a random quote to display
+    const selectQuote = () => {
+      const quote = quotes[Math.floor(Math.random() * quotes.length)];
+      setCurrentQuote(quote);
+      return quote;
+    };
+    
+    // Initial quote
+    const activeQuote = selectQuote();
+    
+    // Split quotes into words and characters
+    const wordChars: { char: string; x: number; y: number; speed: number; jumble: boolean; finalX: number; finalY: number; }[] = [];
+    
+    const initializeWordChars = () => {
+      wordChars.length = 0; // Clear previous characters
+      setDisplayedQuote(false);
+      
+      let startY = -100;
+      const charsPerRow = Math.floor(dimensions.width / (fontSize * 0.7));
+      const centerX = dimensions.width / 2;
+      const bottomY = dimensions.height - 50;
+      
+      // Create characters for the quote
+      activeQuote.split('').forEach((char, index) => {
+        // Random starting position at the top
+        const startX = Math.random() * dimensions.width;
+        
+        // Calculate final position (assembled quote at bottom)
+        const totalWidth = activeQuote.length * (fontSize * 0.7);
+        const startOffset = centerX - (totalWidth / 2);
+        const finalX = startOffset + (index * fontSize * 0.7);
+        
+        wordChars.push({
+          char,
+          x: startX,
+          y: startY - (Math.random() * 100), // Stagger the start
+          speed: 0.5 + (Math.random() * speed),
+          jumble: true,
+          finalX,
+          finalY: bottomY
+        });
       });
-    });
+    };
     
-    const columnWidth = fontSize * 6; // Width for each column (wider to fit words)
-    const columnCount = Math.floor(dimensions.width / columnWidth);
-    const drops: number[] = [];
-    const currentWords: string[] = [];
+    // Initialize the animation
+    initializeWordChars();
     
-    // Initialize drops and words
-    for (let i = 0; i < columnCount; i++) {
-      drops[i] = Math.random() * -100;
-      currentWords[i] = words[Math.floor(Math.random() * words.length)];
-    }
+    // Function to restart animation with a new quote
+    const restartAnimation = () => {
+      if (quoteTimerRef.current) {
+        clearTimeout(quoteTimerRef.current);
+      }
+      initializeWordChars();
+    };
     
     const draw = () => {
       // Semi-transparent black to create fade effect
-      ctx.fillStyle = `rgba(0, 0, 0, ${0.05 / speed})`;
+      ctx.fillStyle = `rgba(0, 0, 0, ${0.1 / speed})`;
       ctx.fillRect(0, 0, dimensions.width, dimensions.height);
       
       // Text color and font
       ctx.fillStyle = characterColor;
       ctx.font = `${fontSize}px monospace`;
       
-      // Loop through drops
-      for (let i = 0; i < drops.length; i++) {
-        // Get current word for this column
-        const word = currentWords[i];
+      let allAssembled = true;
+      
+      // Loop through all characters
+      wordChars.forEach(charObj => {
+        // Generate a jumbled character if still falling
+        const displayChar = charObj.jumble ? 
+          "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz?!.,"[Math.floor(Math.random() * 56)] : 
+          charObj.char;
         
-        // x coordinate of the drop, y coordinate is drops[i]
-        const x = i * columnWidth;
-        const y = drops[i] * fontSize;
+        // Draw the character
+        ctx.fillText(displayChar, charObj.x, charObj.y);
         
-        // Draw the word
-        ctx.fillText(word, x, y);
-        
-        // Send the drop back to the top randomly after it has crossed the screen
-        // Adding randomness to the reset creates a more varied effect
-        if (y > dimensions.height && Math.random() > 0.975) {
-          drops[i] = 0;
-          // Change the word for variety
-          currentWords[i] = words[Math.floor(Math.random() * words.length)];
+        // If character is not at final position, update position
+        if (charObj.y < charObj.finalY || charObj.x !== charObj.finalX) {
+          allAssembled = false;
+          
+          // Move toward final position
+          if (charObj.y < charObj.finalY) {
+            charObj.y += charObj.speed;
+          }
+          
+          // When near the bottom, start moving horizontally to final position
+          if (charObj.y > dimensions.height * 0.7) {
+            const distX = charObj.finalX - charObj.x;
+            charObj.x += distX * 0.05; // Gradual horizontal movement
+            
+            // When close enough to final position, stop jumbling
+            if (Math.abs(distX) < 5 && Math.abs(charObj.finalY - charObj.y) < 20) {
+              charObj.jumble = false;
+            }
+          }
+        } else {
+          charObj.jumble = false; // Stop jumbling when at final position
         }
+      });
+      
+      // If all characters have assembled and we haven't set the timer yet
+      if (allAssembled && !displayedQuote) {
+        setDisplayedQuote(true);
         
-        // Increment y coordinate for the drop
-        drops[i] += (speed * 0.1);
+        // Set timer to restart animation after 5 seconds of displaying the quote
+        quoteTimerRef.current = window.setTimeout(() => {
+          selectQuote(); // Select a new quote
+          restartAnimation();
+        }, 5000);
       }
     };
     
-    // Set up animation loop with proper density
-    const interval = setInterval(draw, 33 / (speed * 0.5)); // ~30 fps adjusted by speed
+    // Set up animation loop
+    const interval = setInterval(draw, 33); // ~30 fps
     
     return () => {
       clearInterval(interval);
+      if (quoteTimerRef.current) {
+        clearTimeout(quoteTimerRef.current);
+      }
     };
-  }, [dimensions, fontSize, characterColor, speed, density, quotes]);
+  }, [dimensions, fontSize, characterColor, speed, quotes, currentQuote]);
 
   return (
     <motion.div 
@@ -162,4 +230,3 @@ export const SparklesCore = (props: MatrixProps) => {
     </motion.div>
   );
 };
-
