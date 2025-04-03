@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useEffect, useState, useRef, useId } from "react";
 import { cn } from "@/lib/utils";
@@ -180,6 +179,7 @@ export const SparklesCore = (props: MatrixProps) => {
         const startOffset = (dimensions.width - totalWidth) / 2;
         const lineY = bottomY + (lineIndex * lineHeight);
         
+        // Process each character
         line.split('').forEach((char, charIndex) => {
           // Random starting position at the top
           const startX = Math.random() * dimensions.width;
@@ -256,42 +256,37 @@ export const SparklesCore = (props: MatrixProps) => {
           }
           
           // When near the bottom, start moving horizontally to final position
-          if (charObj.y > dimensions.height * 0.7) {
+          if (charObj.y > dimensions.height * 0.65) { // Changed from 0.7 to 0.65 to start horizontal movement earlier
             const distX = charObj.finalX - charObj.x;
             charObj.x += distX * 0.05; // Gradual horizontal movement
             
             // When close enough to final position, stop jumbling
-            if (Math.abs(distX) < 5 && Math.abs(charObj.finalY - charObj.y) < 20) {
+            if (Math.abs(distX) < 10 && Math.abs(charObj.finalY - charObj.y) < 30) {
               charObj.jumble = false;
             }
           }
         } else {
-          charObj.jumble = false; // Stop jumbling when at final position
+          // Make sure it stops jumbling when reached final position
+          charObj.jumble = false;
         }
       });
+      
+      // Draw a semi-transparent background for the final assembled quote
+      if (wordChars.some(char => !char.jumble)) {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+        ctx.fillRect(0, dimensions.height - 70, dimensions.width, 70);
+      }
       
       // If all characters have assembled and we haven't set the timer yet
       if (allAssembled && !displayedQuote) {
         setDisplayedQuote(true);
         
-        // Clear the entire bottom area to remove any overlapping elements
-        ctx.clearRect(0, dimensions.height - 60, dimensions.width, 60);
-        
-        // Add a more visible background behind the quote
-        ctx.fillStyle = "rgba(0, 0, 0, 1)"; // Fully opaque black
-        ctx.fillRect(
-          0,  // Start at the left edge
-          dimensions.height - 60, // Positioned higher to accommodate multiple lines
-          dimensions.width,  // Cover full width
-          60  // Taller background to fit multiple lines
-        );
-        
-        // Redraw the characters with enhanced visibility
+        // Redraw all finalized characters with enhanced visibility
         wordChars.forEach(charObj => {
           ctx.fillStyle = "#FFFFFF"; // Bright white for final assembled quote
           ctx.font = `bold ${Math.max(fontSize * 1.25, 16)}px monospace`;
-          ctx.shadowColor = "#00ff00"; // Green glow
-          ctx.shadowBlur = 8; // Maintained glow effect
+          ctx.shadowColor = characterColor;
+          ctx.shadowBlur = 8; // Glow effect
           ctx.fillText(charObj.char, charObj.finalX, charObj.finalY);
         });
         ctx.shadowBlur = 0;
