@@ -12,6 +12,7 @@ type MatrixProps = {
   fontSize?: number;
   speed?: number;
   density?: number;
+  quotes?: string[];
 };
 
 export const SparklesCore = (props: MatrixProps) => {
@@ -23,6 +24,23 @@ export const SparklesCore = (props: MatrixProps) => {
     fontSize = 14,
     speed = 1,
     density = 100,
+    quotes = [
+      "It was the best of times, it was the worst of times",
+      "All that we see or seem is but a dream within a dream",
+      "Two roads diverged in a wood, and I took the one less traveled by",
+      "Be the change you wish to see in the world",
+      "Not all those who wander are lost",
+      "To be or not to be, that is the question",
+      "I have a dream that one day this nation will rise up",
+      "It is a truth universally acknowledged",
+      "Call me Ishmael",
+      "It was a pleasure to burn",
+      "The only way out of the labyrinth of suffering is to forgive",
+      "We accept the love we think we deserve",
+      "And so we beat on, boats against the current",
+      "It does not do to dwell on dreams and forget to live",
+      "So we beat on, boats against the current",
+    ],
   } = props;
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -60,7 +78,7 @@ export const SparklesCore = (props: MatrixProps) => {
     };
   }, [controls]);
 
-  // Matrix rain animation effect
+  // Matrix rain animation effect with quotes
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || dimensions.width === 0) return;
@@ -68,16 +86,24 @@ export const SparklesCore = (props: MatrixProps) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    const columnCount = Math.floor(dimensions.width / fontSize);
-    const drops: number[] = [];
+    // Split quotes into words
+    const words: string[] = [];
+    quotes.forEach(quote => {
+      quote.split(' ').forEach(word => {
+        if (word.trim()) words.push(word.trim());
+      });
+    });
     
-    // Initialize drops
+    const columnWidth = fontSize * 6; // Width for each column (wider to fit words)
+    const columnCount = Math.floor(dimensions.width / columnWidth);
+    const drops: number[] = [];
+    const currentWords: string[] = [];
+    
+    // Initialize drops and words
     for (let i = 0; i < columnCount; i++) {
       drops[i] = Math.random() * -100;
+      currentWords[i] = words[Math.floor(Math.random() * words.length)];
     }
-    
-    // Characters to display (including Asian characters for authentic Matrix look)
-    const matrixChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%・ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ';
     
     const draw = () => {
       // Semi-transparent black to create fade effect
@@ -90,20 +116,22 @@ export const SparklesCore = (props: MatrixProps) => {
       
       // Loop through drops
       for (let i = 0; i < drops.length; i++) {
-        // Random character
-        const text = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+        // Get current word for this column
+        const word = currentWords[i];
         
         // x coordinate of the drop, y coordinate is drops[i]
-        const x = i * fontSize;
+        const x = i * columnWidth;
         const y = drops[i] * fontSize;
         
-        // Draw the character
-        ctx.fillText(text, x, y);
+        // Draw the word
+        ctx.fillText(word, x, y);
         
         // Send the drop back to the top randomly after it has crossed the screen
         // Adding randomness to the reset creates a more varied effect
         if (y > dimensions.height && Math.random() > 0.975) {
           drops[i] = 0;
+          // Change the word for variety
+          currentWords[i] = words[Math.floor(Math.random() * words.length)];
         }
         
         // Increment y coordinate for the drop
@@ -117,7 +145,7 @@ export const SparklesCore = (props: MatrixProps) => {
     return () => {
       clearInterval(interval);
     };
-  }, [dimensions, fontSize, characterColor, speed, density]);
+  }, [dimensions, fontSize, characterColor, speed, density, quotes]);
 
   return (
     <motion.div 
@@ -134,3 +162,4 @@ export const SparklesCore = (props: MatrixProps) => {
     </motion.div>
   );
 };
+
