@@ -113,9 +113,9 @@ export const SparklesCore = (props: MatrixProps) => {
       wordChars.length = 0; // Clear previous characters
       setDisplayedQuote(false);
       
-      let startY = -100;
+      const largerFontSize = Math.max(fontSize * 1.5, 24); // Ensure quote is significantly larger and minimum size of 24px
+      const bottomY = dimensions.height - largerFontSize - 5; // Position just above the bottom
       const centerX = dimensions.width / 2;
-      const bottomY = dimensions.height - fontSize;
       
       // Create characters for the quote
       activeQuote.split('').forEach((char, index) => {
@@ -123,14 +123,14 @@ export const SparklesCore = (props: MatrixProps) => {
         const startX = Math.random() * dimensions.width;
         
         // Calculate final position (assembled quote at bottom)
-        const totalWidth = activeQuote.length * (fontSize * 0.6);
+        const totalWidth = activeQuote.length * (largerFontSize * 0.6);
         const startOffset = centerX - (totalWidth / 2);
-        const finalX = startOffset + (index * fontSize * 0.6);
+        const finalX = startOffset + (index * largerFontSize * 0.6);
         
         wordChars.push({
           char,
           x: startX,
-          y: startY - (Math.random() * 100), // Stagger the start
+          y: -100 - (Math.random() * 100), // Stagger the start
           speed: 0.5 + (Math.random() * speed),
           jumble: true,
           finalX,
@@ -170,7 +170,7 @@ export const SparklesCore = (props: MatrixProps) => {
         if (!charObj.jumble && Math.abs(charObj.y - charObj.finalY) < 5) {
           // Assembled characters are brighter and clearer
           ctx.fillStyle = "#FFFFFF"; // Bright white for assembled characters
-          ctx.font = `bold ${fontSize}px monospace`;
+          ctx.font = `bold ${Math.max(fontSize * 1.5, 24)}px monospace`; // Larger font for assembled quote
           ctx.shadowColor = characterColor;
           ctx.shadowBlur = 4;
         } else {
@@ -214,28 +214,33 @@ export const SparklesCore = (props: MatrixProps) => {
       if (allAssembled && !displayedQuote) {
         setDisplayedQuote(true);
         
-        // Add an overlay behind the final quote to make it more visible
-        const totalWidth = activeQuote.length * (fontSize * 0.6);
+        // Clear any lingering dark overlay at the very bottom
+        ctx.clearRect(0, dimensions.height - 60, dimensions.width, 60);
+        
+        const largerFontSize = Math.max(fontSize * 1.5, 24);
+        
+        // Add a clear, full-width background behind the final quote to make it more visible and ensure nothing covers it
+        const totalWidth = activeQuote.length * (largerFontSize * 0.6);
         const centerX = dimensions.width / 2;
         const startOffset = centerX - (totalWidth / 2);
-        const lineHeight = fontSize * 1.2;
-        const bottomY = dimensions.height - fontSize;
+        const lineHeight = largerFontSize * 1.2;
+        const bottomY = dimensions.height - largerFontSize - 5;
         
-        // Semi-transparent background behind the quote
-        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+        // Full-width background behind the quote
+        ctx.fillStyle = "rgba(0, 0, 0, 0.9)";
         ctx.fillRect(
-          startOffset - 10, 
+          0,  // Start at the left edge
           bottomY - lineHeight + 5, 
-          totalWidth + 20, 
-          lineHeight
+          dimensions.width,  // Cover full width
+          lineHeight + 10
         );
         
         // Redraw the characters with enhanced visibility
         wordChars.forEach(charObj => {
           ctx.fillStyle = "#FFFFFF"; // Bright white for final assembled quote
-          ctx.font = `bold ${fontSize}px monospace`;
+          ctx.font = `bold ${largerFontSize}px monospace`; // Larger font for better visibility
           ctx.shadowColor = "#00ff00"; // Green glow
-          ctx.shadowBlur = 3;
+          ctx.shadowBlur = 5;
           ctx.fillText(charObj.char, charObj.finalX, charObj.finalY);
         });
         ctx.shadowBlur = 0;

@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { SparklesCore } from "@/components/ui/sparkles";
@@ -46,8 +47,8 @@ export const Hero = () => {
                 className="w-full h-full"
               />
 
-              {/* Very subtle radial gradient to keep characters visible through the whole fall */}
-              <div className="absolute inset-0 w-full h-full bg-black [mask-image:radial-gradient(350px_50px_at_top,transparent_50%,white)]"></div>
+              {/* Remove the masking gradient that was covering quotes */}
+              {/* <div className="absolute inset-0 w-full h-full bg-black [mask-image:radial-gradient(350px_50px_at_top,transparent_50%,white)]"></div> */}
             </div>
           </div>
           <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8 animate-fade-in animate-fade-in-delay-2">
