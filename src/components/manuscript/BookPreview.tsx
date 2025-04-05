@@ -52,9 +52,9 @@ const BookPreview = () => {
           
         if (bookError) throw bookError;
         
-        // Fetch chapters
+        // Fetch chapters - using manuscript_chapters instead of chapters
         const { data: chaptersData, error: chaptersError } = await supabase
-          .from('chapters')
+          .from('manuscript_chapters')
           .select('*')
           .eq('book_id', bookId)
           .order('sort_order', { ascending: true });
@@ -328,7 +328,7 @@ const BookPreview = () => {
                     <ul className="space-y-2">
                       {chapters.map((chapter, index) => (
                         <li key={chapter.id} className="flex justify-between">
-                          <span>{chapter.title || `Chapter ${index + 1}`}</span>
+                          <span>{chapter.chapter_id || `Chapter ${index + 1}`}</span>
                           <span className="text-gray-500">{index + 1}</span>
                         </li>
                       ))}

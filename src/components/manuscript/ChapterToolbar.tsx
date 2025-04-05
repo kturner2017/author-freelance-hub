@@ -124,7 +124,7 @@ const ChapterToolbar = ({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button 
-              variant="primary" 
+              variant="default" 
               size="sm" 
               onClick={onSave}
               className="bg-[#0F172A] hover:bg-[#1E293B] text-white"
@@ -139,7 +139,7 @@ const ChapterToolbar = ({
         </Tooltip>
       </TooltipProvider>
       
-      <WordCountBadge wordCount={totalWordCount} />
+      <WordCountBadge totalWordCount={totalWordCount} />
     </div>
   );
 };
