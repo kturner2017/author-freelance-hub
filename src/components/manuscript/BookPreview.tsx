@@ -1,9 +1,19 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ArrowLeft, BookOpen, Download, Files, Settings, ChevronLeft, ChevronRight } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  BookOpen, 
+  Download, 
+  Files, 
+  Settings, 
+  ChevronLeft, 
+  ChevronRight,
+  Upload,
+  Image as ImageIcon
+} from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -15,6 +25,13 @@ import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog';
 
 const BookPreview = () => {
   const { bookId } = useParams();
@@ -39,6 +56,11 @@ const BookPreview = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [frontMatterContents, setFrontMatterContents] = useState<any[]>([]);
+  const [coverImageUploadOpen, setCoverImageUploadOpen] = useState(false);
+  const [uploadedCoverImage, setUploadedCoverImage] = useState<File | null>(null);
+  const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetchBookData = async () => {
@@ -77,6 +99,11 @@ const BookPreview = () => {
         setBookData(bookData);
         setChapters(chaptersData || []);
         setFrontMatterContents(frontMatterData || []);
+        
+        // If the book has a cover image, set it as the preview
+        if (bookData?.cover_image_url) {
+          setCoverImagePreview(bookData.cover_image_url);
+        }
         
         // Calculate total pages based on content
         const estimatedPages = Math.max(1, Math.ceil((chaptersData?.length || 0) * 2.5));
@@ -156,6 +183,94 @@ const BookPreview = () => {
     }
   };
 
+  const handleFileSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    // Check if file is an image
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please select an image file for the cover.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Cover image must be less than 5MB.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setUploadedCoverImage(file);
+    
+    // Create preview URL
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setCoverImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleUploadCoverImage = async () => {
+    if (!uploadedCoverImage || !bookId) return;
+    
+    try {
+      setIsUploading(true);
+      
+      // Create a unique filename
+      const fileExt = uploadedCoverImage.name.split('.').pop();
+      const fileName = `cover_${bookId}_${Date.now()}.${fileExt}`;
+      const filePath = `book_covers/${fileName}`;
+      
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('book_covers')
+        .upload(filePath, uploadedCoverImage);
+        
+      if (uploadError) throw uploadError;
+      
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('book_covers')
+        .getPublicUrl(filePath);
+      
+      // Update the book record with the cover image URL
+      const { error: updateError } = await supabase
+        .from('books')
+        .update({ cover_image_url: publicUrl })
+        .eq('id', bookId);
+        
+      if (updateError) throw updateError;
+      
+      toast({
+        title: "Cover uploaded",
+        description: "Your book cover has been updated successfully.",
+      });
+      
+      // Close the dialog
+      setCoverImageUploadOpen(false);
+    } catch (error) {
+      console.error('Error uploading cover image:', error);
+      toast({
+        title: "Upload failed",
+        description: "There was a problem uploading your cover image.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
   // Function to calculate what content should be shown on the current page
   const getCurrentPageContent = () => {
     // Cover page
@@ -227,9 +342,19 @@ const BookPreview = () => {
       case 'cover':
         return (
           <div className="text-center flex flex-col justify-center h-full">
-            <h1 className="text-3xl font-bold mb-4">{bookData?.title || 'Book Title'}</h1>
-            <h2 className="text-xl mb-2">by</h2>
-            <h3 className="text-2xl">{bookData?.author || 'Author Name'}</h3>
+            {coverImagePreview ? (
+              <img 
+                src={coverImagePreview} 
+                alt={bookData?.title || 'Book Cover'} 
+                className="max-h-full max-w-full mx-auto object-contain" 
+              />
+            ) : (
+              <>
+                <h1 className="text-3xl font-bold mb-4">{bookData?.title || 'Book Title'}</h1>
+                <h2 className="text-xl mb-2">by</h2>
+                <h3 className="text-2xl">{bookData?.author || 'Author Name'}</h3>
+              </>
+            )}
           </div>
         );
         
@@ -300,6 +425,71 @@ const BookPreview = () => {
           </Button>
           <h1 className="text-xl font-semibold">Book Preview</h1>
           <div className="ml-auto flex items-center gap-3">
+            <Dialog open={coverImageUploadOpen} onOpenChange={setCoverImageUploadOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <ImageIcon className="h-4 w-4 mr-2" />
+                  {coverImagePreview ? 'Change Cover' : 'Add Cover'}
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{coverImagePreview ? 'Update Book Cover' : 'Add Book Cover'}</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-3">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    onChange={handleFileSelection}
+                    accept="image/*"
+                  />
+                  
+                  {coverImagePreview ? (
+                    <div className="relative mx-auto border rounded-md overflow-hidden" style={{ maxWidth: '200px' }}>
+                      <img 
+                        src={coverImagePreview} 
+                        alt="Cover preview" 
+                        className="w-full h-auto"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="absolute top-2 right-2 bg-white/80 hover:bg-white"
+                        onClick={triggerFileInput}
+                      >
+                        Change
+                      </Button>
+                    </div>
+                  ) : (
+                    <div 
+                      className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:bg-gray-50"
+                      onClick={triggerFileInput}
+                    >
+                      <Upload className="mx-auto h-10 w-10 text-gray-400 mb-3" />
+                      <p className="text-sm text-gray-500 mb-1">Click to upload a cover image</p>
+                      <p className="text-xs text-gray-400">PNG, JPG, GIF up to 5MB</p>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-end gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setCoverImageUploadOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleUploadCoverImage}
+                      disabled={!uploadedCoverImage || isUploading}
+                    >
+                      {isUploading ? 'Uploading...' : 'Save Cover'}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+            
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline">
