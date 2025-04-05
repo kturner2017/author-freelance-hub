@@ -24,6 +24,7 @@ const Navigation = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setIsAuthenticated(!!session);
+      setIsLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -46,6 +47,7 @@ const Navigation = () => {
     }
   };
 
+  // Updated the navigation items with correct URLs
   const mainNavItems = [
     { name: 'Editor', url: '/editor', icon: BookOpen },
     { name: 'For Authors', url: '/for-authors', icon: BookOpen },

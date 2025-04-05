@@ -7,6 +7,8 @@ import ChaptersEditor from '@/components/manuscript/ChaptersEditor';
 import BoxesEditor from '@/components/manuscript/BoxesEditor';
 import BooksDashboard from '@/components/BooksDashboard';
 import BookPreview from '@/components/manuscript/BookPreview';
+import ForAuthors from '@/pages/ForAuthors';
+import PublishingSupport from '@/pages/PublishingSupport';
 
 export const publishingRoutes = (
   <>
@@ -18,6 +20,9 @@ export const publishingRoutes = (
     <Route path="/editor/manuscript/:bookId/chapters/:chapterId/full-view" element={<ProtectedRoute><ChaptersEditor /></ProtectedRoute>} />
     <Route path="/editor/manuscript/:bookId/boxes" element={<ProtectedRoute><BoxesEditor /></ProtectedRoute>} />
     <Route path="/editor/manuscript/:bookId/book-preview" element={<ProtectedRoute><BookPreview /></ProtectedRoute>} />
+    
+    {/* Add the missing routes for "For Authors" and "Publishing Support" */}
+    <Route path="/for-authors" element={<ForAuthors />} />
+    <Route path="/publishing-support" element={<PublishingSupport />} />
   </>
 );
-

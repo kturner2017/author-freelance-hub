@@ -22,8 +22,12 @@ export function TubelightNavbar({ items, className }: NavBarProps) {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    // Check if any item URL is part of the current path
-    const currentItem = items.find(item => location.pathname.startsWith(item.url));
+    // Check if any item URL matches exactly or is part of the current path
+    const currentItem = items.find(item => 
+      location.pathname === item.url || 
+      (item.url !== '/' && location.pathname.startsWith(item.url))
+    );
+    
     if (currentItem) {
       setActiveTab(currentItem.name);
     } else {
