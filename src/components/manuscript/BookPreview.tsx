@@ -1,9 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ArrowLeft, BookOpen, Download, Files, Settings } from 'lucide-react';
+import { ArrowLeft, BookOpen, Download, Files, Settings, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -13,6 +13,8 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/components/ui/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card } from '@/components/ui/card';
 
 const BookPreview = () => {
   const { bookId } = useParams();
@@ -35,8 +37,10 @@ const BookPreview = () => {
   const [includePageNumbers, setIncludePageNumbers] = useState(true);
   const [includeTableOfContents, setIncludeTableOfContents] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [frontMatterContents, setFrontMatterContents] = useState<any[]>([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchBookData = async () => {
       if (!bookId) return;
       
@@ -61,8 +65,22 @@ const BookPreview = () => {
           
         if (chaptersError) throw chaptersError;
         
+        // Fetch front matter content
+        const { data: frontMatterData, error: frontMatterError } = await supabase
+          .from('front_matter_content')
+          .select('*')
+          .eq('book_id', bookId)
+          .order('created_at', { ascending: true });
+          
+        if (frontMatterError) throw frontMatterError;
+        
         setBookData(bookData);
         setChapters(chaptersData || []);
+        setFrontMatterContents(frontMatterData || []);
+        
+        // Calculate total pages based on content
+        const estimatedPages = Math.max(1, Math.ceil((chaptersData?.length || 0) * 2.5));
+        setTotalPages(estimatedPages);
       } catch (error) {
         console.error('Error loading book preview data:', error);
         toast({
@@ -123,6 +141,153 @@ const BookPreview = () => {
       case '5x8': return '8in';
       case 'a4': return '297mm';
       default: return '9in';
+    }
+  };
+
+  const nextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  // Function to calculate what content should be shown on the current page
+  const getCurrentPageContent = () => {
+    // Cover page
+    if (currentPage === 1) {
+      return {
+        type: 'cover',
+        content: null
+      };
+    }
+    
+    // Copyright page
+    if (currentPage === 2) {
+      return {
+        type: 'copyright',
+        content: null
+      };
+    }
+    
+    // Table of contents
+    if (currentPage === 3 && includeTableOfContents) {
+      return {
+        type: 'toc',
+        content: null
+      };
+    }
+    
+    // Calculate offset for frontmatter and chapters
+    const tocOffset = includeTableOfContents ? 1 : 0;
+    const pageOffset = 2 + tocOffset; // Cover + Copyright + TOC (if included)
+    
+    // Front matter pages
+    if (frontMatterContents.length > 0 && currentPage <= pageOffset + frontMatterContents.length) {
+      const frontMatterIndex = currentPage - pageOffset - 1;
+      return {
+        type: 'frontmatter',
+        content: frontMatterContents[frontMatterIndex]
+      };
+    }
+    
+    // Calculate further offset for chapter pages
+    const frontMatterOffset = frontMatterContents.length;
+    const chapterPageStart = pageOffset + frontMatterOffset + 1;
+    
+    // Chapter content (assuming each chapter starts on a new page)
+    if (chapters.length > 0 && currentPage >= chapterPageStart) {
+      const chapterIndex = Math.floor((currentPage - chapterPageStart) / 2);
+      
+      if (chapterIndex < chapters.length) {
+        return {
+          type: 'chapter',
+          content: chapters[chapterIndex],
+          isChapterStart: (currentPage - chapterPageStart) % 2 === 0
+        };
+      }
+    }
+    
+    // If we've gone past all content
+    return {
+      type: 'blank',
+      content: null
+    };
+  };
+
+  const pageContent = getCurrentPageContent();
+
+  // Function to render page content based on type
+  const renderPageContent = () => {
+    switch (pageContent.type) {
+      case 'cover':
+        return (
+          <div className="text-center flex flex-col justify-center h-full">
+            <h1 className="text-3xl font-bold mb-4">{bookData?.title || 'Book Title'}</h1>
+            <h2 className="text-xl mb-2">by</h2>
+            <h3 className="text-2xl">{bookData?.author || 'Author Name'}</h3>
+          </div>
+        );
+        
+      case 'copyright':
+        return (
+          <div className="text-sm h-full flex flex-col justify-center">
+            <p className="mb-4">Copyright © {new Date().getFullYear()} {bookData?.author || 'Author Name'}</p>
+            <p className="mb-4">All rights reserved.</p>
+            <p>No part of this publication may be reproduced, distributed, or transmitted in any form or by any means, including photocopying, recording, or other electronic or mechanical methods, without the prior written permission of the publisher, except in the case of brief quotations embodied in critical reviews and certain other noncommercial uses permitted by copyright law.</p>
+          </div>
+        );
+        
+      case 'toc':
+        return (
+          <div className="h-full">
+            <h2 className="text-xl font-bold mb-4 text-center">Table of Contents</h2>
+            <ul className="space-y-2">
+              {frontMatterContents.map((item, index) => (
+                <li key={`fm-${item.id}`} className="flex justify-between">
+                  <span>{item.title}</span>
+                  <span className="text-gray-500">{index + 4}</span>
+                </li>
+              ))}
+              {chapters.map((chapter, index) => (
+                <li key={chapter.id} className="flex justify-between">
+                  <span>{chapter.chapter_id || `Chapter ${index + 1}`}</span>
+                  <span className="text-gray-500">{frontMatterContents.length + index + 4}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+        
+      case 'frontmatter':
+        return (
+          <div className="h-full">
+            <h2 className="text-xl font-bold mb-4 text-center">{pageContent.content?.title}</h2>
+            <div dangerouslySetInnerHTML={{ __html: pageContent.content?.content || '' }} />
+          </div>
+        );
+        
+      case 'chapter':
+        return (
+          <div className="h-full">
+            {pageContent.isChapterStart && (
+              <h2 className="text-xl font-bold mb-4 text-center">
+                {pageContent.content?.chapter_id || `Chapter ${chapters.indexOf(pageContent.content) + 1}`}
+              </h2>
+            )}
+            <div dangerouslySetInnerHTML={{ __html: pageContent.content?.content || '' }} />
+          </div>
+        );
+        
+      case 'blank':
+        return <div className="h-full"></div>;
+        
+      default:
+        return <div className="h-full"></div>;
     }
   };
 
@@ -292,57 +457,36 @@ const BookPreview = () => {
       </div>
       
       <ScrollArea className="h-[calc(100vh-4rem)] py-8">
-        <div className="max-w-7xl mx-auto px-4 flex justify-center">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col items-center">
           {isLoading ? (
             <div className="flex items-center justify-center h-96">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
             </div>
           ) : (
-            <div className={viewMode === 'spread' ? 'flex gap-4' : ''}>
-              <div 
-                className="bg-white shadow-lg border relative mx-auto"
-                style={{
-                  width: getPageWidth(),
-                  height: getPageHeight(),
-                  padding: `${margins.top}in ${margins.right}in ${margins.bottom}in ${margins.left}in`,
-                  fontFamily,
-                  fontSize: `${fontSize}pt`,
-                  lineHeight: lineHeight,
-                }}
-              >
-                {includePageNumbers && (
-                  <div className="absolute bottom-2 text-center w-full left-0 text-gray-500 text-sm">
-                    {currentPage}
-                  </div>
-                )}
-                
-                <div className="text-center mb-16">
-                  <h1 className="text-3xl font-bold mb-4">{bookData?.title || 'Book Title'}</h1>
-                  <h2 className="text-xl mb-2">by</h2>
-                  <h3 className="text-2xl">{bookData?.author || 'Author Name'}</h3>
+            <>
+              <div className="flex justify-between items-center w-full max-w-4xl mb-4">
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  onClick={prevPage} 
+                  disabled={currentPage <= 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div className="text-sm">
+                  Page {currentPage} of {totalPages}
                 </div>
-                
-                {includeTableOfContents && (
-                  <div className="mb-16">
-                    <h2 className="text-xl font-bold mb-4 text-center">Table of Contents</h2>
-                    <ul className="space-y-2">
-                      {chapters.map((chapter, index) => (
-                        <li key={chapter.id} className="flex justify-between">
-                          <span>{chapter.chapter_id || `Chapter ${index + 1}`}</span>
-                          <span className="text-gray-500">{index + 1}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                
-                <div>
-                  {/* This would render the actual chapter content */}
-                  <p>First chapter content would appear here...</p>
-                </div>
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  onClick={nextPage} 
+                  disabled={currentPage >= totalPages}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
               </div>
               
-              {viewMode === 'spread' && (
+              <div className={viewMode === 'spread' ? 'flex gap-4' : ''}>
                 <div 
                   className="bg-white shadow-lg border relative mx-auto"
                   style={{
@@ -354,18 +498,44 @@ const BookPreview = () => {
                     lineHeight: lineHeight,
                   }}
                 >
-                  {includePageNumbers && (
+                  {includePageNumbers && currentPage > 2 && (
                     <div className="absolute bottom-2 text-center w-full left-0 text-gray-500 text-sm">
-                      {currentPage + 1}
+                      {currentPage}
                     </div>
                   )}
                   
-                  <div>
-                    <p>Continued content would appear here...</p>
-                  </div>
+                  {renderPageContent()}
                 </div>
-              )}
-            </div>
+                
+                {viewMode === 'spread' && (
+                  <div 
+                    className="bg-white shadow-lg border relative mx-auto"
+                    style={{
+                      width: getPageWidth(),
+                      height: getPageHeight(),
+                      padding: `${margins.top}in ${margins.right}in ${margins.bottom}in ${margins.left}in`,
+                      fontFamily,
+                      fontSize: `${fontSize}pt`,
+                      lineHeight: lineHeight,
+                    }}
+                  >
+                    {includePageNumbers && currentPage > 2 && (
+                      <div className="absolute bottom-2 text-center w-full left-0 text-gray-500 text-sm">
+                        {currentPage + 1}
+                      </div>
+                    )}
+                    
+                    <div className="h-full flex items-center justify-center text-gray-300">
+                      {currentPage + 1 <= totalPages ? (
+                        <div>Next page content</div>
+                      ) : (
+                        <div>End of book</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
       </ScrollArea>
