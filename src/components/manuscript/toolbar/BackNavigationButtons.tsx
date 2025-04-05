@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '../../ui/button';
 import { ArrowLeft, Home } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../ui/tooltip';
 
 const BackNavigationButtons = () => {
@@ -16,15 +16,15 @@ const BackNavigationButtons = () => {
             <Button 
               variant="ghost" 
               size="icon"
-              onClick={() => navigate('/editor/books')}
+              onClick={() => navigate(-1)} // Go back one step in history
               className="hover:bg-gray-100 text-[#0F172A]"
-              aria-label="Back to editor"
+              aria-label="Back"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Back to Books</p>
+            <p>Back</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -35,11 +35,13 @@ const BackNavigationButtons = () => {
             <Button 
               variant="ghost" 
               size="icon"
-              onClick={() => navigate('/')}
+              asChild
               className="hover:bg-gray-100 text-[#0F172A]"
               aria-label="Home"
             >
-              <Home className="h-5 w-5" />
+              <Link to="/">
+                <Home className="h-5 w-5" />
+              </Link>
             </Button>
           </TooltipTrigger>
           <TooltipContent>

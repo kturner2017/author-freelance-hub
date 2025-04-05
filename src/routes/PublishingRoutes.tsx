@@ -13,7 +13,11 @@ export const publishingRoutes = (
     <Route path="/editor" element={<ProtectedRoute><Editor /></ProtectedRoute>} />
     <Route path="/editor/books" element={<ProtectedRoute><BooksDashboard /></ProtectedRoute>} />
     <Route path="/editor/manuscript/:bookId/chapters" element={<ProtectedRoute><ChaptersEditor /></ProtectedRoute>} />
+    <Route path="/editor/manuscript/:bookId/chapters/:chapterId" element={<ProtectedRoute><ChaptersEditor /></ProtectedRoute>} />
+    <Route path="/editor/manuscript/:bookId/chapters/:chapterId/page-view" element={<ProtectedRoute><ChaptersEditor /></ProtectedRoute>} />
+    <Route path="/editor/manuscript/:bookId/chapters/:chapterId/full-view" element={<ProtectedRoute><ChaptersEditor /></ProtectedRoute>} />
     <Route path="/editor/manuscript/:bookId/boxes" element={<ProtectedRoute><BoxesEditor /></ProtectedRoute>} />
     <Route path="/editor/manuscript/:bookId/book-preview" element={<ProtectedRoute><BookPreview /></ProtectedRoute>} />
   </>
 );
+

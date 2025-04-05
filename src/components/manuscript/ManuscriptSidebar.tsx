@@ -2,10 +2,11 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
-import { ChevronRight, ChevronDown, FileText, TableOfContents } from 'lucide-react';
+import { ChevronRight, ChevronDown, FileText, TableOfContents, BookOpen, LayoutDashboard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '../ui/switch';
+import { Link, useParams } from 'react-router-dom';
 
 interface FrontMatterOption {
   id: string;
@@ -30,7 +31,8 @@ const ManuscriptSidebar = ({
   const { toast } = useToast();
   const [expandedSections, setExpandedSections] = useState({
     frontMatter: true,
-    chapters: false
+    chapters: false,
+    views: true
   });
   const [frontMatterOptions, setFrontMatterOptions] = useState<FrontMatterOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -115,6 +117,48 @@ const ManuscriptSidebar = ({
               <span>Generate Table of Contents</span>
             </div>
           </Button>
+          
+          <div className="space-y-1 mb-4">
+            <div>
+              <button
+                onClick={() => handleToggleSection('views')}
+                className="w-full flex items-center justify-between p-2 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <span className="font-medium">Views</span>
+                {expandedSections.views ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+              </button>
+              
+              {expandedSections.views && (
+                <div className="ml-4 space-y-1">
+                  <Link 
+                    to={`/editor/manuscript/${bookId}/chapters`}
+                    className="flex items-center px-2 py-1.5 text-sm text-gray-300 hover:bg-white/10 rounded transition-colors"
+                  >
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Document View
+                  </Link>
+                  <Link 
+                    to={`/editor/manuscript/${bookId}/boxes`}
+                    className="flex items-center px-2 py-1.5 text-sm text-gray-300 hover:bg-white/10 rounded transition-colors"
+                  >
+                    <LayoutDashboard className="h-4 w-4 mr-2" />
+                    Boxes View
+                  </Link>
+                  <Link 
+                    to={`/editor/manuscript/${bookId}/book-preview`}
+                    className="flex items-center px-2 py-1.5 text-sm text-gray-300 hover:bg-white/10 rounded transition-colors"
+                  >
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Book Preview
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
           
           <div className="space-y-1">
             <div>

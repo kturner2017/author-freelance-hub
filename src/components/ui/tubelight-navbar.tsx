@@ -18,13 +18,17 @@ interface NavBarProps {
 
 export function TubelightNavbar({ items, className }: NavBarProps) {
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState(items[0].name)
-  const [isMobile, setIsMobile] = useState(false)
+  const [activeTab, setActiveTab] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const currentItem = items.find(item => item.url === location.pathname);
+    // Check if any item URL is part of the current path
+    const currentItem = items.find(item => location.pathname.startsWith(item.url));
     if (currentItem) {
       setActiveTab(currentItem.name);
+    } else {
+      // If no match, default to first or null
+      setActiveTab(items.length > 0 ? items[0].name : null);
     }
   }, [location, items]);
 
@@ -41,7 +45,7 @@ export function TubelightNavbar({ items, className }: NavBarProps) {
   return (
     <div
       className={cn(
-        "fixed bottom-0 sm:top-0 left-1/2 -translate-x-1/2 z-50 mb-6 sm:pt-6",
+        "fixed bottom-0 sm:static left-1/2 -translate-x-1/2 sm:translate-x-0 z-50 mb-6 sm:mb-0 sm:pt-0",
         className,
       )}
     >

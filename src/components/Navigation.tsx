@@ -1,5 +1,5 @@
 
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Briefcase, LogIn, LogOut, BookOpen, Users, UserPlus } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -12,8 +12,10 @@ import { useToast } from "@/hooks/use-toast";
 const Navigation = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -114,7 +116,7 @@ const Navigation = () => {
             )}
           </div>
 
-          <Sheet>
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="sm:hidden text-[#0F172A] hover:bg-gray-100 border border-[#0F172A]">
                 <Briefcase className="h-6 w-6" />
@@ -126,6 +128,30 @@ const Navigation = () => {
                   items={mainNavItems}
                   className="static transform-none" 
                 />
+                <div className="flex flex-col gap-2 mt-4">
+                  <Button 
+                    asChild
+                    onClick={() => setIsSheetOpen(false)}
+                    className="w-full justify-start"
+                  >
+                    <Link to="/professional-network/projects">
+                      <Briefcase className="mr-2 h-4 w-4" />
+                      For Freelancers
+                    </Link>
+                  </Button>
+                  
+                  <Button 
+                    asChild
+                    variant="secondary"
+                    onClick={() => setIsSheetOpen(false)}
+                    className="w-full justify-start"
+                  >
+                    <Link to="/professional-network/apply">
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Become a Freelancer
+                    </Link>
+                  </Button>
+                </div>
               </div>
             </SheetContent>
           </Sheet>

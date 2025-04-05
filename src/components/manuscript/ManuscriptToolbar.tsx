@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   Save,
@@ -23,6 +23,7 @@ interface ManuscriptToolbarProps {
   bookData: {
     title: string;
   };
+  bookId?: string;
   selectedChapter: string;
   editorView: 'boxes' | 'document';
   viewMode: 'grid' | 'list';
@@ -35,6 +36,7 @@ interface ManuscriptToolbarProps {
 
 const ManuscriptToolbar = ({
   bookData,
+  bookId,
   selectedChapter,
   editorView,
   viewMode,
@@ -74,11 +76,13 @@ const ManuscriptToolbar = ({
               <Button 
                 variant="ghost" 
                 size="icon"
-                onClick={() => navigate('/')}
+                asChild
                 className="hover:bg-gray-100 text-[#0F172A]"
                 aria-label="Home"
               >
-                <Home className="h-5 w-5" />
+                <Link to="/">
+                  <Home className="h-5 w-5" />
+                </Link>
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -178,6 +182,29 @@ const ManuscriptToolbar = ({
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
+
+          {bookId && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline"
+                    size="icon"
+                    asChild
+                    className="bg-white text-[#0F172A] border border-gray-200 hover:bg-gray-50 font-medium"
+                    aria-label="Book Preview"
+                  >
+                    <Link to={`/editor/manuscript/${bookId}/book-preview`}>
+                      <BookOpen className="h-5 w-5" />
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Book Preview</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </div>
 
         <Separator orientation="vertical" className="h-6 bg-gray-200" />

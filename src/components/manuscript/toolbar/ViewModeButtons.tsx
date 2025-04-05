@@ -2,11 +2,10 @@
 import React from 'react';
 import { Button } from '../../ui/button';
 import { BookOpen, LayoutDashboard } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../ui/tooltip';
 
 const ViewModeButtons = () => {
-  const navigate = useNavigate();
   const { bookId } = useParams();
 
   return (
@@ -17,11 +16,13 @@ const ViewModeButtons = () => {
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={() => navigate(`/editor/manuscript/${bookId}/chapters`)}
+              asChild
               className="bg-gray-50 hover:bg-gray-100 text-[#0F172A] border border-gray-200 font-medium"
             >
-              <BookOpen className="h-4 w-4 mr-2" />
-              Document
+              <Link to={`/editor/manuscript/${bookId}/chapters`}>
+                <BookOpen className="h-4 w-4 mr-2" />
+                Document
+              </Link>
             </Button>
           </TooltipTrigger>
           <TooltipContent>
@@ -36,11 +37,13 @@ const ViewModeButtons = () => {
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={() => navigate(`/editor/manuscript/${bookId}/boxes`)}
+              asChild
               className="bg-gray-50 hover:bg-gray-100 text-[#0F172A] border border-gray-200 font-medium"
             >
-              <LayoutDashboard className="h-4 w-4 mr-2" />
-              Boxes
+              <Link to={`/editor/manuscript/${bookId}/boxes`}>
+                <LayoutDashboard className="h-4 w-4 mr-2" />
+                Boxes
+              </Link>
             </Button>
           </TooltipTrigger>
           <TooltipContent>
