@@ -1,51 +1,145 @@
 
 import React from 'react';
-import { Separator } from '../ui/separator';
-import { useParams } from 'react-router-dom';
-import BackNavigationButtons from './toolbar/BackNavigationButtons';
-import EditorHeaderInfo from './toolbar/EditorHeaderInfo';
+import { Button } from '@/components/ui/button';
+import { 
+  Plus, 
+  Folder, 
+  Save, 
+  AlignLeft, 
+  BookOpen,
+  Download
+} from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useParams, Link } from 'react-router-dom';
 import WordCountBadge from './toolbar/WordCountBadge';
 import ViewModeButtons from './toolbar/ViewModeButtons';
-import ActionButtons from './toolbar/ActionButtons';
 
 interface ChapterToolbarProps {
   totalWordCount: number;
   onSave: () => void;
-  onAddChapter: () => Promise<any>;
+  onAddChapter: () => void;
   onAddAct: () => void;
   onGenerateTOC: () => void;
 }
 
-const ChapterToolbar = ({ 
-  totalWordCount, 
-  onSave, 
+const ChapterToolbar = ({
+  totalWordCount,
+  onSave,
   onAddChapter,
   onAddAct,
   onGenerateTOC
 }: ChapterToolbarProps) => {
-  return (
-    <div className="flex items-center gap-4 h-16 border-b px-6 justify-between bg-white text-[#0F172A] shadow-sm">
-      <div className="flex items-center gap-4">
-        <BackNavigationButtons />
-        <EditorHeaderInfo />
-      </div>
+  const { bookId } = useParams();
 
-      <div className="flex items-center gap-4">
-        <WordCountBadge totalWordCount={totalWordCount} />
-        
-        <div className="flex items-center gap-2 ml-2">
-          <ViewModeButtons />
-        </div>
-        
-        <Separator orientation="vertical" className="h-6 bg-gray-200" />
-        
-        <ActionButtons 
-          onSave={onSave}
-          onAddChapter={onAddChapter}
-          onAddAct={onAddAct}
-          onGenerateTOC={onGenerateTOC}
-        />
-      </div>
+  return (
+    <div className="flex items-center gap-2">
+      <ViewModeButtons />
+      
+      <Separator orientation="vertical" className="h-6" />
+      
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onAddChapter}
+              className="bg-gray-50 hover:bg-gray-100 text-[#0F172A] border border-gray-200 font-medium"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Chapter
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Add a new chapter</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onAddAct}
+              className="bg-gray-50 hover:bg-gray-100 text-[#0F172A] border border-gray-200 font-medium"
+            >
+              <Folder className="h-4 w-4 mr-2" />
+              Add Act
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Add a new act</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      
+      <Separator orientation="vertical" className="h-6" />
+      
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onGenerateTOC}
+              className="bg-gray-50 hover:bg-gray-100 text-[#0F172A] border border-gray-200 font-medium"
+            >
+              <AlignLeft className="h-4 w-4 mr-2" />
+              Generate TOC
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Generate Table of Contents</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              asChild
+              className="bg-gray-50 hover:bg-gray-100 text-[#0F172A] border border-gray-200 font-medium"
+            >
+              <Link to={`/editor/manuscript/${bookId}/book-preview`}>
+                <BookOpen className="h-4 w-4 mr-2" />
+                Book Preview
+              </Link>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Preview your book for export</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      
+      <Separator orientation="vertical" className="h-6" />
+      
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              variant="primary" 
+              size="sm" 
+              onClick={onSave}
+              className="bg-[#0F172A] hover:bg-[#1E293B] text-white"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Save
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Save changes</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      
+      <WordCountBadge wordCount={totalWordCount} />
     </div>
   );
 };

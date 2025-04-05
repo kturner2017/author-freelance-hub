@@ -1,71 +1,19 @@
 
+import React from 'react';
 import { Route } from 'react-router-dom';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import PublishingSupport from '@/pages/PublishingSupport';
-import ForAuthors from '@/pages/ForAuthors';
-import LaunchStrategies from '@/pages/LaunchStrategies';
-import ContractReview from '@/pages/ContractReview';
-import ContractTemplates from '@/pages/ContractTemplates';
-import QualityAssurance from '@/pages/QualityAssurance';
+import Editor from '@/pages/Editor';
+import ChaptersEditor from '@/components/manuscript/ChaptersEditor';
+import BoxesEditor from '@/components/manuscript/BoxesEditor';
+import BooksDashboard from '@/components/BooksDashboard';
+import BookPreview from '@/components/manuscript/BookPreview';
 
-export const publishingRoutes = [
-  <Route
-    key="publishing-support"
-    path="/publishing-support"
-    element={
-      <ProtectedRoute>
-        <PublishingSupport />
-      </ProtectedRoute>
-    }
-  />,
-  
-  <Route
-    key="for-authors"
-    path="/for-authors"
-    element={
-      <ProtectedRoute>
-        <ForAuthors />
-      </ProtectedRoute>
-    }
-  />,
-  
-  <Route
-    key="launch-strategies"
-    path="/launch-strategies"
-    element={
-      <ProtectedRoute>
-        <LaunchStrategies />
-      </ProtectedRoute>
-    }
-  />,
-  
-  <Route
-    key="contract-review"
-    path="/contract-review"
-    element={
-      <ProtectedRoute>
-        <ContractReview />
-      </ProtectedRoute>
-    }
-  />,
-  
-  <Route
-    key="contract-templates"
-    path="/contract-templates"
-    element={
-      <ProtectedRoute>
-        <ContractTemplates />
-      </ProtectedRoute>
-    }
-  />,
-
-  <Route
-    key="quality-assurance"
-    path="/quality-assurance"
-    element={
-      <ProtectedRoute>
-        <QualityAssurance />
-      </ProtectedRoute>
-    }
-  />
-];
+export const publishingRoutes = (
+  <>
+    <Route path="/editor" element={<ProtectedRoute><Editor /></ProtectedRoute>} />
+    <Route path="/editor/books" element={<ProtectedRoute><BooksDashboard /></ProtectedRoute>} />
+    <Route path="/editor/manuscript/:bookId/chapters" element={<ProtectedRoute><ChaptersEditor /></ProtectedRoute>} />
+    <Route path="/editor/manuscript/:bookId/boxes" element={<ProtectedRoute><BoxesEditor /></ProtectedRoute>} />
+    <Route path="/editor/manuscript/:bookId/book-preview" element={<ProtectedRoute><BookPreview /></ProtectedRoute>} />
+  </>
+);
