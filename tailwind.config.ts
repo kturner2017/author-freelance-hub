@@ -25,25 +25,16 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#1a365d",
-          foreground: "#ffffff",
-          100: "#e6edf5",
-          200: "#b3c9e6",
-          300: "#80a6d6",
-          400: "#4d82c6",
-          500: "#1a365d",
-          600: "#152b4a",
-          700: "#102038",
-          800: "#0a1525",
-          900: "#050b13"
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "#f7fafc",
-          foreground: "#1a365d",
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
         },
         accent: {
-          DEFAULT: "#ffd700",
-          foreground: "#1a365d",
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
@@ -61,6 +52,11 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        surface: {
+          DEFAULT: "hsl(var(--surface))",
+          foreground: "hsl(var(--surface-foreground))",
+        },
+        glass: "hsl(var(--glass))",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -77,14 +73,39 @@ export default {
           to: { height: "0" },
         },
         fadeIn: {
-          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "0%": { opacity: "0", transform: "translateY(20px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        slideUp: {
+          "0%": { opacity: "0", transform: "translateY(30px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        scaleIn: {
+          "0%": { opacity: "0", transform: "scale(0.95)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
+        glow: {
+          "0%, 100%": { boxShadow: "0 0 20px hsl(var(--accent) / 0.3)" },
+          "50%": { boxShadow: "0 0 30px hsl(var(--accent) / 0.5)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-10px)" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        fadeIn: "fadeIn 0.5s ease-out forwards",
+        fadeIn: "fadeIn 0.6s ease-out forwards",
+        slideUp: "slideUp 0.8s ease-out forwards",
+        scaleIn: "scaleIn 0.5s ease-out forwards",  
+        glow: "glow 2s ease-in-out infinite",
+        float: "float 3s ease-in-out infinite",
+      },
+      boxShadow: {
+        soft: "var(--shadow-soft)",
+        medium: "var(--shadow-medium)",
+        large: "var(--shadow-large)",
       },
       fontFamily: {
         serif: ["Merriweather", "serif"],
