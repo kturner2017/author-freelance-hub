@@ -18,7 +18,7 @@ export const Hero = () => {
   ];
 
   return (
-    <section className="relative overflow-hidden bg-background">
+    <section className="relative overflow-hidden bg-white">
       {/* Main Hero Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-16">
         <div className="text-center space-y-8">
@@ -28,14 +28,14 @@ export const Hero = () => {
               ✨ The future of book publishing is here
             </div>
             
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-serif text-foreground leading-tight">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-serif text-gray-900 leading-tight">
               Write. Connect.{" "}
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 Publish.
               </span>
             </h1>
             
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
               Transform your manuscript into a published masterpiece with our advanced writing tools and network of expert professionals.
             </p>
           </div>
@@ -58,7 +58,7 @@ export const Hero = () => {
               asChild 
               variant="outline" 
               size="lg"
-              className="border-2 border-border hover:bg-secondary shadow-medium hover:shadow-large transition-all duration-300 text-lg px-8 py-6 group backdrop-blur-sm"
+              className="border-2 border-gray-300 bg-white hover:bg-gray-50 text-gray-900 shadow-medium hover:shadow-large transition-all duration-300 text-lg px-8 py-6 group backdrop-blur-sm"
             >
               <Link to="/professional-network/find" className="flex items-center space-x-2">
                 <Users className="h-5 w-5" />
@@ -70,8 +70,8 @@ export const Hero = () => {
 
           {/* Trust Indicators */}
           <div className="pt-8 animate-fade-in animate-fade-in-delay-2">
-            <p className="text-sm text-muted-foreground mb-4">Trusted by authors worldwide</p>
-            <div className="flex justify-center items-center space-x-8 text-muted-foreground">
+            <p className="text-sm text-gray-600 mb-4">Trusted by authors worldwide</p>
+            <div className="flex justify-center items-center space-x-8 text-gray-600">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-accent rounded-full"></div>
                 <span className="text-sm font-medium">10,000+ Books Published</span>
@@ -90,14 +90,14 @@ export const Hero = () => {
       </div>
 
       {/* Interactive Sparkles Background */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0 opacity-30">
         <SparklesCore
           background="transparent"
           characterColor="hsl(var(--accent))"
           fontSize={20}
           speed={0.8}
-          density={60}
-          className="w-full h-full opacity-60"
+          density={40}
+          className="w-full h-full"
         />
       </div>
 
