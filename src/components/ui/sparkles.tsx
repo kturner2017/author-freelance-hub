@@ -121,7 +121,7 @@ export const SparklesCore = (props: MatrixProps) => {
     }[] = [];
     
     // Define bottomY here so it's accessible throughout the effect scope
-    const bottomY = dimensions.height - 80; // Position for first line
+    const bottomY = dimensions.height - 20; // Position quotes at the very bottom
     
     const initializeWordChars = () => {
       wordChars.length = 0; // Clear previous characters
