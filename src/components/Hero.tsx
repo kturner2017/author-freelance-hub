@@ -18,7 +18,7 @@ export const Hero = () => {
   ];
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-background via-secondary to-background">
+    <section className="relative overflow-hidden bg-background">
       {/* Main Hero Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-16">
         <div className="text-center space-y-8">
@@ -91,17 +91,14 @@ export const Hero = () => {
 
       {/* Interactive Sparkles Background */}
       <div className="absolute inset-0 z-0">
-        <div className="h-full w-full bg-gradient-to-br from-primary/5 via-transparent to-accent/5">
-          <SparklesCore
-            background="transparent"
-            characterColor="hsl(var(--accent))"
-            fontSize={20}
-            speed={0.8}
-            density={60}
-            quotes={famousQuotes}
-            className="w-full h-full opacity-60"
-          />
-        </div>
+        <SparklesCore
+          background="transparent"
+          characterColor="hsl(var(--accent))"
+          fontSize={20}
+          speed={0.8}
+          density={60}
+          className="w-full h-full opacity-60"
+        />
       </div>
 
       {/* Decorative Elements */}
